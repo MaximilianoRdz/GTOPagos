@@ -1,15 +1,17 @@
 <div class="flex justify-center flex-col w-screen h-screen gradient-money">
   <div id="container" class="relative bg-white/90 rounded-lg shadow-lg overflow-hidden w-1/2 h-1/2 mx-auto" [class.right-panel-active]="rightPanelActive">
     <!-- Register Form -->
-    <div *ngIf="rightPanelActive" class="form-container absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2 z-1 opacity-0"
-    [class.opacity-100]="rightPanelActive" [class.z-50]="rightPanelActive" [class.translate-x-full]="rightPanelActive"
+    <div class="form-container absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2"
+    [class.opacity-100]="rightPanelActive" [class.z-50]="rightPanelActive" [class.translate-x-0]="!rightPanelActive"
+    [class.opacity-0]="!rightPanelActive" [class.z-10]="!rightPanelActive" [class.translate-x-full]="rightPanelActive"
     >
       <app-register/>
     </div>
 
     <!-- Login Form -->
-    <div *ngIf="!rightPanelActive" class="form-container absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2 z-50"
-    [class.translate-x-full]="rightPanelActive"
+    <div class="form-container absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2"
+    [class.opacity-0]="rightPanelActive" [class.z-10]="rightPanelActive" [class.translate-x-full]="rightPanelActive"
+    [class.opacity-100]="!rightPanelActive" [class.z-50]="!rightPanelActive" [class.translate-x-0]="!rightPanelActive"
     >
       <app-login/>
     </div>
