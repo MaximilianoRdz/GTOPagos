@@ -1,54 +1,111 @@
-<div class="flex justify-center flex-col w-screen h-screen gradient-money">
-  <div id="container" class="relative bg-white/90 rounded-lg shadow-lg overflow-hidden w-1/2 h-1/2 mx-auto" [class.right-panel-active]="rightPanelActive">
+<div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-4">
+  <div
+    class="relative bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl h-[600px] transition-all duration-700 ease-in-out"
+    [class.right-panel-active]="rightPanelActive"
+    style="box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
+  >
     <!-- Register Form -->
-    <div class="form-container absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2"
-    [class.opacity-100]="rightPanelActive" [class.z-50]="rightPanelActive" [class.translate-x-0]="!rightPanelActive"
-    [class.opacity-0]="!rightPanelActive" [class.z-10]="!rightPanelActive" [class.translate-x-full]="rightPanelActive"
-    >
-      <app-register/>
+    <div class="form-container absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2"
+      [class.opacity-100]="rightPanelActive"
+      [class.z-50]="rightPanelActive"
+      [class.translate-x-0]="!rightPanelActive"
+      [class.opacity-0]="!rightPanelActive"
+      [class.z-10]="!rightPanelActive"
+      [class.translate-x-full]="rightPanelActive"
+      >
+      <app-register></app-register>
     </div>
 
     <!-- Login Form -->
-    <div class="form-container absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2"
-    [class.opacity-0]="rightPanelActive" [class.z-10]="rightPanelActive" [class.translate-x-full]="rightPanelActive"
-    [class.opacity-100]="!rightPanelActive" [class.z-50]="!rightPanelActive" [class.translate-x-0]="!rightPanelActive"
+    <div class="form-container absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2"
+      [class.opacity-0]="rightPanelActive"
+      [class.z-10]="rightPanelActive"
+      [class.translate-x-full]="rightPanelActive"
+      [class.opacity-100]="!rightPanelActive"
+      [class.z-50]="!rightPanelActive"
+      [class.translate-x-0]="!rightPanelActive"
     >
-      <app-login/>
+      <app-login></app-login>
     </div>
 
     <!-- Overlay -->
-    <div class="overlay-container absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-600 ease-in-out z-100" [class.translate-x--full]="rightPanelActive" [class.translate-x-0]="!rightPanelActive" [class.translate-x--full]="rightPanelActive" [class.-translate-x-full]="rightPanelActive">
-      <div class="overlay bg-gradient-to-r from-green-700 to-yellow-400 text-white relative left-[-100%] h-full w-[200%] transition-transform duration-600 ease-in-out"
+    <div
+      class="overlay-container absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-[100]"
+      [class.translate-x--full]="rightPanelActive"
+      [class.translate-x-0]="!rightPanelActive"
+      [class.translate-x--full]="rightPanelActive"
+      [class.-translate-x-full]="rightPanelActive"
+    >
+      <div class="overlay relative left-[-100%] h-full w-[200%] transition-transform duration-600 ease-in-out" style="background: linear-gradient(135deg, #059669 0%, #0d9488 25%, #0891b2 50%, #0284c7 75%, #2563eb 100%)"
         [ngClass]="{
           'translate-x-1/2': rightPanelActive,
           'translate-x-0': !rightPanelActive
         }">
-        <div class="overlay-panel overlay-left absolute flex items-center flex-col justify-center px-10 text-center top-0 h-full w-1/2 left-0 transform translate-x-0 transition-transform duration-600 ease-in-out"
-        [ngClass]="{
-          '-translate-x-1/4': !rightPanelActive,
-          'translate-x-0': rightPanelActive
-        }">
-          <h1 class="text-3xl font-bold mb-4">Bienvenido de nuevo!</h1>
-          <p class="text-sm font-light mb-8"> Si posee una cuenta podra iniciar sesión</p>
-          <button class="ghost bg-transparent border border-white text-white rounded-full px-12 py-3 uppercase font-bold tracking-widest hover:bg-white hover:text-green-700 transition-colors duration-300" (click)="togglePanel(false)">
-            Iniciar Sesión
-          </button>
-        </div>
-
-        <div class="overlay-panel overlay-right absolute flex items-center flex-col justify-center px-10 text-center top-0 h-full w-1/2 right-0 transform translate-x-0 transition-transform duration-600 ease-in-out"
-        [ngClass]="{
-          'translate-x-1/4': rightPanelActive,
-          'translate-x-0': !rightPanelActive
+        <!-- Panel Izquierdo -->
+        <div class="overlay-panel absolute flex items-center flex-col justify-center px-10 text-center top-0 h-full w-1/2 left-0 transform translate-x-0 transition-transform duration-600 ease-in-out"
+          [ngClass]="{
+            '-translate-x-1/4': !rightPanelActive,
+            'translate-x-0': rightPanelActive
           }">
-          <h1 class="text-3xl font-bold mb-4">Bienvenido!</h1>
-          <p class="text-sm font-light mb-8">Introduce tus datos personales y comienza tu viaje con nosotros</p>
-          <button class="ghost bg-transparent border border-white text-white rounded-full px-12 py-3 uppercase font-bold tracking-widest hover:bg-white hover:text-green-700 transition-colors duration-300" (click)="togglePanel(true)">
-            Crear cuenta
+          <div class="mb-8">
+            <div class="w-20 h-20 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                />
+              </svg>
+            </div>
+            <h1 class="text-4xl font-bold mb-4 text-white">¡Bienvenido de nuevo!</h1>
+            <p class="text-lg font-light mb-8 text-white/90 leading-relaxed">
+              Gestiona tus finanzas de manera inteligente. <br />
+              Inicia sesión para continuar con tu planificación.
+            </p>
+          </div>
+          <button
+            class="cursor-pointer group relative bg-transparent border-2 border-white text-white rounded-full px-8 py-3 font-semibold tracking-wide hover:bg-white hover:text-emerald-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
+            (click)="togglePanel(false)"
+          >
+            <span class="relative z-10">Iniciar Sesión</span>
+            <div class="absolute inset-0 bg-white rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-300"></div>
           </button>
         </div>
 
+        <!-- Panel Derecho -->
+        <div class="overlay-panel absolute flex items-center flex-col justify-center px-10 text-center top-0 h-full w-1/2 right-0 transform translate-x-0 transition-transform duration-600 ease-in-out"
+          [ngClass]="{
+            'translate-x-1/4': rightPanelActive,
+            'translate-x-0': !rightPanelActive
+          }"
+        >
+          <div class="mb-8">
+            <div class="w-20 h-20 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <h1 class="text-4xl font-bold mb-4 text-white">¡Comienza hoy!</h1>
+            <p class="text-lg font-light mb-8 text-white/90 leading-relaxed">
+              Crea tu cuenta y toma control de tus finanzas. <br />
+              Planifica, ahorra y alcanza tus metas.
+            </p>
+          </div>
+          <button
+            class="cursor-pointer group relative bg-transparent border-2 border-white text-white rounded-full px-8 py-3 font-semibold tracking-wide hover:bg-white hover:text-emerald-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
+            (click)="togglePanel(true)"
+          >
+            <span class="relative z-10">Crear Cuenta</span>
+            <div class="absolute inset-0 bg-white rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
