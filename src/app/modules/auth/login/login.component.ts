@@ -1,17 +1,16 @@
 import { Component, signal  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LucideAngularModule  } from 'lucide-angular';
 import { LoginService, LoginRequest } from '../../../core/services/auth/login.service';
 import { AlertsService } from '../../../core/services/alerts/Alerts.service';
-
+import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-login',
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    LucideAngularModule,
-  ],
+    RouterLink
+],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
