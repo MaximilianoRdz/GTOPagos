@@ -1,0 +1,25 @@
+<nav class="bg-gradient-to-r from-emerald-900 to-teal-800 text-white h-16 px-6 shadow-lg flex items-center justify-between">
+  <div class="flex items-center space-x-4">
+    <button (click)="toggleSidebar()" class="p-2 hover:bg-emerald-700 rounded-lg transition-colors">
+      <!-- Ícono de menú hamburguesa -->
+      <lucide-angular [img]="Menu" class="w-5 h-5"></lucide-angular>
+    </button>
+    <div class="flex items-center space-x-2 text-sm">
+      <span class="text-emerald-200">Panel Financiero</span>
+      <lucide-angular [img]="ChevronRight" class="w-4 h-4 text-emerald-300"></lucide-angular>
+      <span class="font-medium">Dashboard</span>
+    </div>
+  </div>
+  <div class="flex items-center space-x-3">
+    <div class="text-right">
+      <p class="text-sm font-medium capitalize">{{ monthYear }}</p>
+      <p class="text-xs text-emerald-200">Último acceso: {{ lastAccess }}</p>
+    </div>
+    <div>
+      <button class="flex items-center space-x-2 px-3 py-2 hover:bg-emerald-700 rounded-lg transition-colors text-emerald-200 hover:text-red-300">
+        <lucide-angular [img]="LogOut" class="w-4 h-4"></lucide-angular>
+        <span>Salir</span>
+      </button>
+    </div>
+  </div>
+</nav>
