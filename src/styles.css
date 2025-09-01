@@ -1,0 +1,27 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap';
+@import "tailwindcss";
+
+
+h1, h2, h3, h4, h5, p, span, button, a, input {
+  font-family: 'Outfit', sans-serif;
+}
+
+@keyframes gradientMoney {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-money {
+  background: linear-gradient(135deg,#224d2f,#6b8e23,#00c853);
+  background-size: 180% 180%;
+  animation: gradient-animation 15s ease infinite;
+}
+
