@@ -8,9 +8,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   confirm_password: string;
-  salary: number;
-  currency_id: number;
-  income_frequency: string;
 }
 
 export interface RegisterResponse {
@@ -18,9 +15,6 @@ export interface RegisterResponse {
     id: number;
     name: string;
     email: string;
-    salary: number;
-    currency: string;
-    income_frequency: string;
   };
   access_token: string;
 }
@@ -42,10 +36,6 @@ export class RegisterService {
 
   postRegister(data: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register/`, data);
-  }
-
-  getCurrencies(): Observable<Currency[]> {
-    return this.http.get<Currency[]>(`${this.apiUrl}/currencies/`);
   }
 
 }

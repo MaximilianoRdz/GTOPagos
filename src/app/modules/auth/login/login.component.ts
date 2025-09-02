@@ -4,17 +4,22 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { LoginService, LoginRequest } from '../../../core/services/auth/login.service';
 import { AlertsService } from '../../../core/services/alerts/Alerts.service';
 import { RouterLink } from '@angular/router';
+import { LucideAngularModule, Lock, EyeClosed, Eye } from 'lucide-angular';
 @Component({
   selector: 'app-login',
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    LucideAngularModule
 ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
 })
 export class LoginComponent {
+  readonly Lock = Lock;
+  readonly EyeClosed = EyeClosed;
+  readonly Eye = Eye;
+
   form: FormGroup;
   showPassword = signal(false);
 

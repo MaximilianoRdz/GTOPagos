@@ -2,6 +2,7 @@ import { Component} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
+import { LucideAngularModule, DollarSign, ChartNoAxesCombined } from 'lucide-angular';
 
 @Component({
   selector: 'app-auth',
@@ -9,11 +10,13 @@ import { RegisterComponent } from './register/register.component';
     LoginComponent,
     RegisterComponent,
     CommonModule,
+    LucideAngularModule,
   ],
   templateUrl: './auth.component.html',
-  styleUrl: './auth.component.css'
 })
 export class AuthComponent {
+  readonly DollarSign = DollarSign;
+  readonly ChartNoAxesCombined = ChartNoAxesCombined;
 
   rightPanelActive = false;
 
