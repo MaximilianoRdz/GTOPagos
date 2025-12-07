@@ -3,17 +3,21 @@ import { CommonModule } from '@angular/common';
 import { LayoutService } from '../../../core/services/layout/layout.service';
 import { Subscription } from 'rxjs';
 import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, ChevronDown, User,Settings } from 'lucide-angular';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
+
 
 interface MenuItem {
   id: string;
   label: string;
   icon: any;
+  route: string;
   hasDropdown?: boolean;
 }
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule ],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css'],
 })
@@ -32,22 +36,27 @@ export class SidebarComponent implements OnDestroy {
   private subscription!: Subscription;
 
   menuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: this.Layers, hasDropdown: true },
-    { id: 'budget', label: 'Presupuesto', icon: this.Wallet },
-    { id: 'goals', label: 'Metas', icon: this.Target },
-    { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing },
-    { id: 'settings', label: 'Configuración', icon: this.Settings }
+    { id: 'dashboard', label: 'Dashboard', icon: this.Layers, hasDropdown: true, route: '/dashboard' },
+    { id: 'budget', label: 'Presupuesto', icon: this.Wallet, route: '/budget' },
+    { id: 'goals', label: 'Metas', icon: this.Target, route: '/goals' },
+    { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing, route: '/reports' },
+    { id: 'settings', label: 'Configuración', icon: this.Settings, route: '/configuration' },
   ];
 
-  constructor(private layoutService: LayoutService) {
-    this.subscription = this.layoutService.sidebarOpen$.subscribe(open => {
-      this.sidebarOpen = open;
-    });
+  constructor(private layoutService: LayoutService, private router: Router) {
+    this.subscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        const current = event.urlAfterRedirects.split('/')[1];
+        this.activeSection = current;
+      });
   }
 
   setActiveSection(sectionId: string) {
-    this.activeSection = sectionId;
-    console.log('Sección activa:', sectionId);
+    const item = this.menuItems.find(m => m.id === sectionId);
+    if (!item) return;
+
+    this.router.navigateByUrl(item.route);
   }
 
   ngOnDestroy() {
