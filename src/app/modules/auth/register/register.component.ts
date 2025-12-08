@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { RegisterService, RegisterRequest } from '../../../core/services/auth/register.service'
 import { AlertsService } from '../../../core/services/alerts/Alerts.service'
@@ -8,10 +8,9 @@ import { LucideAngularModule, User } from 'lucide-angular';
 @Component({
   selector: 'app-register',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     LucideAngularModule
-  ],
+],
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {
