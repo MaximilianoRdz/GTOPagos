@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   LucideAngularModule,
   DollarSign,
@@ -78,7 +78,7 @@ type NotificationKey = keyof NotificationSettings;
 
 @Component({
   selector: 'app-configuration',
-  imports: [CommonModule, LucideAngularModule, FormsModule],
+  imports: [LucideAngularModule, FormsModule],
   templateUrl: './configuration.component.html',
 })
 

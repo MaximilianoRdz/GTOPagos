@@ -10,30 +10,31 @@
 
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div
-        *ngFor="let stat of stats"
-        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 rounded-lg bg-gray-50" [ngClass]="stat.color">
-            <lucide-angular [img]="stat.icon" class="w-6 h-6" [ngClass]="stat.color"></lucide-angular>
-          </div>
-          <div
-            class="flex items-center text-sm font-medium"
-            [ngClass]="stat.trend === 'up' ? 'text-emerald-600' : 'text-red-600'"
+      @for (stat of stats; track stat) {
+        <div
+          class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
           >
-            <lucide-angular
-              [img]="stat.trend === 'up' ? TrendingUp : TrendingDown"
-              class="w-4 h-4 mr-1"
-            ></lucide-angular>
-            {{ stat.change }}
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 rounded-lg bg-gray-50" [ngClass]="stat.color">
+              <lucide-angular [img]="stat.icon" class="w-6 h-6" [ngClass]="stat.color"></lucide-angular>
+            </div>
+            <div
+              class="flex items-center text-sm font-medium"
+              [ngClass]="stat.trend === 'up' ? 'text-emerald-600' : 'text-red-600'"
+              >
+              <lucide-angular
+                [img]="stat.trend === 'up' ? TrendingUp : TrendingDown"
+                class="w-4 h-4 mr-1"
+              ></lucide-angular>
+              {{ stat.change }}
+            </div>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-900 mb-1">{{ stat.value }}</p>
+            <p class="text-sm text-gray-600">{{ stat.title }}</p>
           </div>
         </div>
-        <div>
-          <p class="text-2xl font-bold text-gray-900 mb-1">{{ stat.value }}</p>
-          <p class="text-sm text-gray-600">{{ stat.title }}</p>
-        </div>
-      </div>
+      }
     </div>
 
     <!-- Content -->
@@ -51,32 +52,33 @@
           </div>
         </div>
         <div class="space-y-3">
-          <div
-            *ngFor="let transaction of recentTransactions"
-            class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-200"
-          >
-            <div class="flex items-center space-x-3">
-              <div
-                class="p-2 rounded-full"
-                [ngClass]="transaction.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'"
+          @for (transaction of recentTransactions; track transaction) {
+            <div
+              class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-200"
               >
-                <lucide-angular
-                [img]="transaction.type === 'income' ? TrendingUp : TrendingDown"
-                class="w-4 h-4"
-                ></lucide-angular>
+              <div class="flex items-center space-x-3">
+                <div
+                  class="p-2 rounded-full"
+                  [ngClass]="transaction.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'"
+                  >
+                  <lucide-angular
+                    [img]="transaction.type === 'income' ? TrendingUp : TrendingDown"
+                    class="w-4 h-4"
+                  ></lucide-angular>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">{{ transaction.description }}</p>
+                  <p class="text-sm text-gray-500">{{ transaction.date }}</p>
+                </div>
               </div>
-              <div>
-                <p class="font-medium text-gray-900">{{ transaction.description }}</p>
-                <p class="text-sm text-gray-500">{{ transaction.date }}</p>
-              </div>
+              <span
+                class="font-semibold"
+                [ngClass]="transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'"
+                >
+                {{ transaction.amount }}
+              </span>
             </div>
-            <span
-              class="font-semibold"
-              [ngClass]="transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'"
-            >
-              {{ transaction.amount }}
-            </span>
-          </div>
+          }
         </div>
       </div>
 
