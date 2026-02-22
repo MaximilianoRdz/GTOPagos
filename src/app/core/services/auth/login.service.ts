@@ -12,10 +12,9 @@ export interface LoginResponse {
   user: {
     name: string;
     email: string;
-    salary: number;
-    currency: string;
   };
   access_token: string;
+  refresh_token: string;
 }
 
 @Injectable({

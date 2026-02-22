@@ -24,7 +24,6 @@ export class RegisterComponent {
     private alert: AlertsService
   ) {
     this.registerForm = this.fb.group({
-      name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirm_password: ['', [Validators.required, Validators.minLength(6)]],
@@ -45,7 +44,6 @@ export class RegisterComponent {
     const formValue = this.registerForm.value;
 
     const registerData: RegisterRequest = {
-      name: formValue.name,
       email: formValue.email,
       password: formValue.password,
       confirm_password: formValue.password,  // si pides confirmación, ajusta según tu UI

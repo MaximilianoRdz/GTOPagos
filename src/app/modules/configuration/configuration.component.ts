@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
+import { Component, effect } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ConfigurationService, Currency, IncomeFrequency } from '../../core/services/configuration/configuration.service';
 import {
   LucideAngularModule,
   DollarSign,
@@ -21,18 +23,16 @@ import {
   Settings,
   Bell,
   Palette,
-  CreditCard
+  CreditCard,
 } from 'lucide-angular';
-import { FormsModule } from '@angular/forms';
+import { I18nService } from '../../core/i18n/i18n.service';
+
+/* ===================== INTERFACES ===================== */
 
 interface ProfileData {
   firstName: string;
   lastName: string;
-  email: string;
   phone: string;
-  address: string;
-  birthDate: string;
-  bio: string;
 }
 
 interface SecurityData {
@@ -41,6 +41,8 @@ interface SecurityData {
   confirmPassword: string;
   twoFactorEnabled: boolean;
 }
+
+export type NotificationMethod = 'email' | 'sms' | 'both';
 
 interface NotificationSettings {
   budgetAlerts: boolean;
@@ -52,13 +54,19 @@ interface NotificationSettings {
 }
 
 interface AppearanceSettings {
-  theme: string;
-  currency: string;
-  dateFormat: string;
-  numberFormat: string;
+  theme: 'light' | 'dark' | 'auto';
   language: string;
-  incomeFrequency: string;
 }
+
+interface UserProfile {
+  firstName?: string | null;
+  lastName?: string | null;
+  currency: Currency | null;
+  salary: number | null;
+  income_frequency: IncomeFrequency | null;
+  phone?: string | null;
+}
+
 
 interface MenuItem {
   id: string;
@@ -67,31 +75,59 @@ interface MenuItem {
   hasDropdown?: boolean;
 }
 
-interface SettingsTab {
-  id: Tab;
-  label: string;
-  icon: any;
-}
-
 type Tab = 'profile' | 'security' | 'notifications' | 'appearance' | 'financial';
 type NotificationKey = keyof NotificationSettings;
 
+/* ===================== COMPONENT ===================== */
+
 @Component({
   selector: 'app-configuration',
-  imports: [LucideAngularModule, FormsModule],
+  standalone: true,
+  imports: [LucideAngularModule, FormsModule, CommonModule],
   templateUrl: './configuration.component.html',
 })
+export class ConfigurationComponent {
 
-export class ConfigurationComponent implements OnInit {
+  constructor(public i18n: I18nService, private configService: ConfigurationService) {}
+
+  loadProfile(): void {
+    this.configService.getProfile().subscribe(profile => {
+      if (profile?.phone) {
+        this.profileData.phone = profile.phone;
+      }
+    });
+  }
+
+
+  ngOnInit(): void {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
+    const savedLang = localStorage.getItem('language') as 'es' | 'en' | null;
+    
+    if (savedTheme) {
+      this.appearanceSettings.theme = savedTheme;
+      this.applyTheme(savedTheme);
+    }
+    if (savedLang) {
+      this.appearanceSettings.language = savedLang;
+    }
+
+    this.loadCurrencies();
+    this.loadIncomeFrequencies();
+    this.loadUserProfile();
+
+  }
+
+  /* ===================== STATE ===================== */
 
   activeSection: string = 'settings';
   activeTab: Tab = 'profile';
-  showCurrentPassword: boolean = false;
-  showNewPassword: boolean = false;
-  showConfirmPassword: boolean = false;
-  theme: string = 'light';
 
-  // Lucide Icons
+  showCurrentPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
+
+  /* ===================== ICONS ===================== */
+
   DollarSign = DollarSign;
   Menu = Menu;
   User = User;
@@ -106,15 +142,17 @@ export class ConfigurationComponent implements OnInit {
   Monitor = Monitor;
   Settings = Settings;
 
+  /* ===================== MENU ===================== */
+
   menuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, hasDropdown: true },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'budget', label: 'Presupuesto', icon: Wallet },
     { id: 'goals', label: 'Metas', icon: Target },
     { id: 'reports', label: 'Reportes', icon: BarChart3 },
     { id: 'settings', label: 'Configuración', icon: Settings },
   ];
 
-  settingsTabs: SettingsTab[] = [
+  settingsTabs: { id: Tab; label: string; icon: any }[] = [
     { id: 'profile', label: 'Perfil', icon: User },
     { id: 'security', label: 'Seguridad', icon: Shield },
     { id: 'notifications', label: 'Notificaciones', icon: Bell },
@@ -122,14 +160,13 @@ export class ConfigurationComponent implements OnInit {
     { id: 'financial', label: 'Configuración Financiera', icon: CreditCard },
   ];
 
+
+  /* ===================== DATA ===================== */
+
   profileData: ProfileData = {
-    firstName: 'Juan',
-    lastName: 'Pérez',
-    email: 'juan@email.com',
-    phone: '+52 123 456 7890',
-    address: 'Guanajuato, México',
-    birthDate: '1990-05-15',
-    bio: 'Profesional en finanzas personales',
+    firstName: '',
+    lastName: '',
+    phone: '',
   };
 
   securityData: SecurityData = {
@@ -138,6 +175,9 @@ export class ConfigurationComponent implements OnInit {
     confirmPassword: '',
     twoFactorEnabled: false,
   };
+
+  // Método de notificación
+  notificationMethod: NotificationMethod = 'email';
 
   notificationSettings: NotificationSettings = {
     budgetAlerts: true,
@@ -149,21 +189,50 @@ export class ConfigurationComponent implements OnInit {
   };
 
   appearanceSettings: AppearanceSettings = {
-    theme: 'light',
-    currency: 'MXN',
-    dateFormat: 'DD/MM/YYYY',
-    numberFormat: '1,234.56',
+    theme: 'auto',
     language: 'es',
-    incomeFrequency: 'monthly',
   };
 
+  userProfile: UserProfile = {
+    firstName: '',
+    lastName: '',
+    currency: null,
+    salary: null,
+    income_frequency: null,
+    phone: '',
+  };
+
+  loadingProfile = false;
+
   themeOptions = [
-    { value: 'light', label: 'Claro', icon: Sun, description: 'Tema claro' },
-    { value: 'dark', label: 'Oscuro', icon: Moon, description: 'Tema oscuro' },
-    { value: 'auto', label: 'Automático', icon: Monitor, description: 'Sigue el sistema' },
+    {
+      value: 'light' as const,
+      label: 'Claro',
+      icon: Sun,
+      description: 'Tema claro',
+      color: 'text-yellow-500',
+    },
+    {
+      value: 'dark' as const,
+      label: 'Oscuro',
+      icon: Moon,
+      description: 'Tema oscuro',
+      color: 'text-indigo-500',
+    },
+    {
+      value: 'auto' as const,
+      label: 'Automático',
+      icon: Monitor,
+      description: 'Sigue el sistema',
+      color: 'text-gray-500',
+    },
   ];
 
-  notificationSettingsConfig: { key: NotificationKey; label: string; description: string }[] = [
+  notificationOptions: {
+  key: NotificationKey;
+  label: string;
+  description: string;
+  }[] = [
     {
       key: 'budgetAlerts',
       label: 'Alertas de presupuesto',
@@ -177,12 +246,12 @@ export class ConfigurationComponent implements OnInit {
     {
       key: 'weeklyReports',
       label: 'Reportes semanales',
-      description: 'Resumen semanal de tus finanzas'
+      description: 'Resumen semanal de tus finanzas',
     },
     {
       key: 'monthlyReports',
       label: 'Reportes mensuales',
-      description: 'Análisis detallado mensual'
+      description: 'Análisis detallado mensual',
     },
     {
       key: 'transactionAlerts',
@@ -196,103 +265,228 @@ export class ConfigurationComponent implements OnInit {
     },
   ];
 
-  ngOnInit(): void {
-    // Cargar tema desde localStorage al inicializar
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    this.theme = savedTheme;
-    this.appearanceSettings.theme = savedTheme;
-    this.applyTheme(savedTheme);
-  }
+  currencies: Currency[] = [];
 
-  applyTheme(selectedTheme: string): void {
-    const root = document.documentElement;
+  incomeFrequencies: IncomeFrequency[] = [];
 
-    if (selectedTheme === 'dark') {
-      root.classList.add('dark');
-    } else if (selectedTheme === 'light') {
-      root.classList.remove('dark');
-    } else if (selectedTheme === 'auto') {
-      // Detectar preferencia del sistema
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    }
-  }
 
-  handleThemeChange(newTheme: string): void {
-    this.theme = newTheme;
-    this.appearanceSettings.theme = newTheme;
-    localStorage.setItem('theme', newTheme);
-    this.applyTheme(newTheme);
-  }
+  /* ===================== LIFECYCLE ===================== */
 
-  getActiveLabel(): string {
-    const activeItem = this.menuItems.find((item) => item.id === this.activeSection);
-    return activeItem ? activeItem.label : 'Dashboard';
-  }
 
-  getCurrentMonthYear(): string {
-    const now = new Date();
-    return now.toLocaleDateString('es-ES', {
-      month: 'long',
-      year: 'numeric',
-    });
-  }
 
-  get isProfileTab(): boolean {
+  /* ===================== GETTERS (TABS) ===================== */
+
+  get isProfileTab() {
     return this.activeTab === 'profile';
   }
 
-  get isSecurityTab(): boolean {
+  get isSecurityTab() {
     return this.activeTab === 'security';
   }
 
-  get isNotificationsTab(): boolean {
+  get isNotificationsTab() {
     return this.activeTab === 'notifications';
   }
 
-
-  handleProfileSave(): void {
-    console.log('Guardando perfil:', this.profileData);
-    // Aquí iría la lógica para guardar el perfil
+  get isAppearanceTab() {
+    return this.activeTab === 'appearance';
   }
 
-  handleSecuritySave(): void {
-    console.log('Guardando configuración de seguridad:', this.securityData);
-    // Aquí iría la lógica para cambiar contraseña
+  get isFinancialTab() {
+    return this.activeTab === 'financial';
   }
 
-  handleAppearanceSave(): void {
-    console.log('Guardando configuración de apariencia:', this.appearanceSettings);
-    // Aquí iría la lógica para guardar las preferencias
-  }
-
-  setActiveSection(section: string): void {
-    this.activeSection = section;
-  }
+  /* ===================== ACTIONS ===================== */
 
   setActiveTab(tab: Tab): void {
     this.activeTab = tab;
   }
 
-  togglePasswordVisibility(field: string): void {
-    switch (field) {
-      case 'current':
-        this.showCurrentPassword = !this.showCurrentPassword;
-        break;
-      case 'new':
-        this.showNewPassword = !this.showNewPassword;
-        break;
-      case 'confirm':
-        this.showConfirmPassword = !this.showConfirmPassword;
-        break;
-    }
-  }
-
   updateNotificationSetting(key: NotificationKey, value: boolean): void {
     this.notificationSettings[key] = value;
   }
+
+  setTheme(theme: 'light' | 'dark' | 'auto'): void {
+    this.appearanceSettings.theme = theme;
+    localStorage.setItem('theme', theme);
+    this.applyTheme(theme);
+  }
+
+  applyTheme(theme: 'light' | 'dark' | 'auto'): void {
+    const root = document.documentElement;
+
+    if (theme === 'light') {
+      root.classList.remove('dark');
+    }
+
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    }
+
+    if (theme === 'auto') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', prefersDark);
+    }
+  }
+
+  setLanguage(lang: 'es' | 'en') {
+    this.appearanceSettings.language = lang;
+    this.i18n.setLanguage(lang);
+    localStorage.setItem('language', lang);
+  }
+
+  formatPhone(value: string) {
+    const numbers = value.replace(/\D/g, '').slice(0, 10);
+
+    if (numbers.length <= 3) {
+      this.profileData.phone = numbers;
+    } else if (numbers.length <= 6) {
+      this.profileData.phone = `${numbers.slice(0, 3)} ${numbers.slice(3)}`;
+    } else {
+      this.profileData.phone = `${numbers.slice(0, 3)} ${numbers.slice(3, 6)} ${numbers.slice(6)}`;
+    }
+  }
+
+  handleProfileSave(): void {
+    const payload: any = {};
+
+    if (this.profileData.firstName?.trim()) {
+      payload.first_name = this.profileData.firstName.trim();
+    }
+
+    if (this.profileData.lastName?.trim()) {
+      payload.last_name = this.profileData.lastName.trim();
+    }
+
+    if (this.profileData.phone?.trim()) {
+      payload.phone = this.profileData.phone.trim();
+    }
+
+    if (!Object.keys(payload).length) return;
+
+    this.configService.updateProfile(payload).subscribe();
+  }
+
+
+  handleSecuritySave(): void {
+    if (!this.securityData.currentPassword ||
+        !this.securityData.newPassword ||
+        !this.securityData.confirmPassword) {
+      return;
+    }
+
+    if (this.securityData.newPassword !== this.securityData.confirmPassword) {
+      console.error('Las contraseñas no coinciden');
+      return;
+    }
+
+    const payload = {
+      current_password: this.securityData.currentPassword,
+      new_password: this.securityData.newPassword,
+      confirm_password: this.securityData.confirmPassword,
+    };
+
+    this.configService.changePassword(payload).subscribe({
+      next: () => {
+        console.log('Contraseña actualizada correctamente');
+
+        // Limpiar campos
+        this.securityData.currentPassword = '';
+        this.securityData.newPassword = '';
+        this.securityData.confirmPassword = '';
+      },
+      error: (err) => {
+        console.error('Error cambiando contraseña', err);
+      }
+    });
+  }
+
+
+  handleFinancialSave(): void {
+    const payload = {
+      salary: this.userProfile.salary ?? null,
+      currency_id: this.userProfile.currency?.id ?? null,
+      income_frequency_id: this.userProfile.income_frequency?.id ?? null,
+    };
+
+    this.configService.updateProfile(payload).subscribe({
+      next: (updatedProfile) => {
+        // Mantener objetos completos si quieres mostrar
+        this.userProfile.salary = updatedProfile.salary;
+        // Opcional: podrías volver a cargar profile desde backend si necesitas los objetos currency y frequency
+        console.log('Perfil financiero actualizado');
+      },
+      error: (err) => {
+        console.error('Error actualizando perfil', err);
+      },
+    });
+  }
+
+  loadCurrencies(): void {
+    this.configService.getCurrencies().subscribe({
+      next: (data) => {
+        this.currencies = data;
+
+        // seleccionar MXN por defecto si no hay moneda aún
+        if (!this.userProfile.currency && data.length) {
+          const mxn = data.find(c => c.code === 'MXN');
+          if (mxn) {
+            this.userProfile.currency = mxn;
+          }
+        }
+      },
+      error: (err) => console.error('Error cargando monedas', err),
+    });
+  }
+
+  loadIncomeFrequencies(): void {
+    this.configService.getIncomeFrequencies().subscribe({
+      next: (data) => {
+        this.incomeFrequencies = data;
+      },
+      error: (err) => console.error('Error cargando frecuencias de ingreso', err),
+    });
+  }
+
+  loadUserProfile(): void {
+    this.loadingProfile = true;
+
+    this.configService.getProfile().subscribe({
+      next: (profile) => {
+        this.userProfile = profile;
+
+        // Perfil básico
+        this.profileData.phone = profile.phone ?? '';
+        this.profileData.firstName = profile.first_name ?? '';
+        this.profileData.lastName = profile.last_name ?? '';
+
+        // ---- Currency ----
+        const currencyId = profile.currency?.id;
+
+        if (this.currencies.length && currencyId) {
+          this.userProfile.currency =
+            this.currencies.find(c => c.id === currencyId) ?? null;
+        } else {
+          this.userProfile.currency = null;
+        }
+
+        // ---- Income frequency ----
+        const frequencyId = profile.income_frequency?.id;
+
+        if (this.incomeFrequencies.length && frequencyId) {
+          this.userProfile.income_frequency =
+            this.incomeFrequencies.find(f => f.id === frequencyId) ?? null;
+        } else {
+          this.userProfile.income_frequency = null;
+        }
+
+        this.loadingProfile = false;
+      },
+      error: () => {
+        this.loadingProfile = false;
+      },
+    });
+  }
+
+
 }

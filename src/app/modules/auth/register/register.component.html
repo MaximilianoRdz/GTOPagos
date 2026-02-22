@@ -9,12 +9,6 @@
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-3">
-      <!-- Nombre -->
-      <div class="relative">
-        <input type="text" formControlName="name" placeholder="Nombre completo"
-          class="w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg bg-white/80 backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent border-gray-200" />
-      </div>
-
       <!-- Email -->
       <div class="relative">
         <input type="email" formControlName="email" placeholder="Correo electrónico"
