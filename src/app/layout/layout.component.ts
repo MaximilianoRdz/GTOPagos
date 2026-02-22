@@ -9,4 +9,6 @@ import { NavbarComponent } from "../shared/ui/navbar/navbar.component";
   imports: [RouterOutlet, SidebarComponent, NavbarComponent],
   templateUrl: './layout.component.html',
 })
-export class LayoutComponent { }
+export class LayoutComponent { 
+  
+}
