@@ -3,6 +3,7 @@ import { LayoutComponent } from "./layout.component";
 import { DashboardComponent } from "../modules/dashboard/dashboard.component";
 import { ConfigurationComponent } from "../modules/configuration/configuration.component";
 import { AuthGuard } from "../core/guards/auth.guard";
+import { BudgetComponent } from "../modules/budget/budget.component";
 
 export const layoutRoutes: Routes = [
   {
@@ -13,6 +14,10 @@ export const layoutRoutes: Routes = [
       {
         path: 'dashboard',
         component: DashboardComponent,
+      },
+      {
+        path: 'budgets',
+        component: BudgetComponent,
       },
       {
         path: 'configuration',
