@@ -1,19 +1,24 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutService } from '../../../core/services/layout/layout.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, ChevronDown, User,Settings } from 'lucide-angular';
+import { filter } from 'rxjs/operators';
+import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, User,Settings } from 'lucide-angular';
+
 
 interface MenuItem {
   id: string;
   label: string;
   icon: any;
+  route: string;
   hasDropdown?: boolean;
 }
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule ],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css'],
 })
@@ -23,34 +28,53 @@ export class SidebarComponent implements OnDestroy {
   readonly Wallet = Wallet;
   readonly Target = Target;
   readonly ChartColumnDecreasing = ChartColumnDecreasing;
-  readonly ChevronDown = ChevronDown;
   readonly User = User;
   readonly Settings = Settings;
 
   sidebarOpen = true;
-  activeSection = 'dashboard';
+  activeSection = localStorage.getItem('activeSection') ?? 'dashboard';
   private subscription!: Subscription;
+  private layoutSub!: Subscription;
 
   menuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: this.Layers, hasDropdown: true },
-    { id: 'budget', label: 'Presupuesto', icon: this.Wallet },
-    { id: 'goals', label: 'Metas', icon: this.Target },
-    { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing },
-    { id: 'settings', label: 'Configuración', icon: this.Settings }
+    { id: 'dashboard', label: 'Dashboard', icon: this.Layers, hasDropdown: true, route: '/dashboard' },
+    { id: 'budget', label: 'Presupuesto', icon: this.Wallet, route: '/budgets' },
+    { id: 'goals', label: 'Metas', icon: this.Target, route: '/goals' },
+    { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing, route: '/reports' },
+    { id: 'settings', label: 'Configuración', icon: this.Settings, route: '/configuration' },
   ];
 
-  constructor(private layoutService: LayoutService) {
-    this.subscription = this.layoutService.sidebarOpen$.subscribe(open => {
-      this.sidebarOpen = open;
+  constructor(private layoutService: LayoutService, private router: Router, public auth: AuthService) {
+    this.subscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        const current = event.urlAfterRedirects.split('/')[1];
+        this.activeSection = current;
+      });
+    
+    this.layoutSub = this.layoutService.sidebarOpen$.subscribe(isOpen => {
+      this.sidebarOpen = isOpen;
     });
   }
 
+  user = computed(() => this.auth.user());
+
+
   setActiveSection(sectionId: string) {
+    const item = this.menuItems.find(m => m.id === sectionId);
+    if (!item) return;
+
     this.activeSection = sectionId;
-    console.log('Sección activa:', sectionId);
+    localStorage.setItem('activeSection', sectionId);
+    this.router.navigateByUrl(item.route);
   }
 
   ngOnDestroy() {
     this.subscription?.unsubscribe();
+    this.layoutSub?.unsubscribe();
+  }
+
+  configuration() {
+    this.router.navigateByUrl('/configuration');
   }
 }

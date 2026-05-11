@@ -1,15 +1,20 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { LucideAngularModule, Lock, ChevronLeft, CircleCheck } from 'lucide-angular';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LucideAngularModule],
   templateUrl: './forgot-password.component.html',
 })
 export class ForgotPasswordComponent {
+  readonly Lock = Lock;
+  readonly ChevronLeft = ChevronLeft;
+  readonly CircleCheck = CircleCheck;
+
   form: FormGroup;
   isSubmitted = signal(false);
   isLoading = signal(false);
