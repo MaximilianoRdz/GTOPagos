@@ -1,1 +1,583 @@
-<p>budget works!</p>
+<main class="flex-1 overflow-auto p-4 md:p-6 xl:p-8 2xl:p-10 text-gray-900 dark:text-gray-100">
+  <div class="max-w-screen-2xl mx-auto space-y-6 md:space-y-10">
+    <div class="mb-6">
+      <button
+        (click)="goBack()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl
+              bg-white dark:bg-slate-900
+              border border-gray-200 dark:border-slate-700
+              hover:bg-gray-100 dark:hover:bg-slate-800
+              hover:shadow-md hover:-translate-y-0.5
+              transition-all duration-200 cursor-pointer">
+
+        <lucide-angular [img]="ChevronLeft" class="w-4 h-4"></lucide-angular>
+        <span class="font-medium">Volver a dashboards</span>
+      </button>
+    </div>
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-800 dark:text-gray-100 mb-2">{{ selectedDashboard?.name || 'Dashboard' }}</h2>
+        <p class="text-base text-gray-500 dark:text-gray-400">
+          {{
+            selectedDashboard?.description ||
+            ( isExpenseOnly ? 'Gestiona tus gastos' : isIncomeOnly ? 'Gestiona tus ingresos' : 'Gestiona tus ingresos y gastos')
+          }}
+        </p>
+      </div>
+
+      <button
+        (click)="openCreateModal()"
+        class="bg-emerald-600 hover:bg-emerald-700
+              text-white px-5 py-3 rounded-2xl
+              font-semibold shadow-lg shadow-emerald-500/20
+              transition-all duration-200 cursor-pointer">
+
+        <div class="flex items-center gap-2">
+          <lucide-angular [img]="Plus" class="w-5 h-5"></lucide-angular>
+          <span>Agregar {{ currentRecordTypeName }}</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- ERROR -->
+    @if (error && !loading) {
+      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-6">
+        <p class="text-red-800 dark:text-red-300">{{ error }}</p>
+      </div>
+    }
+
+    <!-- CONTENT -->
+    @if (dashboardData && !loading) {
+      <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+        
+        <!-- COLUMNA IZQUIERDA (Principal) -->
+        <div class="lg:col-span-8 space-y-6">
+          
+          <div class="flex flex-col xl:flex-row items-start xl:items-center gap-4 mb-6">
+            <!-- TABS (Segmented Control) -->
+            @if (isBoth) {
+              <div class="flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/50 w-full sm:w-auto border border-slate-200/50 dark:border-slate-700/50">
+                <button
+                  type="button"
+                  (click)="switchTab('expenses')"
+                  class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+                  [ngClass]="isExpenses
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
+                  <lucide-angular [img]="TrendingDown" class="w-4 h-4"></lucide-angular>
+                  Gastos
+                </button>
+                <button
+                  type="button"
+                  (click)="switchTab('income')"
+                  class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+                  [ngClass]="!isExpenses
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
+                  <lucide-angular [img]="TrendingUp" class="w-4 h-4"></lucide-angular>
+                  Ingresos
+                </button>
+              </div>
+            }
+
+            <!-- PERIOD TABS (Segmented Control) -->
+            <div class="flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/50 w-full sm:w-auto border border-slate-200/50 dark:border-slate-700/50 overflow-x-auto">
+              <button
+                type="button"
+                (click)="switchPeriod('month')"
+                class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer whitespace-nowrap"
+                [ngClass]="selectedPeriod === 'month'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
+                Mes Completo
+              </button>
+              <button
+                type="button"
+                (click)="switchPeriod('q1')"
+                class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer whitespace-nowrap"
+                [ngClass]="selectedPeriod === 'q1'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
+                1ra Quincena
+              </button>
+              <button
+                type="button"
+                (click)="switchPeriod('q2')"
+                class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer whitespace-nowrap"
+                [ngClass]="selectedPeriod === 'q2'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
+                2da Quincena
+              </button>
+            </div>
+          </div>
+
+          <!-- SUMMARY CARDS -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 mb-8">
+            @if (isExpenses) {
+              <!-- TOTAL -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-200">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Debo este periodo</p>
+                    <p class="text-2xl xl:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                      {{ formatCurrency(dashboardData.expense_summary.total_amount) }}
+                    </p>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700">
+                    <lucide-angular [img]="DollarSign" class="w-5 h-5 text-slate-600 dark:text-slate-300"></lucide-angular>
+                  </div>
+                </div>
+                <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ dashboardData.expense_summary.total_records }} registros en total</p>
+              </div>
+
+              <!-- PAGADO -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-200">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Pagado</p>
+                    <p class="text-2xl xl:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                      {{ formatCurrency(dashboardData.expense_summary.paid_amount) }}
+                    </p>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700">
+                    <lucide-angular [img]="CheckCircle" class="w-5 h-5 text-emerald-600 dark:text-emerald-500"></lucide-angular>
+                  </div>
+                </div>
+                <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ dashboardData.expense_summary.paid_records }} pagos cubiertos</p>
+              </div>
+
+              <!-- PENDIENTE -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-200">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Falta pagar</p>
+                    <p class="text-2xl xl:text-3xl font-bold tracking-tight text-yellow-600 dark:text-yellow-400">
+                      {{ formatCurrency(dashboardData.expense_summary.pending_amount) }}
+                    </p>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700">
+                    <lucide-angular [img]="Clock" class="w-5 h-5 text-yellow-600 dark:text-yellow-500"></lucide-angular>
+                  </div>
+                </div>
+                <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ dashboardData.expense_summary.pending_records }} por liquidar</p>
+              </div>
+            }
+
+            @if (!isExpenses) {
+              <!-- TOTAL INCOME -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-200">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total del periodo</p>
+                    <p class="text-2xl xl:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                      {{ formatCurrency(dashboardData.income_summary.total_amount) }}
+                    </p>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700">
+                    <lucide-angular [img]="DollarSign" class="w-5 h-5 text-blue-600 dark:text-blue-400"></lucide-angular>
+                  </div>
+                </div>
+                <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ dashboardData.income_summary.total_records }} registros</p>
+              </div>
+
+              <!-- RECIBIDO -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-200">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Recibido</p>
+                    <p class="text-2xl xl:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                      {{ formatCurrency(dashboardData.income_summary.paid_amount) }}
+                    </p>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700">
+                    <lucide-angular [img]="CheckCircle" class="w-5 h-5 text-emerald-600 dark:text-emerald-500"></lucide-angular>
+                  </div>
+                </div>
+                <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ dashboardData.income_summary.paid_records }} recibos</p>
+              </div>
+
+              <!-- ESPERADO -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-200">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Por recibir</p>
+                    <p class="text-2xl xl:text-3xl font-bold tracking-tight text-yellow-600 dark:text-yellow-400">
+                      {{ formatCurrency(dashboardData.income_summary.pending_amount) }}
+                    </p>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700">
+                    <lucide-angular [img]="Clock" class="w-5 h-5 text-yellow-600 dark:text-yellow-500"></lucide-angular>
+                  </div>
+                </div>
+                <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ dashboardData.income_summary.pending_records }} pendientes</p>
+              </div>
+            }
+          </div>
+
+          <!-- HISTORIAL DE MOVIMIENTOS (Agrupado) -->
+          <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+            
+            <div class="p-6 md:px-8 md:py-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+              <div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+                  {{ isExpenses ? 'Historial de Gastos' : 'Historial de Ingresos' }}
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Todos tus movimientos del periodo</p>
+              </div>
+            </div>
+
+            @if (loadingRecords) {
+              <div class="text-center py-16">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
+                <p class="text-slate-500 mt-4 font-medium">Cargando...</p>
+              </div>
+            }
+
+            @if (!loadingRecords && filteredRecords.length === 0) {
+              <div class="p-16 text-center">
+                <div class="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 border border-slate-100 dark:border-slate-700">
+                  <lucide-angular [img]="Clock" class="w-6 h-6 text-slate-400"></lucide-angular>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 font-medium">No hay movimientos registrados</p>
+              </div>
+            }
+
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (record of filteredRecords; track record.id) {
+                <div class="p-4 md:px-8 md:py-5 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  
+                  <!-- LEFT -->
+                  <div class="flex items-start sm:items-center gap-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 border border-white/50 dark:border-slate-700/50 shadow-sm"
+                         [ngClass]="record.record_type_id === expenseRecordTypeId ? 'bg-red-50 dark:bg-red-900/20 text-red-500' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500'">
+                      <lucide-angular [img]="record.record_type_id === expenseRecordTypeId ? TrendingDown : TrendingUp" class="w-5 h-5"></lucide-angular>
+                    </div>
+                    
+                    <div>
+                      <h4 class="font-bold text-slate-900 dark:text-slate-100 text-base">
+                        {{ record.description || 'Sin descripción' }}
+                      </h4>
+                      <div class="flex items-center gap-2 mt-1 flex-wrap">
+                        <span class="text-xs font-medium text-slate-500">{{ record.record_date | date:'dd MMM yyyy' }}</span>
+                        <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                        <span class="text-xs font-medium text-slate-500">{{ record.category_name || 'General' }}</span>
+                        
+                        @if (record.payment_status_id === paidStatusId) {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 ml-1">Pagado</span>
+                        } @else if (record.payment_status_id === pendingStatusId) {
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400 ml-1">Pendiente</span>
+                        }
+                      </div>
+                      
+                      @if (record.payment_type === 'CREDIT' && record.total_installments > 1) {
+                        <!-- COMPACT MSI WIDGET -->
+                        <div class="mt-2.5 w-48 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg p-2 border border-slate-200/50 dark:border-slate-700/50">
+                          <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
+                            <span>Pago {{ record.current_installment || 1 }}/{{ record.total_installments }}</span>
+                          </div>
+                          <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-orange-400 to-red-400 rounded-full shadow-inner" [style.width.%]="((record.current_installment || 1) / record.total_installments) * 100"></div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- RIGHT -->
+                  <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pl-16 sm:pl-0">
+                    <p class="text-lg font-black tracking-tight"
+                       [ngClass]="record.record_type_id === expenseRecordTypeId ? 'text-slate-900 dark:text-white' : 'text-emerald-600 dark:text-emerald-400'">
+                      {{ record.record_type_id === expenseRecordTypeId ? '-' : '+' }}{{ formatCurrency(toNumber(record.amount)) }}
+                    </p>
+                    
+                    @if (record.payment_status_id !== paidStatusId) {
+                      <div class="flex sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button (click)="openEditModal(record)" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-700 cursor-pointer transition-all">
+                          <lucide-angular [img]="Pencil" class="w-4 h-4"></lucide-angular>
+                        </button>
+                        <button (click)="deleteRecord(record.id)" class="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer transition-all">
+                          <lucide-angular [img]="Trash" class="w-4 h-4"></lucide-angular>
+                        </button>
+                      </div>
+                    } @else {
+                       <!-- Placeholder to keep spacing -->
+                       <div class="w-[72px] hidden sm:block"></div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMNA DERECHA (Panel Lateral) -->
+        <div class="lg:col-span-4 space-y-6 mt-8 lg:mt-0 lg:sticky lg:top-8">
+          
+          <!-- PRÓXIMOS PAGOS -->
+          @if (dashboardData.pending_to_pay && dashboardData.pending_to_pay.length > 0) {
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">Próximos Pagos</h3>
+                  <p class="text-xs text-slate-500 font-medium mt-0.5">Atención prioritaria</p>
+                </div>
+                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-sm font-bold text-red-600 dark:text-red-400 shadow-sm">{{ dashboardData.pending_to_pay.length }}</span>
+              </div>
+              
+              <div class="space-y-4">
+                @for (pending of dashboardData.pending_to_pay; track pending.id) {
+                  <div class="p-4 rounded-[20px] border border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-800/60 hover:border-orange-300 dark:hover:border-orange-500/50 transition-colors group">
+                    <div class="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 class="font-bold text-slate-900 dark:text-slate-100 text-sm leading-tight">{{ pending.description }}</h4>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">{{ pending.category || 'General' }}</p>
+                      </div>
+                      
+                      <!-- URGENCY BADGE -->
+                      <span class="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400 shrink-0 ml-2">Pendiente</span>
+                    </div>
+                    
+                    @if (pending.total_installments > 1) {
+                      <div class="mt-3 mb-1 w-full bg-slate-50 dark:bg-slate-900/50 rounded-md p-1.5 border border-slate-100 dark:border-slate-700/50">
+                        <div class="h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div class="h-full bg-orange-400 rounded-full" [style.width.%]="((pending.current_installment || 1) / pending.total_installments) * 100"></div>
+                        </div>
+                      </div>
+                    }
+
+                    <div class="flex items-end justify-between mt-3">
+                      <p class="text-xl font-black tracking-tight text-slate-900 dark:text-white">{{ formatCurrency(toNumber(pending.amount)) }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- MINI WIDGET: DISTRIBUCIÓN -->
+          @if (isExpenses && dashboardData.expense_summary.total_amount > 0) {
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+              
+              <div class="relative z-10">
+                <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total de Gastos (Periodo)</h3>
+                <p class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-5">{{ formatCurrency(dashboardData.expense_summary.total_amount) }}</p>
+                
+                <div class="h-2.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden mb-3 border border-slate-200 dark:border-slate-700">
+                  <div class="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full" [style.width.%]="(dashboardData.expense_summary.paid_amount / dashboardData.expense_summary.total_amount) * 100"></div>
+                </div>
+                
+                <div class="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
+                  <span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></div> {{ (dashboardData.expense_summary.paid_amount / dashboardData.expense_summary.total_amount) * 100 | number:'1.0-0' }}% Pagado</span>
+                  <span class="text-slate-500">Restan {{ formatCurrency(dashboardData.expense_summary.pending_amount) }}</span>
+                </div>
+              </div>
+            </div>
+          }
+          
+        </div>
+      </div>
+    }
+
+  </div>
+</main>
+
+@if (showCreateModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-2xl">
+      <!-- HEADER -->
+      <div class="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 p-6">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ editingRecord ? 'Editar ' + currentRecordTypeName : 'Agregar ' + currentRecordTypeName }}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ editingRecord ? 'Modifica el movimiento' : 'Registra un nuevo movimiento' }}</p>
+        </div>
+
+        <button
+          (click)="closeCreateModal()"
+          class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">
+          <lucide-angular [img]="X" class="w-5 h-5"></lucide-angular>
+        </button>
+      </div>
+
+      <!-- BODY -->
+      <div class="p-6 space-y-5">
+        <!-- MONTO -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Monto</label>
+
+          <input
+            type="number"
+            [(ngModel)]="formData.amount"
+            class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+            placeholder="0.00">
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Descripción</label>
+
+          <input
+            type="text"
+            [(ngModel)]="formData.description"
+            class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+            placeholder="Ej. Pago de internet">
+        </div>
+
+        <!-- CATEGORÍA -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Categoría</label>
+
+          <select
+            [(ngModel)]="formData.category_id"
+            class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800">
+
+            <option [ngValue]="null">Selecciona una categoría</option>
+
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- ESTADO DE PAGO -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Estado de Pago</label>
+
+          <select
+            [(ngModel)]="formData.payment_status_id"
+            class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800">
+
+            <option [ngValue]="null">Selecciona el estado</option>
+
+            @for (status of paymentStatuses; track status.id) {
+              <option [value]="status.id">{{ status.status }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- TIPO DE PAGO -->
+        @if (isExpenses) {
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Tipo de pago
+            </label>
+
+            <select
+              [(ngModel)]="formData.payment_type"
+              class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800">
+
+              @for (option of paymentTypes; track option.value) {
+                <option [value]="option.value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- MESES SIN INTERESES -->
+          @if (formData.payment_type === 'CREDIT') {
+            <div>
+              <label class="block text-sm font-medium mb-2">
+                Meses sin intereses
+              </label>
+
+              <select
+                [(ngModel)]="formData.total_installments"
+                class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800">
+
+                @for (month of installmentOptions; track month) {
+                  <option [value]="month">
+                    {{ month }} meses
+                  </option>
+                }
+              </select>
+            </div>
+          }
+        }
+
+        <!-- FECHA -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Fecha</label>
+          <input
+            type="date"
+            [(ngModel)]="formData.record_date"
+            class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800">
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="flex justify-end gap-3 border-t border-gray-200 dark:border-slate-700 p-6">
+        <button
+          (click)="closeCreateModal()"
+          class="px-4 py-2 rounded-xl border border-gray-300 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer">
+          Cancelar
+        </button>
+
+        <button
+          (click)="editingRecord ? updateRecord() : createRecord()"
+          [disabled]="creatingRecord"
+          class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white font-semibold cursor-pointer">
+          {{creatingRecord ? 'Guardando...' : editingRecord ? 'Guardar cambios' : 'Crear ' + currentRecordTypeName.toLowerCase()}}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteModal) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+
+    <div class="w-full max-w-md rounded-[32px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl animate-modal-in overflow-hidden">
+
+      <!-- HEADER ICON -->
+      <div class="flex justify-center pt-8">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+          <lucide-angular
+            [img]="Trash"
+            class="w-9 h-9 text-red-500">
+          </lucide-angular>
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="px-8 pt-6 pb-8 text-center">
+        <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">¿Eliminar movimiento?</h3>
+
+        <p class="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+          Esta acción eliminará el<span class="font-semibold">{{ currentRecordTypeName.toLowerCase() }}</span>permanentemente y no podrá recuperarse.
+        </p>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="flex gap-3 p-5 border-t border-gray-200 dark:border-slate-800">
+
+        <button
+          (click)="closeDeleteModal()"
+          class="flex-1 rounded-2xl border
+                border-slate-300 dark:border-slate-700
+                px-4 py-3 font-medium
+                text-slate-700 dark:text-slate-300
+                hover:bg-slate-100
+                dark:hover:bg-slate-800
+                transition cursor-pointer">
+
+          Cancelar
+        </button>
+
+        <button
+          (click)="confirmDelete()"
+          [disabled]="deletingRecord"
+          class="flex-1 rounded-2xl
+                bg-red-500 hover:bg-red-600
+                px-4 py-3 font-semibold text-white
+                shadow-lg shadow-red-500/20
+                transition cursor-pointer">
+          {{ deletingRecord ? 'Eliminando...' : 'Sí, eliminar'}}
+        </button>
+
+      </div>
+    </div>
+  </div>
+}

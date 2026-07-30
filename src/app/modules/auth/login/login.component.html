@@ -1,73 +1,63 @@
-<div class="bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center h-full px-12 text-center">
+<div class="md:bg-gradient-to-br md:from-gray-50 md:to-white flex flex-col items-center justify-center h-full px-4 sm:px-12 text-center w-full">
   <div class="w-full max-w-sm">
+
+    <!-- Title -->
     <div class="mb-8">
       <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
-        <!-- Lock icon -->
         <lucide-angular [img]="Lock" class="w-8 h-8 text-white"></lucide-angular>
       </div>
-      <h1 class="font-bold text-3xl mb-2 text-gray-800">Iniciar Sesión</h1>
-      <p class="text-gray-600 text-sm">Accede a tu cuenta de planificación financiera</p>
+      <h1 class="font-bold text-3xl mb-2 text-slate-900 dark:text-white">Iniciar Sesión</h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Accede a tu cuenta de planificación financiera</p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
       <!-- Email -->
       <div class="relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <!-- Mail icon -->
-          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <input
-            type="email"
-            formControlName="email"
-            placeholder="Correo electrónico"
-            class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
-            required
-            />
+        <div class="absolute inset-y-0 left-0 pl-4 md:pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-slate-400 md:text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="Correo electrónico"
+          class="w-full pl-12 md:pl-10 pr-4 py-4 md:py-3 border border-slate-200 md:border-gray-200 rounded-2xl md:rounded-xl focus:ring-2 focus:ring-slate-900 md:focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white md:bg-white/80 md:backdrop-blur-sm text-slate-900 md:text-gray-800 dark:text-white placeholder-slate-400 md:placeholder-gray-500 text-[15px] md:text-sm"
+          required
+        />
       </div>
 
       <!-- Password -->
       <div class="relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <!-- Lock icon -->
-          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M12 15a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M17 8V6a5 5 0 00-10 0v2M5 10h14v10H5V10z" />
-              </svg>
-            </div>
-            <input
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="Contraseña"
-              class="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
-              required
-              />
-              <button
-                type="button"
-                (click)="togglePasswordVisibility()"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                <!-- Toggle eye icon -->
-                @if (showPassword()) {
-                  <!-- EyeOff icon -->
-                  <lucide-angular [img]="EyeClosed" class="h-5 w-5 text-gray-400 hover:text-gray-600"></lucide-angular>
-                } @else {
-                  <!-- Eye icon -->
-                  <lucide-angular [img]="Eye" class="h-5 w-5 text-gray-400 hover:text-gray-600"></lucide-angular>
-                }
-              </button>
+        <div class="absolute inset-y-0 left-0 pl-4 md:pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-slate-400 md:text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8V6a5 5 0 00-10 0v2M5 10h14v10H5V10z" />
+          </svg>
+        </div>
+        <input
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          placeholder="Contraseña"
+          class="w-full pl-12 md:pl-10 pr-12 py-4 md:py-3 border border-slate-200 md:border-gray-200 rounded-2xl md:rounded-xl focus:ring-2 focus:ring-slate-900 md:focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white md:bg-white/80 md:backdrop-blur-sm text-slate-900 md:text-gray-800 dark:text-white placeholder-slate-400 md:placeholder-gray-500 text-[15px] md:text-sm"
+          required
+        />
+        <button
+          type="button"
+          (click)="togglePasswordVisibility()"
+          class="absolute inset-y-0 right-0 pr-4 md:pr-3 flex items-center cursor-pointer"
+        >
+          @if (showPassword()) {
+            <lucide-angular [img]="EyeClosed" class="h-5 w-5 text-slate-400 md:text-gray-400 hover:text-slate-600 md:hover:text-gray-600 dark:hover:text-slate-300"></lucide-angular>
+          } @else {
+            <lucide-angular [img]="Eye" class="h-5 w-5 text-slate-400 md:text-gray-400 hover:text-slate-600 md:hover:text-gray-600 dark:hover:text-slate-300"></lucide-angular>
+          }
+        </button>
       </div>
 
       <!-- Forgot Password -->
-      <div class="text-right">
-        <a
-          routerLink="/forgot-password"
-          class="cursor-pointer text-sm text-emerald-600 hover:text-emerald-700 hover:underline transition-colors duration-200"
-          >
+      <div class="text-right pb-2 md:pb-0">
+        <a routerLink="/forgot-password" class="cursor-pointer text-sm font-semibold md:font-normal text-slate-500 md:text-emerald-600 hover:text-slate-900 md:hover:text-emerald-700 dark:text-slate-400 dark:hover:text-white transition-colors duration-200 hover:underline">
           ¿Olvidaste tu contraseña?
         </a>
       </div>
@@ -75,8 +65,8 @@
       <!-- Submit Button -->
       <button
         type="submit"
-        class="cursor-pointer w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-emerald-700 hover:to-teal-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
-        >
+        class="cursor-pointer w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-[15px] md:text-base py-4 md:py-3 px-6 rounded-2xl md:rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl mt-4 md:mt-0 transform hover:scale-[1.02]"
+      >
         Iniciar Sesión
       </button>
     </form>

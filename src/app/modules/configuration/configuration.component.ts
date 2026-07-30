@@ -26,6 +26,8 @@ import {
   CreditCard,
 } from 'lucide-angular';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 
 /* ===================== INTERFACES ===================== */
 
@@ -83,7 +85,7 @@ type NotificationKey = keyof NotificationSettings;
 @Component({
   selector: 'app-configuration',
   standalone: true,
-  imports: [LucideAngularModule, FormsModule, CommonModule],
+  imports: [LucideAngularModule, FormsModule, CommonModule, InputTextModule, SelectModule],
   templateUrl: './configuration.component.html',
 })
 export class ConfigurationComponent {
