@@ -1,12 +1,11 @@
-import { Component, OnDestroy, computed } from '@angular/core';
+import { Component, OnDestroy, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutService } from '../../../core/services/layout/layout.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, User,Settings } from 'lucide-angular';
-
+import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, User, Settings, LogOut, Menu } from 'lucide-angular';
 
 interface MenuItem {
   id: string;
@@ -20,6 +19,7 @@ interface MenuItem {
   selector: 'app-sidebar',
   imports: [CommonModule, LucideAngularModule ],
   templateUrl: './sidebar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent implements OnDestroy {
@@ -30,6 +30,8 @@ export class SidebarComponent implements OnDestroy {
   readonly ChartColumnDecreasing = ChartColumnDecreasing;
   readonly User = User;
   readonly Settings = Settings;
+  readonly LogOut = LogOut;
+  readonly Menu = Menu;
 
   sidebarOpen = true;
   activeSection = localStorage.getItem('activeSection') ?? 'dashboard';
@@ -41,7 +43,6 @@ export class SidebarComponent implements OnDestroy {
     { id: 'budget', label: 'Presupuesto', icon: this.Wallet, route: '/budgets' },
     { id: 'goals', label: 'Metas', icon: this.Target, route: '/goals' },
     { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing, route: '/reports' },
-    { id: 'settings', label: 'Configuración', icon: this.Settings, route: '/configuration' },
   ];
 
   constructor(private layoutService: LayoutService, private router: Router, public auth: AuthService) {
@@ -58,7 +59,10 @@ export class SidebarComponent implements OnDestroy {
   }
 
   user = computed(() => this.auth.user());
-
+  
+  toggleSidebar() {
+    this.layoutService.toggleSidebar();
+  }
 
   setActiveSection(sectionId: string) {
     const item = this.menuItems.find(m => m.id === sectionId);
@@ -76,5 +80,10 @@ export class SidebarComponent implements OnDestroy {
 
   configuration() {
     this.router.navigateByUrl('/configuration');
+  }
+
+  logout() {
+    this.auth.clearSession();
+    this.router.navigate(['/login']);
   }
 }

@@ -1,34 +1,52 @@
-<div class="bg-gradient-to-br from-gray-50 to-white flex flex-col items-center justify-center h-full px-6 text-center overflow-y-auto">
-  <div class="w-full max-w-sm py-4">
+<div class="flex flex-col items-center justify-center h-full px-4 sm:px-12 md:px-6 text-center w-full overflow-y-auto bg-transparent">
+  <div class="w-full max-w-sm md:py-4">
+
+    <!-- Title -->
     <div class="mb-6">
       <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
         <lucide-angular [img]="User" class="w-8 h-8 text-white"></lucide-angular>
       </div>
-      <h1 class="font-bold text-2xl mb-2 text-gray-800">Crear Cuenta</h1>
-      <p class="text-gray-600 text-sm">Comienza tu planificación financiera</p>
+      <h1 class="font-bold text-2xl mb-2 text-slate-900 dark:text-white">Crear Cuenta</h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Comienza tu planificación financiera</p>
     </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-3">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4 md:space-y-3">
       <!-- Email -->
       <div class="relative">
+        <div class="md:hidden absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
         <input type="email" formControlName="email" placeholder="Correo electrónico"
-          class="w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg bg-white/80 backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent border-gray-200" />
+          class="w-full pl-12 md:pl-10 pr-4 py-4 md:py-2.5 text-[15px] md:text-sm border border-slate-200 dark:border-slate-700 md:border-gray-200 rounded-2xl md:rounded-lg bg-white dark:bg-slate-800 md:bg-white/80 dark:md:bg-slate-800/80 md:backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:ring-slate-900 md:focus:ring-emerald-500 dark:focus:ring-emerald-500 focus:border-transparent text-slate-900 dark:text-white md:text-gray-800 placeholder-slate-400 dark:placeholder-slate-500 md:placeholder-gray-500" />
       </div>
 
       <!-- Password -->
       <div class="relative">
+        <div class="md:hidden absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8V6a5 5 0 00-10 0v2M5 10h14v10H5V10z" />
+          </svg>
+        </div>
         <input type="password" formControlName="password" placeholder="Contraseña"
-          class="w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white/80 backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent border-gray-200" />
+          class="w-full pl-12 md:pl-10 pr-10 py-4 md:py-2.5 text-[15px] md:text-sm border border-slate-200 dark:border-slate-700 md:border-gray-200 rounded-2xl md:rounded-lg bg-white dark:bg-slate-800 md:bg-white/80 dark:md:bg-slate-800/80 md:backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:ring-slate-900 md:focus:ring-emerald-500 dark:focus:ring-emerald-500 focus:border-transparent text-slate-900 dark:text-white md:text-gray-800 placeholder-slate-400 dark:placeholder-slate-500 md:placeholder-gray-500" />
       </div>
 
       <!-- Confirm Password -->
       <div class="relative">
+        <div class="md:hidden absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
         <input type="password" formControlName="confirm_password" placeholder="Confirmar contraseña"
-          class="w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white/80 backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent border-gray-200" />
+          class="w-full pl-12 md:pl-10 pr-10 py-4 md:py-2.5 text-[15px] md:text-sm border border-slate-200 dark:border-slate-700 md:border-gray-200 rounded-2xl md:rounded-lg bg-white dark:bg-slate-800 md:bg-white/80 dark:md:bg-slate-800/80 md:backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:ring-slate-900 md:focus:ring-emerald-500 dark:focus:ring-emerald-500 focus:border-transparent text-slate-900 dark:text-white md:text-gray-800 placeholder-slate-400 dark:placeholder-slate-500 md:placeholder-gray-500" />
       </div>
 
       <button type="submit"
-        class="cursor-pointer w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-emerald-700 hover:to-teal-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl text-sm mt-4">
+        class="cursor-pointer w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold py-4 md:py-3 px-6 rounded-2xl md:rounded-lg hover:from-emerald-700 hover:to-teal-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg shadow-emerald-500/30 hover:shadow-xl text-[15px] md:text-sm mt-6 md:mt-4">
         Crear Mi Cuenta
       </button>
     </form>

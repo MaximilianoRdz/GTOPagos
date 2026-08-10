@@ -1,11 +1,11 @@
-import { Component, signal  } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginService, LoginRequest } from '../../../core/services/auth/login.service';
-import { AlertsService } from '../../../core/services/alerts/Alerts.service';
+import { AlertsService } from '../../../core/services/alerts/alerts.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, Lock, EyeClosed, Eye } from 'lucide-angular';
+import { LucideAngularModule, Lock, EyeClosed, Eye, DollarSign } from 'lucide-angular';
 @Component({
   selector: 'app-login',
   imports: [
@@ -13,12 +13,14 @@ import { LucideAngularModule, Lock, EyeClosed, Eye } from 'lucide-angular';
     RouterLink,
     LucideAngularModule
 ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
   readonly Lock = Lock;
   readonly EyeClosed = EyeClosed;
   readonly Eye = Eye;
+  readonly DollarSign = DollarSign;
 
   form: FormGroup;
   showPassword = signal(false);

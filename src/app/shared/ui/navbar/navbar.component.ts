@@ -23,7 +23,7 @@ export class NavbarComponent implements OnDestroy {
 
   private routeMap: Record<string, string> = {
     dashboard: 'Dashboard',
-    budget: 'Presupuesto',
+    budgets: 'Presupuesto',
     goals: 'Metas',
     reports: 'Reportes',
     configuration: 'Configuración',

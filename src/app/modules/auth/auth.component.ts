@@ -1,4 +1,4 @@
-import { Component} from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
@@ -12,6 +12,7 @@ import { LucideAngularModule, DollarSign, ChartNoAxesCombined } from 'lucide-ang
     CommonModule,
     LucideAngularModule,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './auth.component.html',
 })
 export class AuthComponent {

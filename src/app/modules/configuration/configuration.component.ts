@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect } from '@angular/core';
+import { Component, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfigurationService, Currency, IncomeFrequency } from '../../core/services/configuration/configuration.service';
 import {
@@ -26,6 +26,8 @@ import {
   CreditCard,
 } from 'lucide-angular';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { AlertsService } from '../../core/services/alerts/alerts.service';
+
 
 /* ===================== INTERFACES ===================== */
 
@@ -87,8 +89,12 @@ type NotificationKey = keyof NotificationSettings;
   templateUrl: './configuration.component.html',
 })
 export class ConfigurationComponent {
-
-  constructor(public i18n: I18nService, private configService: ConfigurationService) {}
+  constructor(
+    public i18n: I18nService, 
+    private configService: ConfigurationService,
+    private cdr: ChangeDetectorRef,
+    private alert: AlertsService
+  ) {}
 
   loadProfile(): void {
     this.configService.getProfile().subscribe(profile => {
@@ -302,6 +308,18 @@ export class ConfigurationComponent {
     this.activeTab = tab;
   }
 
+  compareFn(c1: any, c2: any): boolean {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
+
+  toggle2FA(enabled: boolean): void {
+    this.alert.show('La autenticación de dos pasos estará disponible próximamente', 'info');
+    setTimeout(() => {
+      this.securityData.twoFactorEnabled = false;
+      this.cdr.detectChanges();
+    }, 200);
+  }
+
   updateNotificationSetting(key: NotificationKey, value: boolean): void {
     this.notificationSettings[key] = value;
   }
@@ -433,7 +451,11 @@ export class ConfigurationComponent {
           if (mxn) {
             this.userProfile.currency = mxn;
           }
+        } else if (!this.userProfile.currency && (this.userProfile as any)._temp_currency_id) {
+          this.userProfile.currency = data.find(c => c.id === (this.userProfile as any)._temp_currency_id) ?? null;
         }
+        
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error cargando monedas', err),
     });
@@ -443,6 +465,12 @@ export class ConfigurationComponent {
     this.configService.getIncomeFrequencies().subscribe({
       next: (data) => {
         this.incomeFrequencies = data;
+        
+        if (!this.userProfile.income_frequency && (this.userProfile as any)._temp_frequency_id) {
+          this.userProfile.income_frequency = data.find(f => f.id === (this.userProfile as any)._temp_frequency_id) ?? null;
+        }
+
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error cargando frecuencias de ingreso', err),
     });
@@ -459,28 +487,25 @@ export class ConfigurationComponent {
         this.profileData.phone = profile.phone ?? '';
         this.profileData.firstName = profile.first_name ?? '';
         this.profileData.lastName = profile.last_name ?? '';
+        
+        this.cdr.detectChanges();
 
         // ---- Currency ----
-        const currencyId = profile.currency?.id;
-
-        if (this.currencies.length && currencyId) {
-          this.userProfile.currency =
-            this.currencies.find(c => c.id === currencyId) ?? null;
-        } else {
-          this.userProfile.currency = null;
+        const currencyId = (profile as any).currency_id;
+        (this.userProfile as any)._temp_currency_id = currencyId;
+        if (this.currencies.length) {
+          this.userProfile.currency = this.currencies.find(c => c.id === currencyId) ?? null;
         }
 
         // ---- Income frequency ----
-        const frequencyId = profile.income_frequency?.id;
-
-        if (this.incomeFrequencies.length && frequencyId) {
-          this.userProfile.income_frequency =
-            this.incomeFrequencies.find(f => f.id === frequencyId) ?? null;
-        } else {
-          this.userProfile.income_frequency = null;
+        const frequencyId = (profile as any).income_frequency_id;
+        (this.userProfile as any)._temp_frequency_id = frequencyId;
+        if (this.incomeFrequencies.length) {
+          this.userProfile.income_frequency = this.incomeFrequencies.find(f => f.id === frequencyId) ?? null;
         }
 
         this.loadingProfile = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.loadingProfile = false;

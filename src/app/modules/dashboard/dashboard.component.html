@@ -37,45 +37,60 @@
 
     <!-- Content -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Recent Transactions -->
-      <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-        <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent dark:hover:border-slate-700">
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Transacciones Recientes</h3>
-          <div class="flex items-center space-x-2">
-            <button class="flex items-center space-x-1 px-3 py-1.5 text-xs bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700">
-              <lucide-angular [img]="Calendar" class="w-3 h-3"></lucide-angular>
-              <span>Este mes</span>
-            </button>
-            <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium" style="cursor: pointer;">Ver todas</button>
+
+      <!-- Charts Section (New) -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Monthly Chart -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Resumen por Cuenta</h3>
+          <div style="height: 250px; position: relative;">
+            <canvas baseChart [data]="monthlyChartData" [options]="monthlyChartOptions" type="bar"></canvas>
           </div>
         </div>
-        <div class="space-y-3">
-          @for (transaction of recentTransactions; track transaction) {
-            <div
-              class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700">
-              <div class="flex items-center space-x-3">
-                <div class="p-2 rounded-full"
-                  [ngClass]="transaction.type === 'income' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' : 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'">
-                  <lucide-angular
-                    [img]="transaction.type === 'income' ? TrendingUp : TrendingDown"
-                    class="w-4 h-4"
-                  ></lucide-angular>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-900 dark:text-gray-100">{{ transaction.description }}</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ transaction.date }}</p>
-                </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Category Chart -->
+          <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Gastos por Categoría (Global)</h3>
+            <div class="flex justify-center">
+              <div style="height: 200px; width: 200px; position: relative;">
+                <canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions" type="doughnut"></canvas>
               </div>
-              <span
-                class="font-semibold"
-                [ngClass]="transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'"
-                >
-                {{ transaction.amount }}
-              </span>
             </div>
-          }
+          </div>
+
+          <!-- Recent Transactions (Moved to half width under chart if fits, or we can keep it outside. Let's make it fit side by side with category chart) -->
+          <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Transacciones Recientes</h3>
+              <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium" style="cursor: pointer;">Ver todas</button>
+            </div>
+            <div class="space-y-3">
+              @for (transaction of recentTransactions.slice(0, 4); track transaction) {
+                <div
+                  class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700">
+                  <div class="flex items-center space-x-3">
+                    <div class="p-2 rounded-full" [ngClass]="transaction.categoryColor">
+                      <lucide-angular [img]="transaction.categoryIcon" class="w-4 h-4"></lucide-angular>
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ transaction.description }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ transaction.date }}</p>
+                    </div>
+                  </div>
+                  <span
+                    class="font-semibold text-sm"
+                    [ngClass]="transaction.type === 'income' ? 'text-emerald-600' : 'text-red-500'"
+                    >
+                    {{ transaction.amount }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
         </div>
       </div>
+
 
       <!-- Quick Actions -->
       <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
@@ -88,13 +103,13 @@
             <span class="font-medium text-gray-700 dark:text-gray-200">Gestionar Presupuesto</span>
           </button>
           <button class="w-full flex items-center space-x-3 p-3 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 cursor-pointer">
-            <div class="p-2 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-lg">
+            <div class="p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg">
               <lucide-angular [img]="Target" class="w-4 h-4" />
             </div>
             <span class="font-medium text-gray-700 dark:text-gray-200">Nueva Meta</span>
           </button>
           <button class="w-full flex items-center space-x-3 p-3 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 cursor-pointer">
-            <div class="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg">
+            <div class="p-2 bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 rounded-lg">
               <lucide-angular [img]="ChartColumnDecreasing" class="w-4 h-4" />
             </div>
             <span class="font-medium text-gray-700 dark:text-gray-200">Ver Reportes</span>
@@ -119,7 +134,7 @@
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-400">Gastado</span>
-              <span class="font-medium text-red-600">$2,850.00</span>
+              <span class="font-medium text-red-500">$2,850.00</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-400">Restante</span>

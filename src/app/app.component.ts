@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AlertsComponent } from "./shared/ui/alerts/alerts.component";
 import { SidebarComponent } from "./shared/ui/sidebar/sidebar.component";
@@ -9,6 +9,7 @@ import { AuthService } from './core/services/auth/auth.service';
   selector: 'app-root',
   imports: [RouterOutlet, AlertsComponent],
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.css'
 })
 export class AppComponent {
