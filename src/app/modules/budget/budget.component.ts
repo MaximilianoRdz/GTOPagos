@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SHARED_IMPORTS } from '../../shared/shared.config';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -36,6 +36,7 @@ import {
   selector: 'app-budget',
   standalone: true,
   imports: SHARED_IMPORTS,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './budget.component.html',
 })
 export class BudgetComponent implements OnInit {
@@ -58,6 +59,7 @@ export class BudgetComponent implements OnInit {
   // Tab activo
   activeTab: 'expenses' | 'income' = 'expenses';
   selectedPeriod: 'month' | 'q1' | 'q2' = 'month';
+  recordFilter: 'all' | 'pending' | 'msi' = 'all';
 
   // Datos dashboard
   dashboardData: DashboardResponse | null = null;
@@ -111,6 +113,8 @@ export class BudgetComponent implements OnInit {
 
   paidStatusId: number | null = null;
   pendingStatusId: number | null = null;
+
+  isCredit: boolean = false;
 
   formData = {
     amount: null as number | null,
@@ -184,10 +188,20 @@ export class BudgetComponent implements OnInit {
 
     return this.recordsData.results.filter(
       (record) => {
-        return (
-          Number(record.record_type_id) === Number(currentTypeId) &&
-          Number(record.dashboard_id) === Number(this.selectedDashboardId)
-        );
+        const typeMatch = Number(record.record_type_id) === Number(currentTypeId);
+        const dashMatch = Number(record.dashboard_id) === Number(this.selectedDashboardId);
+        
+        if (!typeMatch || !dashMatch) return false;
+
+        if (this.recordFilter === 'pending') {
+          return record.payment_status_id === this.pendingStatusId;
+        }
+
+        if (this.recordFilter === 'msi') {
+          return record.payment_type === 'CREDIT' && (record.total_installments || 1) > 1;
+        }
+
+        return true;
       }
     );
   }
@@ -224,6 +238,7 @@ export class BudgetComponent implements OnInit {
   }
 
   resetForm(): void {
+    this.isCredit = false;
     this.formData = {
       amount: null,
       description: '',
@@ -308,7 +323,7 @@ export class BudgetComponent implements OnInit {
   // RECORDS
   // =========================
 
-  loadRecords(page: number): void {
+  loadRecords(page: number, append: boolean = false): void {
     if (!this.selectedDashboardId) return;
 
     this.loadingRecords = true;
@@ -316,7 +331,13 @@ export class BudgetComponent implements OnInit {
     this.dashboardService
       .getRecords(this.selectedDashboardId, page, this.selectedPeriod).subscribe({
         next: (data) => {
-          this.recordsData = data;
+          if (append && this.recordsData) {
+            this.recordsData.results = [...this.recordsData.results, ...data.results];
+            this.recordsData.next = data.next;
+            this.recordsData.count = data.count;
+          } else {
+            this.recordsData = data;
+          }
           this.currentPage = page;
           this.loadingRecords = false;
         },
@@ -373,11 +394,11 @@ export class BudgetComponent implements OnInit {
       record_date: this.formData.record_date,
       category_id: this.formData.category_id,
       payment_status_id:
-        this.formData.payment_type === 'CREDIT'
+        this.isCredit
           ? this.pendingStatusId : this.paidStatusId,
-      payment_type: this.formData.payment_type,
+      payment_type: (this.isCredit ? 'CREDIT' : 'DEBIT') as 'CREDIT' | 'DEBIT',
       total_installments:
-        this.formData.payment_type === 'CREDIT'
+        this.isCredit
           ? this.formData.total_installments || 1
           : 1,
     };
@@ -459,8 +480,12 @@ export class BudgetComponent implements OnInit {
   }
 
   // =========================
-  // TABS
+  // TABS & FILTERS
   // =========================
+
+  setFilter(filter: 'all' | 'pending' | 'msi'): void {
+    this.recordFilter = filter;
+  }
 
   switchTab(tab: 'expenses' | 'income'): void {
 
@@ -477,6 +502,7 @@ export class BudgetComponent implements OnInit {
     }
 
     this.activeTab = tab;
+    this.recordFilter = 'all';
 
     this.formData.category_id = null;
 
@@ -496,6 +522,7 @@ export class BudgetComponent implements OnInit {
   openEditModal(record: FinancialRecord): void {
     this.editingRecord = record;
     this.showCreateModal = true;
+    this.isCredit = record.payment_type === 'CREDIT';
 
     this.formData = {
       amount: Number(record.amount),
@@ -547,13 +574,13 @@ export class BudgetComponent implements OnInit {
       record_date: this.formData.record_date,
 
       payment_status_id:
-        this.formData.payment_type === 'CREDIT'
+        this.isCredit
           ? this.pendingStatusId 
           : this.paidStatusId,
-      payment_type: this.formData.payment_type,
+      payment_type: (this.isCredit ? 'CREDIT' : 'DEBIT') as 'CREDIT' | 'DEBIT',
 
       total_installments:
-        this.formData.payment_type === 'CREDIT'
+        this.isCredit
           ? this.formData.total_installments || 1
           : 1,
     };
@@ -643,21 +670,51 @@ export class BudgetComponent implements OnInit {
       });
   }
 
-  nextPage(): void {
-    if (this.recordsData?.next) {
-      this.loadRecords(this.currentPage + 1);
-    }
+  markAsPaid(recordId: number): void {
+    if (this.creatingRecord || this.paidStatusId === null) return;
+    this.creatingRecord = true;
+
+    this.dashboardService.updateRecord(recordId, { payment_status_id: this.paidStatusId }).subscribe({
+      next: () => {
+        this.creatingRecord = false;
+        this.loadDashboard();
+        this.loadRecords(this.currentPage);
+        this.alert.show('Movimiento marcado como pagado', 'success');
+      },
+      error: () => {
+        this.creatingRecord = false;
+        this.alert.show('Error al actualizar movimiento', 'error');
+      }
+    });
   }
 
-  prevPage(): void {
-    if (this.recordsData?.previous && this.currentPage > 1) {
-      this.loadRecords(this.currentPage - 1);
+  loadMoreRecords(): void {
+    if (this.recordsData?.next) {
+      this.loadRecords(this.currentPage + 1, true);
     }
   }
 
   // =========================
   // HELPERS
   // =========================
+
+  getSmartDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString + 'T12:00:00');
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    const diffMs = today.getTime() - date.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays === -1) return 'Mañana';
+    if (diffDays > 1 && diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffDays < -1 && diffDays > -7) return `En ${Math.abs(diffDays)} días`;
+    
+    return new Intl.DateTimeFormat('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+  }
 
   getPaidPercentage(paidRecords: number, totalRecords: number): number {
     if (totalRecords === 0) return 0;

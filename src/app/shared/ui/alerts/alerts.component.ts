@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlertsService } from '../../../core/services/alerts/alerts.service';
 
@@ -104,6 +104,7 @@ import { AlertsService } from '../../../core/services/alerts/alerts.service';
       </div>
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     @keyframes toast-enter {
       0% {

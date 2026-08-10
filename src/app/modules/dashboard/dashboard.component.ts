@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Wallet, TrendingUp, TrendingDown, Target, ChartColumnDecreasing, Calendar, Settings, ShoppingCart, Film, Coffee, Briefcase, Code } from 'lucide-angular';
-import { ChartModule } from 'primeng/chart';
+import { BaseChartDirective } from 'ng2-charts';
+import { DashboardService } from '../../core/services/dashboard/dashboard.service';
+import { forkJoin } from 'rxjs';
+
 interface Stat {
   icon: any;
   title: string;
@@ -23,8 +26,9 @@ interface Transaction {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, LucideAngularModule, ChartModule],
+  imports: [CommonModule, LucideAngularModule, BaseChartDirective],
   templateUrl: './dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Default,
   styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent {
@@ -47,55 +51,125 @@ export class DashboardComponent {
   monthlyChartData: any;
   monthlyChartOptions: any;
 
+  // Real Data
+  netWorth: number = 0;
+  totalIncome: number = 0;
+  totalExpenses: number = 0;
+  netWorthLoading: boolean = true;
+
+  constructor(private dashboardService: DashboardService) {}
+
   ngOnInit() {
-    this.initCharts();
+    this.loadNetWorth();
   }
 
-  initCharts() {
-    this.categoryChartData = {
-      labels: ['Comida', 'Entretenimiento', 'Servicios', 'Otros'],
-      datasets: [
-        {
-          data: [450, 220, 150, 100],
-          backgroundColor: ['#10b981', '#14b8a6', '#0ea5e9', '#64748b'],
-          hoverBackgroundColor: ['#059669', '#0d9488', '#0284c7', '#475569']
+  loadNetWorth() {
+    this.dashboardService.getDashboards().subscribe({
+      next: (dashboards) => {
+        this.netWorth = dashboards.reduce((sum, d) => sum + Number(d.balance || 0), 0);
+        this.totalIncome = dashboards.reduce((sum, d) => sum + Number(d.total_income || 0), 0);
+        this.totalExpenses = dashboards.reduce((sum, d) => sum + Number(d.total_expense || 0), 0);
+        
+        // Update mocked stats dynamically
+        this.stats[0].title = 'Patrimonio Total';
+        this.stats[0].value = this.formatCurrency(this.netWorth);
+        this.stats[0].change = `${dashboards.length} espacios`;
+        
+        this.stats[1].value = this.formatCurrency(this.totalIncome);
+        this.stats[2].value = this.formatCurrency(this.totalExpenses);
+        
+        // -- BAR CHART (Dashboards) --
+        this.monthlyChartData = {
+          labels: dashboards.map(d => d.name),
+          datasets: [
+            {
+              label: 'Gastos',
+              data: dashboards.map(d => Number(d.total_expense || 0)),
+              backgroundColor: '#ef4444',
+              borderRadius: 4
+            },
+            {
+              label: 'Ingresos',
+              data: dashboards.map(d => Number(d.total_income || 0)),
+              backgroundColor: '#10b981',
+              borderRadius: 4
+            }
+          ]
+        };
+
+        this.monthlyChartOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+          scales: { y: { beginAtZero: true } }
+        };
+        
+        this.netWorthLoading = false;
+
+        // -- PIE CHART (Categories Global) --
+        if (dashboards.length > 0) {
+          const requests = dashboards.map(d => this.dashboardService.getCurrentDashboard(d.id, 'month'));
+          forkJoin(requests).subscribe(responses => {
+            const categorySums: { [key: string]: number } = {};
+            
+            responses.forEach(res => {
+              if (res.expense_summary?.categories) {
+                res.expense_summary.categories.forEach(cat => {
+                  if (!categorySums[cat.name]) categorySums[cat.name] = 0;
+                  categorySums[cat.name] += Number(cat.total_amount || 0);
+                });
+              }
+            });
+
+            const sortedCats = Object.entries(categorySums).sort((a, b) => b[1] - a[1]);
+            const top5 = sortedCats.slice(0, 5);
+            const others = sortedCats.slice(5).reduce((sum, [, amount]) => sum + amount, 0);
+
+            const labels = top5.map(c => c[0]);
+            const data = top5.map(c => c[1]);
+            if (others > 0) {
+              labels.push('Otros');
+              data.push(others);
+            }
+            
+            const colors = ['#10b981', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#64748b'];
+
+            this.categoryChartData = {
+              labels: labels.length > 0 ? labels : ['Sin datos'],
+              datasets: [{
+                data: data.length > 0 ? data : [1],
+                backgroundColor: data.length > 0 ? colors.slice(0, labels.length) : ['#e2e8f0'],
+                hoverBackgroundColor: data.length > 0 ? colors.slice(0, labels.length) : ['#e2e8f0']
+              }]
+            };
+
+            this.categoryChartOptions = {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: 'bottom' } },
+              cutout: '70%'
+            };
+          });
+        } else {
+          // Empty states
+          this.categoryChartData = {
+            labels: ['Sin datos'],
+            datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }]
+          };
+          this.categoryChartOptions = { responsive: true, maintainAspectRatio: false, cutout: '70%' };
         }
-      ]
-    };
-
-    this.categoryChartOptions = {
-      plugins: {
-        legend: { position: 'bottom' }
       },
-      cutout: '70%'
-    };
-
-    this.monthlyChartData = {
-      labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
-      datasets: [
-        {
-          label: 'Gastos',
-          data: [650, 450, 800, 950],
-          backgroundColor: '#10b981',
-          borderRadius: 4
-        },
-        {
-          label: 'Ingresos',
-          data: [1200, 0, 500, 2500],
-          backgroundColor: '#0ea5e9',
-          borderRadius: 4
-        }
-      ]
-    };
-
-    this.monthlyChartOptions = {
-      plugins: {
-        legend: { position: 'bottom' }
-      },
-      scales: {
-        y: { beginAtZero: true }
+      error: () => {
+        this.netWorthLoading = false;
       }
-    };
+    });
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+    }).format(amount);
   }
 
   stats: Stat[] = [

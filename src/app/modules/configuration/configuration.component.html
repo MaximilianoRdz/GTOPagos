@@ -62,9 +62,8 @@
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre</label>
                       <input
                         type="text"
-                        pInputText
                         [(ngModel)]="profileData.firstName"
-                        class="w-full"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
 
@@ -73,9 +72,8 @@
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Apellido</label>
                       <input
                         type="text"
-                        pInputText
                         [(ngModel)]="profileData.lastName"
-                        class="w-full"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
 
@@ -87,11 +85,10 @@
 
                         <input
                           type="tel"
-                          pInputText
                           placeholder="834 123 4567"
                           [(ngModel)]="profileData.phone"
                           (ngModelChange)="formatPhone($event)"
-                          class="w-full pl-10"
+                          class="w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         />
                       </div>
                     </div>
@@ -141,9 +138,8 @@
                       <div class="relative">
                         <input
                           [type]="showCurrentPassword ? 'text' : 'password'"
-                          pInputText
                           [(ngModel)]="securityData.currentPassword"
-                          class="w-full pr-10"
+                          class="w-full pr-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           placeholder="Ingresa tu contraseña actual"
                         />
 
@@ -165,9 +161,8 @@
                       <div class="relative">
                         <input
                           [type]="showNewPassword ? 'text' : 'password'"
-                          pInputText
                           [(ngModel)]="securityData.newPassword"
-                          class="w-full pr-10"
+                          class="w-full pr-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           placeholder="Ingresa tu nueva contraseña"
                         />
 
@@ -189,9 +184,8 @@
                       <div class="relative">
                         <input
                           [type]="showConfirmPassword ? 'text' : 'password'"
-                          pInputText
                           [(ngModel)]="securityData.confirmPassword"
-                          class="w-full pr-10"
+                          class="w-full pr-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           placeholder="Confirma tu nueva contraseña"
                         />
 
@@ -218,7 +212,7 @@
                       </div>
 
                       <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" [(ngModel)]="securityData.twoFactorEnabled" class="sr-only peer"/>
+                        <input type="checkbox" [(ngModel)]="securityData.twoFactorEnabled" (change)="toggle2FA($any($event.target).checked)" class="sr-only peer"/>
                         <div
                           class="w-11 h-6 bg-gray-200 peer-focus:ring-4
                                 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800
@@ -390,6 +384,7 @@
 
                     <select
                       [(ngModel)]="appearanceSettings.language"
+                      (ngModelChange)="setLanguage($event)"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                             focus:ring-2 focus:ring-emerald-500 focus:border-transparent
                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -417,6 +412,7 @@
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"> Moneda principal </label>
                       <select
+                        [compareWith]="compareFn"
                         [(ngModel)]="userProfile.currency"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                                 focus:ring-2 focus:ring-emerald-500 focus:border-transparent
@@ -449,6 +445,7 @@
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"> Frecuencia de ingresos </label>
 
                       <select
+                        [compareWith]="compareFn"
                         [(ngModel)]="userProfile.income_frequency"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                                 focus:ring-2 focus:ring-emerald-500 focus:border-transparent

@@ -1,4 +1,4 @@
-import { Component, signal  } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginService, LoginRequest } from '../../../core/services/auth/login.service';
@@ -13,6 +13,7 @@ import { LucideAngularModule, Lock, EyeClosed, Eye, DollarSign } from 'lucide-an
     RouterLink,
     LucideAngularModule
 ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './login.component.html',
 })
 export class LoginComponent {

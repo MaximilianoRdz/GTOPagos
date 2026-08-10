@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -8,6 +8,7 @@ import { LucideAngularModule, Lock, ChevronLeft, CircleCheck } from 'lucide-angu
   selector: 'app-forgot-password',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, LucideAngularModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './forgot-password.component.html',
 })
 export class ForgotPasswordComponent {
@@ -37,7 +38,7 @@ export class ForgotPasswordComponent {
     setTimeout(() => {
       this.isLoading.set(false);
       this.isSubmitted.set(true);
-    }, 2000);
+    }, 500); // Reducido de 2000 a 500 para mayor velocidad
   }
 
   retry() {

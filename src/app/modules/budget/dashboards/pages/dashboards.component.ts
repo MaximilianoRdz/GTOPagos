@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { SHARED_IMPORTS } from '../../../../shared/shared.config';
 import { Router } from '@angular/router';
 import * as XLSX from 'xlsx';
@@ -31,6 +31,8 @@ export class DashboardsComponent implements OnInit {
   readonly Pencil = Pencil;
 
   dashboards: DashboardItem[] = [];
+  expenseDashboardsList: DashboardItem[] = [];
+  incomeDashboardsList: DashboardItem[] = [];
   editingDashboard: DashboardItem | null = null;
 
   showDeleteModal = false;
@@ -72,7 +74,8 @@ export class DashboardsComponent implements OnInit {
     private dashboardService: DashboardService,
     private excelService: ExcelService,
     private router: Router,
-    public alert: AlertsService
+    public alert: AlertsService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -84,12 +87,11 @@ export class DashboardsComponent implements OnInit {
   // GETTERS
   // =========================
 
-  get expenseDashboards() {
-    return this.dashboards.filter(
-      d =>
-        d.dashboard_type === 'EXPENSES' ||
-        d.dashboard_type === 'BOTH'
-    );
+  getDashboardsForItem(item: ImportedTransaction) {
+    if (item.behavior === 'INCOME') {
+      return this.incomeDashboardsList;
+    }
+    return this.expenseDashboardsList;
   }
 
   formatCurrency(amount: number): string {
@@ -106,9 +108,12 @@ export class DashboardsComponent implements OnInit {
     this.dashboardService.getDashboards()
       .subscribe({
         next: (data) => {
-          this.dashboards = data;
-
+          const validData = Array.isArray(data) ? data : [];
+          this.dashboards = validData;
+          this.expenseDashboardsList = validData.filter(d => d.dashboard_type === 'EXPENSES' || d.dashboard_type === 'BOTH');
+          this.incomeDashboardsList = validData.filter(d => d.dashboard_type === 'INCOME' || d.dashboard_type === 'BOTH');
           this.loading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.loading = false;
@@ -117,6 +122,7 @@ export class DashboardsComponent implements OnInit {
             'No se pudieron cargar los dashboards',
             'error'
           );
+          this.cdr.detectChanges();
         }
       });
 
@@ -267,13 +273,16 @@ onFileChange(event: any): void {
       // we need to adapt them to ImportedTransaction (or our new interface)
       this.importedTransactions = res.records.map((r: any) => ({
         ...r,
-        dashboardId: null // Force user to select it
+        selected: !r.is_duplicate,
+        dashboardId: null
       }));
       this.showImportModal = true;
       this.alert.show(`${this.importedTransactions.length} movimientos detectados`, 'success');
+      this.cdr.detectChanges();
     },
     error: (err) => {
       this.alert.show('No se pudo analizar el archivo', 'error');
+      this.cdr.detectChanges();
     }
   });
 
@@ -286,44 +295,53 @@ closeImportModal(): void {
   this.importedTransactions = [];
 }
 
-confirmImport(): void {
-  const invalidItems = this.importedTransactions.filter(item => (item as any).dashboardId == null);
-
-  if (invalidItems.length) {
-    this.alert.show('Todos los movimientos deben tener dashboard seleccionado', 'error');
-    return;
+  canImport(): boolean {
+    const selected = this.importedTransactions.filter(item => item.selected);
+    if (selected.length === 0) return false;
+    return selected.every(item => item.dashboardId != null);
   }
-  
-  // We need to send them grouped by dashboard_id, or just send them individually via backend.
-  // Wait, our backend endpoint takes ONE dashboard_id and a list of records!
-  // Oh! The user can select multiple dashboards.
-  // We can group them by dashboard_id and send parallel requests using forkJoin.
-  
-  const grouped = this.importedTransactions.reduce((acc, curr) => {
-      const dId = (curr as any).dashboardId;
-      if (!acc[dId]) acc[dId] = [];
-      acc[dId].push(curr);
-      return acc;
-  }, {} as Record<number, any[]>);
-  
-  const requests = Object.keys(grouped).map(dId => {
-      return this.excelService.confirmImport({
-          dashboard_id: Number(dId),
-          records: grouped[Number(dId)]
-      });
-  });
 
-  forkJoin(requests).subscribe({
-    next: () => {
-      this.alert.show('Movimientos importados correctamente', 'success');
-      this.closeImportModal();
-      this.loadDashboards();
-    },
-    error: (err) => {
-      this.alert.show('Error al importar movimientos', 'error');
+  confirmImport(): void {
+    const itemsToImport = this.importedTransactions.filter(item => item.selected);
+    
+    if (itemsToImport.length === 0) {
+      this.alert.show('Debes seleccionar al menos un movimiento para importar', 'error');
+      return;
     }
-  });
-}
+
+    const invalidItems = itemsToImport.filter(item => (item as any).dashboardId == null);
+
+    if (invalidItems.length) {
+      this.alert.show('Todos los movimientos seleccionados deben tener un dashboard asignado', 'error');
+      return;
+    }
+  
+    // We need to send them grouped by dashboard_id
+    const grouped = itemsToImport.reduce((acc, curr) => {
+        const dId = (curr as any).dashboardId;
+        if (!acc[dId]) acc[dId] = [];
+        acc[dId].push(curr);
+        return acc;
+    }, {} as Record<number, any[]>);
+    
+    const requests = Object.keys(grouped).map(dId => {
+        return this.excelService.confirmImport({
+            dashboard_id: Number(dId),
+            records: grouped[Number(dId)]
+        });
+    });
+
+    forkJoin(requests).subscribe({
+      next: () => {
+        this.alert.show('Movimientos importados correctamente', 'success');
+        this.closeImportModal();
+        this.loadDashboards();
+      },
+      error: (err) => {
+        this.alert.show('Error al importar movimientos', 'error');
+      }
+    });
+  }
 
 loadCategories(): void {
 

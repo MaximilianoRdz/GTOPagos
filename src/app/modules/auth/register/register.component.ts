@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { RegisterService, RegisterRequest } from '../../../core/services/auth/register.service'
@@ -11,6 +11,7 @@ import { LucideAngularModule, User } from 'lucide-angular';
     ReactiveFormsModule,
     LucideAngularModule
 ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {

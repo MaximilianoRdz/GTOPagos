@@ -16,6 +16,9 @@ export interface ImportedTransaction {
   dashboardId?: number | null;
   is_recurrent?: boolean;
   occurrences?: number;
+  is_installment?: boolean;
+  current_installment?: number;
+  total_installments?: number;
 }
 
 export interface ImportConfirmPayload {

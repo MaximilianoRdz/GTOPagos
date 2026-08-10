@@ -42,16 +42,20 @@
       <div class="lg:col-span-2 space-y-6">
         <!-- Monthly Chart -->
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Balance Mensual</h3>
-          <p-chart type="bar" [data]="monthlyChartData" [options]="monthlyChartOptions" height="250px"></p-chart>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Resumen por Cuenta</h3>
+          <div style="height: 250px; position: relative;">
+            <canvas baseChart [data]="monthlyChartData" [options]="monthlyChartOptions" type="bar"></canvas>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Category Chart -->
           <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Gastos por Categoría</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Gastos por Categoría (Global)</h3>
             <div class="flex justify-center">
-              <p-chart type="doughnut" [data]="categoryChartData" [options]="categoryChartOptions" height="200px" width="200px"></p-chart>
+              <div style="height: 200px; width: 200px; position: relative;">
+                <canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions" type="doughnut"></canvas>
+              </div>
             </div>
           </div>
 

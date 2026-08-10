@@ -1,4 +1,4 @@
-<main class="flex-1 p-6">
+<main class="flex-1 p-6 text-gray-900 dark:text-gray-100">
   <div class="max-w-7xl mx-auto">
     <div class="flex items-center justify-between mb-8">
       <div>
@@ -7,7 +7,7 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <input #fileInput type="file" accept=".xlsx,.xls,.csv" hidden (change)="onFileChange($event)"/>
+        <input #fileInput type="file" accept=".xlsx,.xls,.csv,.pdf" hidden (change)="onFileChange($event)"/>
         <button
           (click)="fileInput.click()"
           class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700
@@ -15,7 +15,7 @@
                 font-semibold shadow-sm border border-slate-200 dark:border-slate-700
                 transition-all duration-200 cursor-pointer">
 
-          <div class="flex items-center gap-2"><span>Importar estado de cuenta</span></div>
+          <div class="flex items-center gap-2"><span>Importar Excel o PDF</span></div>
         </button>
 
         <button
@@ -140,7 +140,7 @@
 
 @if (showCreateModal) {
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg border border-gray-200 dark:border-slate-700">
+    <div class="bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-lg border border-gray-200 dark:border-slate-700">
       <!-- HEADER -->
       <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
         <div>
@@ -163,7 +163,7 @@
           <input
             type="text"
             [(ngModel)]="dashboardForm.name"
-            class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+            class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100"
             placeholder="Ej. Finanzas Personales">
         </div>
 
@@ -172,7 +172,7 @@
           <textarea
             [(ngModel)]="dashboardForm.description"
             rows="4"
-            class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+            class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100"
             placeholder="Describe este dashboard">
           </textarea>
         </div>
@@ -181,7 +181,7 @@
           <label class="block text-sm font-medium mb-2">Tipo de dashboard</label>
           <select
             [(ngModel)]="dashboardForm.dashboard_type"
-            class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800">
+            class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100">
 
             @for (type of dashboardTypes; track type.value) {
               <option [value]="type.value">
@@ -260,7 +260,7 @@
 @if (showImportModal) {
   <div class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
 
-    <div class="w-full max-w-5xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+    <div class="w-full max-w-5xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
 
       <!-- HEADER -->
       <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
@@ -276,7 +276,7 @@
 
         <button
           (click)="closeImportModal()"
-          class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+          class="p-2 rounded-xl text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
 
           <lucide-angular
             [img]="X"
@@ -296,20 +296,32 @@
               <div>
                 <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">{{ item.description }}</h3>
                 <div class="flex items-center gap-3 mt-2">
-                  <div class="font-bold text-lg whitespace-nowrap" [ngClass]="item.behavior === 'INCOME' ? 'text-emerald-600' : 'text-red-500'">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="item.selected" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500">
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Importar</span>
+                  </label>
+                  <div class="font-bold text-lg whitespace-nowrap ml-2" [ngClass]="item.behavior === 'INCOME' ? 'text-emerald-600' : 'text-red-500'">
                     {{ formatCurrency(item.amount) }}
                   </div>
                   <div class="flex flex-col items-start ml-2">
                     <span class="text-xs text-slate-500 font-medium">Fecha: {{ item.record_date }}</span>
-                    <span class="text-xs text-slate-500 font-medium" [ngClass]="item.behavior === 'INCOME' ? 'text-emerald-600' : 'text-red-600'">
-                      {{ item.behavior === 'INCOME' ? 'Ingreso' : 'Gasto' }}
-                    </span>
+                    <button (click)="item.behavior = item.behavior === 'INCOME' ? 'EXPENSE' : 'INCOME'; item.dashboardId = null;" 
+                            class="text-xs font-medium px-2 py-0.5 rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-emerald-500"
+                            [ngClass]="item.behavior === 'INCOME' ? 'border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100' : 'border-red-200 text-red-600 bg-red-50 hover:bg-red-100'"
+                            title="Haz clic para cambiar entre Gasto e Ingreso">
+                      {{ item.behavior === 'INCOME' ? 'Ingreso ⟲' : 'Gasto ⟲' }}
+                    </button>
                   </div>
                 </div>
               </div>
 
               <div class="flex items-center gap-2 flex-wrap justify-end">
-                @if (item.is_recurrent) {
+                @if (item.is_installment) {
+                  <span class="px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
+                    Pago {{ item.current_installment }} de {{ item.total_installments }} (MSI)
+                  </span>
+                }
+                @else if (item.is_recurrent) {
                   <span class="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
                     Recurrente ({{ item.occurrences }} veces)
                   </span>
@@ -317,7 +329,7 @@
                 @if (item.is_duplicate) {
                   <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">Posible Duplicado</span>
                 }
-                @else {
+                @else if (!item.is_recurrent && !item.is_installment) {
                   <span class="px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium">Nuevo</span>
                 }
               </div>
@@ -325,15 +337,15 @@
 
             <!-- CATEGORY -->
             <div class="mb-5">
-              <p class="text-sm text-slate-500 mb-2">Categoría detectada</p>
-              <div class="inline-flex px-3 py-2 rounded-2xl bg-slate-200 dark:bg-slate-800 text-sm font-medium">{{ item.category_name }}</div>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">Categoría detectada</p>
+              <div class="inline-flex px-3 py-2 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-sm font-medium">{{ item.category_name }}</div>
             </div>
 
-            <!-- DASHBOARD SELECT -->
-            <div>
-              <p class="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Selecciona dashboard</p>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                @for (dashboard of expenseDashboards; track dashboard.id) {
+            @if (item.selected) {
+              <div>
+                <p class="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Selecciona dashboard</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  @for (dashboard of getDashboardsForItem(item); track dashboard.id) {
                   <button
                     (click)="item.dashboardId = dashboard.id"
                     class="text-left p-4 rounded-2xl border transition-all duration-200 cursor-pointer"
@@ -350,6 +362,7 @@
                 }
               </div>
             </div>
+            }
           </div>
         }
       </div>
@@ -365,11 +378,11 @@
         <div class="flex gap-3">
 
           <button (click)="closeImportModal()"
-            class="px-5 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+            class="px-5 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
             Cancelar
           </button>
 
-          <button (click)="confirmImport()" [disabled]="importedTransactions.some(item => !item.dashboardId)"
+          <button (click)="confirmImport()" [disabled]="!canImport()"
             class="px-5 py-3 rounded-2xl
                   bg-emerald-600 hover:bg-emerald-700
                   disabled:bg-slate-400

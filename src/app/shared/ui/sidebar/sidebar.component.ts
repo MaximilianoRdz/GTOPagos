@@ -1,4 +1,4 @@
-import { Component, OnDestroy, computed } from '@angular/core';
+import { Component, OnDestroy, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutService } from '../../../core/services/layout/layout.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
@@ -19,6 +19,7 @@ interface MenuItem {
   selector: 'app-sidebar',
   imports: [CommonModule, LucideAngularModule ],
   templateUrl: './sidebar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent implements OnDestroy {
