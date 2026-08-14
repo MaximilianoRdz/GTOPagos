@@ -103,9 +103,6 @@ export class BudgetComponent implements OnInit {
 
   editingRecord: FinancialRecord | null = null;
 
-  showDeleteModal = false;
-  recordToDelete: number | null = null;
-
   creatingRecord = false;
   deletingRecord = false;
 
@@ -393,9 +390,9 @@ export class BudgetComponent implements OnInit {
       description: this.formData.description,
       record_date: this.formData.record_date,
       category_id: this.formData.category_id,
-      payment_status_id:
-        this.isCredit
-          ? this.pendingStatusId : this.paidStatusId,
+      payment_status_id: this.formData.payment_status_id 
+        ? this.formData.payment_status_id 
+        : (this.isCredit ? this.pendingStatusId : this.paidStatusId),
       payment_type: (this.isCredit ? 'CREDIT' : 'DEBIT') as 'CREDIT' | 'DEBIT',
       total_installments:
         this.isCredit
@@ -573,10 +570,9 @@ export class BudgetComponent implements OnInit {
       category_id: this.formData.category_id,
       record_date: this.formData.record_date,
 
-      payment_status_id:
-        this.isCredit
-          ? this.pendingStatusId 
-          : this.paidStatusId,
+      payment_status_id: this.formData.payment_status_id 
+        ? this.formData.payment_status_id 
+        : (this.isCredit ? this.pendingStatusId : this.paidStatusId),
       payment_type: (this.isCredit ? 'CREDIT' : 'DEBIT') as 'CREDIT' | 'DEBIT',
 
       total_installments:
@@ -622,52 +618,28 @@ export class BudgetComponent implements OnInit {
   }
 
   deleteRecord(recordId: number): void {
-    this.recordToDelete = recordId;
-    this.showDeleteModal = true;
-  }
-
-  closeDeleteModal(): void {
-    this.showDeleteModal = false;
-    this.recordToDelete = null;
-  }
-
-  confirmDelete(): void {
-
-    if (this.recordToDelete === null || this.deletingRecord) {
-      return;
-    }
-
-    this.deletingRecord = true;
-
-    this.dashboardService
-      .deleteRecord(this.recordToDelete)
-      .subscribe({
-
-        next: () => {
-
-          this.deletingRecord = false;
-
-          this.closeDeleteModal();
-
-          this.loadDashboard();
-          this.loadRecords(this.currentPage);
-
-          this.alert.show(
-            'Movimiento eliminado correctamente',
-            'success'
-          );
-        },
-
-        error: (err) => {
-
-          this.deletingRecord = false;
-
-          this.alert.show(
-            'Error al eliminar movimiento',
-            'error'
-          );
-        }
-      });
+    if (this.deletingRecord) return;
+    this.alert.askConfirm(
+      '¿Eliminar movimiento?', 
+      `Esta acción eliminará el ${this.currentRecordTypeName.toLowerCase()} permanentemente y no podrá recuperarse.`
+    ).then(confirmed => {
+      if (confirmed) {
+        this.deletingRecord = true;
+        this.dashboardService.deleteRecord(recordId).subscribe({
+          next: () => {
+            this.deletingRecord = false;
+            this.loadDashboard();
+            this.loadRecords(this.currentPage);
+            this.alert.show('Movimiento eliminado correctamente', 'success');
+          },
+          error: (err) => {
+            this.deletingRecord = false;
+            this.alert.show('Error al eliminar movimiento', 'error');
+            console.error('Error al eliminar movimiento', err);
+          }
+        });
+      }
+    });
   }
 
   markAsPaid(recordId: number): void {

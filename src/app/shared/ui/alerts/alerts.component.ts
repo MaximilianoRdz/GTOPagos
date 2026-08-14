@@ -103,6 +103,43 @@ import { AlertsService } from '../../../core/services/alerts/alerts.service';
 
       </div>
     }
+
+    <!-- Modal Confirmación Centralizado -->
+    @if (alert.confirmVisible()) {
+      <div class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="w-full max-w-md rounded-[32px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-modal-in">
+          
+          <!-- HEADER ICON -->
+          <div class="flex justify-center pt-8">
+            <div class="flex h-20 w-20 items-center justify-center rounded-full"
+                 [ngClass]="alert.confirmActionStyle() === 'danger' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-orange-100 dark:bg-orange-900/30'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9" [ngClass]="alert.confirmActionStyle() === 'danger' ? 'text-red-500' : 'text-orange-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="px-8 pt-6 pb-8 text-center">
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ alert.confirmTitle() }}</h3>
+            <p class="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              {{ alert.confirmMessage() }}
+            </p>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="flex gap-3 p-5 border-t border-gray-200 dark:border-slate-800">
+            <button (click)="alert.resolveConfirm(false)" class="flex-1 rounded-2xl border border-slate-300 dark:border-slate-700 px-4 py-3 font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+              Cancelar
+            </button>
+            <button (click)="alert.resolveConfirm(true)" class="flex-1 rounded-2xl px-4 py-3 font-semibold text-white shadow-lg transition cursor-pointer"
+                    [ngClass]="alert.confirmActionStyle() === 'danger' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20'">
+              {{ alert.confirmActionName() }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`

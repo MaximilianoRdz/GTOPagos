@@ -40,7 +40,7 @@ export class SidebarComponent implements OnDestroy {
 
   menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: this.Layers, hasDropdown: true, route: '/dashboard' },
-    { id: 'budget', label: 'Presupuesto', icon: this.Wallet, route: '/budgets' },
+    { id: 'budgets', label: 'Presupuesto', icon: this.Wallet, route: '/budgets' },
     { id: 'goals', label: 'Metas', icon: this.Target, route: '/goals' },
     { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing, route: '/reports' },
   ];

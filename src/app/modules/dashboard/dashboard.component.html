@@ -11,25 +11,28 @@
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       @for (stat of stats; track stat) {
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
+        <div class="rounded-xl shadow-sm border p-6 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+             [ngClass]="stat.isNegative ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'">
           <div class="flex items-center justify-between mb-4">
-            <div class="p-3 rounded-lg bg-gray-50 dark:bg-slate-800" [ngClass]="stat.color">
-              <lucide-angular [img]="stat.icon" class="w-6 h-6" [ngClass]="stat.color"></lucide-angular>
+            <div class="p-3 rounded-lg bg-white dark:bg-slate-800 shadow-sm" [ngClass]="stat.isNegative ? 'text-red-600' : stat.color">
+              <lucide-angular [img]="stat.icon" class="w-6 h-6"></lucide-angular>
             </div>
             <div
-              class="flex items-center text-sm font-medium"
-              [ngClass]="stat.trend === 'up' ? 'text-emerald-600' : 'text-red-600'"
+              class="flex items-center px-2 py-1 rounded-full text-xs font-bold shadow-sm border"
+              [ngClass]="stat.trend === 'up' 
+                ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30' 
+                : 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30'"
               >
               <lucide-angular
                 [img]="stat.trend === 'up' ? TrendingUp : TrendingDown"
-                class="w-4 h-4 mr-1"
+                class="w-3.5 h-3.5 mr-1"
               ></lucide-angular>
               {{ stat.change }}
             </div>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stat.value }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ stat.title }}</p>
+            <p class="text-2xl font-bold mb-1" [ngClass]="stat.isNegative ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'">{{ stat.value }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ stat.title }}</p>
           </div>
         </div>
       }
@@ -69,15 +72,15 @@
               @for (transaction of recentTransactions.slice(0, 4); track transaction) {
                 <div
                   class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700">
-                  <div class="flex items-center space-x-3">
-                    <div class="p-2 rounded-full" [ngClass]="transaction.categoryColor">
-                      <lucide-angular [img]="transaction.categoryIcon" class="w-4 h-4"></lucide-angular>
+                    <div class="flex items-center space-x-3">
+                      <div class="p-2 rounded-full shadow-sm" [ngClass]="transaction.categoryColor">
+                        <lucide-angular [img]="transaction.categoryIcon" class="w-4 h-4"></lucide-angular>
+                      </div>
+                      <div>
+                        <p class="font-semibold text-gray-900 dark:text-gray-100 text-[15px]">{{ transaction.description }}</p>
+                        <p class="text-[13px] font-medium text-gray-500 dark:text-gray-400">{{ transaction.date }}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ transaction.description }}</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ transaction.date }}</p>
-                    </div>
-                  </div>
                   <span
                     class="font-semibold text-sm"
                     [ngClass]="transaction.type === 'income' ? 'text-emerald-600' : 'text-red-500'"
