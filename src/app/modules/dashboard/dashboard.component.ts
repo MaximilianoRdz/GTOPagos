@@ -12,6 +12,7 @@ interface Stat {
   change: string;
   trend: 'up' | 'down';
   color: string;
+  isNegative?: boolean;
 }
 
 interface Transaction {
@@ -74,6 +75,7 @@ export class DashboardComponent {
         this.stats[0].title = 'Patrimonio Total';
         this.stats[0].value = this.formatCurrency(this.netWorth);
         this.stats[0].change = `${dashboards.length} espacios`;
+        this.stats[0].isNegative = this.netWorth < 0;
         
         this.stats[1].value = this.formatCurrency(this.totalIncome);
         this.stats[2].value = this.formatCurrency(this.totalExpenses);
@@ -100,7 +102,21 @@ export class DashboardComponent {
         this.monthlyChartOptions = {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } },
+          plugins: { 
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: (context: any) => {
+                  let label = context.dataset.label || '';
+                  if (label) { label += ': '; }
+                  if (context.parsed.y !== null) {
+                    label += this.formatCurrency(context.parsed.y);
+                  }
+                  return label;
+                }
+              }
+            }
+          },
           scales: { y: { beginAtZero: true } }
         };
         
@@ -132,21 +148,37 @@ export class DashboardComponent {
               data.push(others);
             }
             
-            const colors = ['#10b981', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#64748b'];
+            const colors = ['#93c5fd', '#c084fc', '#fb923c', '#6ee7b7', '#f472b6', '#94a3b8']; // Pastel Blue, Purple, Orange, Mint, Pink, Slate
 
             this.categoryChartData = {
               labels: labels.length > 0 ? labels : ['Sin datos'],
               datasets: [{
                 data: data.length > 0 ? data : [1],
                 backgroundColor: data.length > 0 ? colors.slice(0, labels.length) : ['#e2e8f0'],
-                hoverBackgroundColor: data.length > 0 ? colors.slice(0, labels.length) : ['#e2e8f0']
+                hoverBackgroundColor: data.length > 0 ? colors.slice(0, labels.length) : ['#e2e8f0'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
               }]
             };
 
             this.categoryChartOptions = {
               responsive: true,
               maintainAspectRatio: false,
-              plugins: { legend: { position: 'bottom' } },
+              plugins: { 
+                legend: { position: 'bottom' },
+                tooltip: {
+                  callbacks: {
+                    label: (context: any) => {
+                      let label = context.label || '';
+                      if (label) { label += ': '; }
+                      if (context.parsed !== null && context.parsed !== undefined) {
+                        label += this.formatCurrency(context.parsed);
+                      }
+                      return label;
+                    }
+                  }
+                }
+              },
               cutout: '70%'
             };
           });

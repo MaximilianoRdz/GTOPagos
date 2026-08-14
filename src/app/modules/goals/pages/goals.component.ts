@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Target, Plus, TrendingUp, Calendar, CheckCircle2, ChevronRight, X, Sparkles, DollarSign, Edit, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, Target, Plus, TrendingUp, Calendar, CheckCircle2, ChevronRight, X, Sparkles, DollarSign, Edit, Trash2, PiggyBank, Trophy, CalendarClock } from 'lucide-angular';
 import { GoalsService, Goal } from '../../../core/services/goals/goals.service';
 import { ConfigurationService, UserProfile } from '../../../core/services/configuration/configuration.service';
 import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
@@ -34,19 +34,34 @@ export class GoalsComponent implements OnInit {
   DollarSign = DollarSign;
   Edit = Edit;
   Trash2 = Trash2;
+  PiggyBank = PiggyBank;
+  Trophy = Trophy;
+  CalendarClock = CalendarClock;
 
   goals: ProjectedGoal[] = [];
   userProfile: UserProfile | null = null;
   totalExpenses: number = 0;
   disposableIncome: number = 0;
 
+  get activeGoals() { return this.goals.filter(g => g.progressPercentage < 100); }
+  get completedGoals() { return this.goals.filter(g => g.progressPercentage >= 100); }
+  get totalSavedAmount() { return this.goals.reduce((sum, g) => sum + Number(g.saved_amount), 0); }
+  activeTab: 'active' | 'completed' = 'active';
+
   showModal = false;
   editingGoalId: number | null = null;
+  deletingGoal = false;
   newGoal: Partial<Goal> = {
     name: '',
     target_amount: 0,
-    saved_amount: 0
+    saved_amount: 0,
+    target_date: null
   };
+
+  showAddFundsModal = false;
+  addFundsAmount: number | null = null;
+  selectedGoalForFunds: Goal | null = null;
+  savingFunds = false;
 
   loading = true;
 
@@ -99,14 +114,31 @@ export class GoalsComponent implements OnInit {
     let rec = 0;
     
     if (remaining > 0) {
-      if (this.disposableIncome > 0) {
-        // Let's recommend a realistic savings plan (e.g. 30% of disposable income)
-        const savingsCapacity = this.disposableIncome * 0.3;
-        months = Math.ceil(remaining / savingsCapacity);
-        rec = remaining / months;
+      if (goal.target_date) {
+        // Calculate months between today and target date
+        const target = new Date(goal.target_date);
+        const today = new Date();
+        const diffTime = target.getTime() - today.getTime();
+        const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
+        
+        if (diffMonths > 0) {
+          months = diffMonths;
+          rec = remaining / months;
+        } else {
+          // Date is in the past or this month
+          months = 1;
+          rec = remaining;
+        }
       } else {
-        months = 999; // infinite
-        rec = 0;
+        if (this.disposableIncome > 0) {
+          // Let's recommend a realistic savings plan (e.g. 30% of disposable income)
+          const savingsCapacity = this.disposableIncome * 0.3;
+          months = Math.ceil(remaining / savingsCapacity);
+          rec = remaining / months;
+        } else {
+          months = 999; // infinite
+          rec = 0;
+        }
       }
     }
 
@@ -127,11 +159,12 @@ export class GoalsComponent implements OnInit {
       this.newGoal = { 
         name: goal.name, 
         target_amount: goal.target_amount, 
-        saved_amount: goal.saved_amount 
+        saved_amount: goal.saved_amount,
+        target_date: goal.target_date || null
       };
     } else {
       this.editingGoalId = null;
-      this.newGoal = { name: '', target_amount: 0, saved_amount: 0 };
+      this.newGoal = { name: '', target_amount: 0, saved_amount: 0, target_date: null };
     }
     this.showModal = true;
   }
@@ -178,24 +211,73 @@ export class GoalsComponent implements OnInit {
   }
 
   deleteGoal(id: number) {
-    if (confirm('¿Estás seguro de que deseas eliminar esta meta?')) {
-      this.goalsService.deleteGoal(id).subscribe({
-        next: () => {
-          this.goals = this.goals.filter(g => g.id !== id);
-          this.alert.show('Meta eliminada', 'success');
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.alert.show('Error eliminando la meta', 'error');
-        }
-      });
-    }
+    if (this.deletingGoal) return;
+    this.alert.askConfirm('¿Eliminar meta?', 'Esta acción eliminará la meta permanentemente y no podrá recuperarse.').then(confirmed => {
+      if (confirmed) {
+        this.deletingGoal = true;
+        this.goalsService.deleteGoal(id).subscribe({
+          next: () => {
+            this.goals = this.goals.filter(g => g.id !== id);
+            this.alert.show('Meta eliminada', 'success');
+            this.deletingGoal = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.alert.show('Error eliminando la meta', 'error');
+            this.deletingGoal = false;
+          }
+        });
+      }
+    });
   }
 
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
-    }).format(value);
+  openAddFundsModal(goal: Goal) {
+    this.selectedGoalForFunds = goal;
+    this.addFundsAmount = null;
+    this.showAddFundsModal = true;
+  }
+
+  closeAddFundsModal() {
+    this.showAddFundsModal = false;
+    this.selectedGoalForFunds = null;
+    this.addFundsAmount = null;
+  }
+
+  saveAddFunds() {
+    if (!this.selectedGoalForFunds || !this.addFundsAmount || this.addFundsAmount <= 0) {
+      this.alert.show('Ingresa un monto válido a abonar', 'error');
+      return;
+    }
+
+    this.savingFunds = true;
+    const newSavedAmount = Number(this.selectedGoalForFunds.saved_amount) + Number(this.addFundsAmount);
+
+    this.goalsService.updateGoal(this.selectedGoalForFunds.id!, { saved_amount: newSavedAmount }).subscribe({
+      next: (updatedGoal) => {
+        const index = this.goals.findIndex(g => g.id === this.selectedGoalForFunds!.id);
+        if (index !== -1) {
+          this.goals[index] = this.calculateProjections(updatedGoal);
+        }
+        
+        if (updatedGoal.saved_amount >= updatedGoal.target_amount) {
+          this.alert.show('¡Felicidades! Has completado tu meta 🎉', 'success');
+        } else {
+          this.alert.show('Abono registrado correctamente', 'success');
+        }
+
+        this.savingFunds = false;
+        this.closeAddFundsModal();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.alert.show('Error al registrar el abono', 'error');
+        this.savingFunds = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  formatCurrency(val: number) {
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(val);
   }
 }
