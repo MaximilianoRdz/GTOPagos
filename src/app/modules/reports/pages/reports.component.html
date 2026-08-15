@@ -1,0 +1,158 @@
+<div class="flex h-screen bg-slate-50 dark:bg-slate-900">
+  <main class="flex-1 overflow-auto p-4 md:p-6 xl:p-8">
+    <div class="max-w-screen-xl mx-auto space-y-6">
+  <!-- Header & Filters -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
+          <lucide-icon [img]="FileText" class="w-6 h-6 text-blue-600 dark:text-blue-400"></lucide-icon>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">Generador de Reportes</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Consulta y exporta tus movimientos financieros</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button 
+          (click)="download('pdf')"
+          [disabled]="!reportData || reportData.records.length === 0"
+          class="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm cursor-pointer">
+          <lucide-icon [img]="Download" class="w-4 h-4"></lucide-icon>
+          PDF
+        </button>
+        <button 
+          (click)="download('excel')"
+          [disabled]="!reportData || reportData.records.length === 0"
+          class="flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm cursor-pointer">
+          <lucide-icon [img]="Download" class="w-4 h-4"></lucide-icon>
+          Excel
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Row -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cuenta / Dashboard</label>
+        <select [(ngModel)]="selectedDashboardId" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer">
+          <option *ngFor="let d of dashboards" [value]="d.id">{{ d.name }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Inicio</label>
+        <div class="relative">
+          <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+          <input type="date" [(ngModel)]="startDate" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Fin</label>
+        <div class="relative">
+          <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+          <input type="date" [(ngModel)]="endDate" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer">
+        </div>
+      </div>
+      <div class="flex items-end">
+        <button 
+          (click)="generateReport()"
+          [disabled]="isLoading"
+          class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50 cursor-pointer">
+          <lucide-icon *ngIf="!isLoading" [img]="Search" class="w-4 h-4"></lucide-icon>
+          <span *ngIf="isLoading" class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+          Consultar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="reportData">
+    <!-- Summary KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 bg-green-50 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400">
+            <lucide-icon [img]="TrendingUp" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Ingresos Totales</p>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrencyValue(reportData.summary.total_income) }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400">
+            <lucide-icon [img]="TrendingDown" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Gastos Totales</p>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrencyValue(reportData.summary.total_expense) }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700" [ngClass]="{'border-red-500/30 dark:border-red-500/30': reportData.summary.balance < 0}">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center" 
+               [ngClass]="reportData.summary.balance >= 0 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'">
+            <lucide-icon [img]="DollarSign" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Balance Neto</p>
+            <h3 class="text-2xl font-bold" [ngClass]="reportData.summary.balance >= 0 ? 'text-gray-900 dark:text-white' : 'text-red-600 dark:text-red-400'">
+              {{ reportData.summary.balance < 0 ? '-' : '' }}{{ formatCurrencyValue(reportData.summary.balance >= 0 ? reportData.summary.balance : -reportData.summary.balance) }}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Detalle de Movimientos</h3>
+        <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium">{{ reportData.records.length }} registros</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+              <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Fecha</th>
+              <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Descripción</th>
+              <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Categoría</th>
+              <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Monto</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+            <tr *ngFor="let record of reportData.records" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ record.record_date | date:'dd MMM, yyyy' }}</td>
+              <td class="py-4 px-6">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ record.description }}</p>
+              </td>
+              <td class="py-4 px-6">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                  {{ record.category?.name || 'Sin categoría' }}
+                </span>
+              </td>
+              <td class="py-4 px-6 text-right whitespace-nowrap">
+                <span class="text-sm font-semibold" [ngClass]="record.record_type?.behavior === 'INCOME' ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'">
+                  {{ record.record_type?.behavior === 'INCOME' ? '+' : '-' }}{{ formatCurrencyValue(record.amount) }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="reportData.records.length === 0">
+              <td colspan="4" class="py-12 text-center text-gray-500 dark:text-gray-400">
+                <lucide-icon [img]="FileText" class="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600"></lucide-icon>
+                <p>No hay movimientos en el periodo seleccionado.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+    </div>
+  </main>
+</div>

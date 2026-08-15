@@ -3,7 +3,7 @@ import { SHARED_IMPORTS } from '../../shared/shared.config';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { finalize } from 'rxjs';
-import { AlertsService } from '../../core/services/alerts/alerts.service';
+import { AlertsService } from '../../core/services/alerts/Alerts.service';
 import {
   TrendingUp,
   TrendingDown,

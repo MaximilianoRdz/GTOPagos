@@ -6,6 +6,7 @@ import { AuthGuard } from "../core/guards/auth.guard";
 import { BudgetComponent } from "../modules/budget/budget.component";
 import { DashboardsComponent } from "../modules/budget/dashboards/pages/dashboards.component";
 import { GoalsComponent } from "../modules/goals/pages/goals.component";
+import { ReportsComponent } from "../modules/reports/pages/reports.component";
 
 export const layoutRoutes: Routes = [
   {
@@ -32,6 +33,10 @@ export const layoutRoutes: Routes = [
       {
         path: 'goals',
         component: GoalsComponent,
+      },
+      {
+        path: 'reports',
+        component: ReportsComponent,
       },
     ],
   },
