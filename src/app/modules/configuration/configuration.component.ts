@@ -26,7 +26,7 @@ import {
   CreditCard,
 } from 'lucide-angular';
 import { I18nService } from '../../core/i18n/i18n.service';
-import { AlertsService } from '../../core/services/alerts/alerts.service';
+import { AlertsService } from '../../core/services/alerts/Alerts.service';
 
 
 /* ===================== INTERFACES ===================== */

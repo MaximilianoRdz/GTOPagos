@@ -3,7 +3,7 @@ import { SHARED_IMPORTS } from '../../../../shared/shared.config';
 import { Router } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { forkJoin } from 'rxjs';
-import { AlertsService } from '../../../../core/services/alerts/alerts.service';
+import { AlertsService } from '../../../../core/services/alerts/Alerts.service';
 import {
   Plus,
   Trash2,

@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { RegisterService, RegisterRequest } from '../../../core/services/auth/register.service'
-import { AlertsService } from '../../../core/services/alerts/alerts.service'
+import { AlertsService } from '../../../core/services/alerts/Alerts.service'
 import { LucideAngularModule, User } from 'lucide-angular';
 
 @Component({

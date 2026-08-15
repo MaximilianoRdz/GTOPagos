@@ -5,7 +5,7 @@ import { LucideAngularModule, Target, Plus, TrendingUp, Calendar, CheckCircle2, 
 import { GoalsService, Goal } from '../../../core/services/goals/goals.service';
 import { ConfigurationService, UserProfile } from '../../../core/services/configuration/configuration.service';
 import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
-import { AlertsService } from '../../../core/services/alerts/alerts.service';
+import { AlertsService } from '../../../core/services/alerts/Alerts.service';
 import { forkJoin } from 'rxjs';
 
 interface ProjectedGoal extends Goal {
