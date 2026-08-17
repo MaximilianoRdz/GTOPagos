@@ -201,31 +201,6 @@
                     </div>
                   </div>
 
-                  <!-- 2FA -->
-                  <div class="border-t dark:border-gray-600 pt-6">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <h4 class="font-medium text-gray-900 dark:text-white"> Autenticación de dos factores </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">
-                          Agrega una capa extra de seguridad a tu cuenta
-                        </p>
-                      </div>
-
-                      <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" [(ngModel)]="securityData.twoFactorEnabled" (change)="toggle2FA($any($event.target).checked)" class="sr-only peer"/>
-                        <div
-                          class="w-11 h-6 bg-gray-200 peer-focus:ring-4
-                                peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800
-                                rounded-full peer dark:bg-gray-700
-                                peer-checked:after:translate-x-full
-                                after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                                after:bg-white after:border after:rounded-full after:h-5 after:w-5
-                                after:transition-all peer-checked:bg-emerald-600">
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-
                   <!-- Guardar -->
                   <div class="flex justify-end">
                     <button
@@ -261,6 +236,7 @@
                           name="notificationMethod"
                           value="email"
                           [(ngModel)]="notificationMethod"
+                          (ngModelChange)="handleMethodChange()"
                           class="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 focus:ring-emerald-500
                                 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2
                                 dark:bg-gray-700 dark:border-gray-600"
@@ -274,6 +250,7 @@
                           name="notificationMethod"
                           value="sms"
                           [(ngModel)]="notificationMethod"
+                          (ngModelChange)="handleMethodChange()"
                           class="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 focus:ring-emerald-500
                                 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2
                                 dark:bg-gray-700 dark:border-gray-600"
@@ -287,6 +264,7 @@
                           name="notificationMethod"
                           value="both"
                           [(ngModel)]="notificationMethod"
+                          (ngModelChange)="handleMethodChange()"
                           class="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 focus:ring-emerald-500
                                 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2
                                 dark:bg-gray-700 dark:border-gray-600"
