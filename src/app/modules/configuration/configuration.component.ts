@@ -41,7 +41,6 @@ interface SecurityData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-  twoFactorEnabled: boolean;
 }
 
 export type NotificationMethod = 'email' | 'sms' | 'both';
@@ -179,7 +178,6 @@ export class ConfigurationComponent {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-    twoFactorEnabled: false,
   };
 
   // Método de notificación
@@ -312,16 +310,23 @@ export class ConfigurationComponent {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
 
-  toggle2FA(enabled: boolean): void {
-    this.alert.show('La autenticación de dos pasos estará disponible próximamente', 'info');
-    setTimeout(() => {
-      this.securityData.twoFactorEnabled = false;
-      this.cdr.detectChanges();
-    }, 200);
-  }
-
   updateNotificationSetting(key: NotificationKey, value: boolean): void {
     this.notificationSettings[key] = value;
+    
+    // Convertir de camelCase a snake_case para el backend
+    const snakeCaseKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    
+    this.configService.updateProfile({ [snakeCaseKey]: value }).subscribe({
+      next: () => this.alert.show('Preferencia actualizada exitosamente', 'success'),
+      error: () => this.alert.show('Error al guardar preferencia', 'error')
+    });
+  }
+
+  handleMethodChange(): void {
+    this.configService.updateProfile({ notification_method: this.notificationMethod }).subscribe({
+      next: () => this.alert.show('Método de notificación actualizado', 'success'),
+      error: () => this.alert.show('Error al guardar método', 'error')
+    });
   }
 
   setTheme(theme: 'light' | 'dark' | 'auto'): void {
@@ -502,6 +507,22 @@ export class ConfigurationComponent {
         (this.userProfile as any)._temp_frequency_id = frequencyId;
         if (this.incomeFrequencies.length) {
           this.userProfile.income_frequency = this.incomeFrequencies.find(f => f.id === frequencyId) ?? null;
+        }
+
+        // ---- Notifications ----
+        if (profile.notification_method) {
+          this.notificationMethod = profile.notification_method as NotificationMethod;
+        }
+        
+        if (profile.budget_alerts !== undefined) {
+          this.notificationSettings = {
+            budgetAlerts: profile.budget_alerts ?? true,
+            goalReminders: profile.goal_reminders ?? true,
+            weeklyReports: profile.weekly_reports ?? false,
+            monthlyReports: profile.monthly_reports ?? true,
+            transactionAlerts: profile.transaction_alerts ?? true,
+            paymentReminders: profile.payment_reminders ?? true,
+          };
         }
 
         this.loadingProfile = false;

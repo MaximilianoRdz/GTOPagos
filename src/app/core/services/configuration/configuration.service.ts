@@ -23,6 +23,14 @@ export interface UserProfile {
   currency: Currency | null;
   income_frequency: IncomeFrequency | null;
   phone?: string;
+  notification_method?: string;
+  budget_alerts?: boolean;
+  goal_reminders?: boolean;
+  weekly_reports?: boolean;
+  monthly_reports?: boolean;
+  transaction_alerts?: boolean;
+  payment_reminders?: boolean;
+  [key: string]: any;
 }
 
 export interface UserProfilePayload {
@@ -32,6 +40,14 @@ export interface UserProfilePayload {
   currency_id?: number | null;
   income_frequency_id?: number | null;
   phone?: string;
+  notification_method?: string;
+  budget_alerts?: boolean;
+  goal_reminders?: boolean;
+  weekly_reports?: boolean;
+  monthly_reports?: boolean;
+  transaction_alerts?: boolean;
+  payment_reminders?: boolean;
+  [key: string]: any;
 }
 
 @Injectable({
