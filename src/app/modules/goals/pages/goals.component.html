@@ -1,0 +1,137 @@
+<div class="p-6 text-gray-900 dark:text-gray-100 w-full h-full">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div id="tour-goals-section" class="flex items-center justify-between mb-8">
+      <div id="tour-goals-header">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <lucide-angular [img]="Target" class="w-6 h-6 text-emerald-500"></lucide-angular>
+          Mis Metas
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">
+          Establece objetivos y calcula tu plan de ahorro ideal
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="startTour()"
+          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
+          title="Ver guía interactiva de metas de ahorro"
+        >
+          <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
+          <span>Guía de Metas</span>
+        </button>
+
+        <button
+          id="tour-goals-create"
+          (click)="openModal()"
+          class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm font-medium cursor-pointer"
+        >
+          <lucide-angular [img]="Plus" class="w-5 h-5"></lucide-angular>
+          Nueva Meta
+        </button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="flex items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    } @else {
+      <!-- Dashboard de Capacidad -->
+      <div id="tour-goals-capacity" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <app-stat-card
+          title="Ingreso Mensual"
+          [value]="formatCurrency(userProfile?.salary || 0)"
+          [icon]="DollarSign"
+          colorScheme="blue"
+        />
+        <app-stat-card
+          title="Gastos Mensuales"
+          [value]="formatCurrency(totalExpenses)"
+          [icon]="TrendingUp"
+          colorScheme="rose"
+        />
+        <app-stat-card
+          title="Capacidad de Ahorro"
+          [value]="formatCurrency(disposableIncome)"
+          [icon]="Sparkles"
+          colorScheme="emerald"
+        />
+      </div>
+
+      <!-- Contenedor Principal (Grid 3 Columnas) -->
+      <div id="tour-goals-list" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna Izquierda (Metas) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Tabs -->
+          <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 w-fit">
+            <button
+              (click)="activeTab = 'active'"
+              [class]="'px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ' + (activeTab === 'active' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300')"
+            >
+              Activas ({{ activeGoals.length }})
+            </button>
+            <button
+              (click)="activeTab = 'completed'"
+              [class]="'px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ' + (activeTab === 'completed' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300')"
+            >
+              Logradas ({{ completedGoals.length }})
+            </button>
+          </div>
+
+          @if ((activeTab === 'active' ? activeGoals : completedGoals).length === 0) {
+            <app-empty-state
+              [icon]="activeTab === 'active' ? Target : Trophy"
+              [title]="activeTab === 'active' ? 'No tienes metas aún' : 'Aún no has logrado ninguna meta'"
+              [description]="activeTab === 'active' ? 'Crea una meta para descubrir cuánto tiempo te tomará alcanzarla.' : '¡Sigue ahorrando en tus metas activas para verlas aquí!'"
+              [actionText]="activeTab === 'active' ? 'Crear mi primera meta' : ''"
+              [bordered]="true"
+              padding="large"
+              (actionClick)="openModal()"
+            />
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              @for (goal of (activeTab === 'active' ? activeGoals : completedGoals); track goal.id) {
+                <app-goal-card
+                  [goal]="goal"
+                  [isCompleted]="activeTab === 'completed'"
+                  (addFunds)="openAddFundsModal($event)"
+                  (edit)="openModal($event)"
+                  (delete)="deleteGoal($event)"
+                />
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Columna Derecha (Resumen) -->
+        <div class="lg:col-span-1 space-y-6">
+          <app-goals-summary-card
+            [activeGoalsCount]="activeGoals.length"
+            [totalSavedAmount]="totalSavedAmount"
+          />
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal Nueva / Editar Meta -->
+<app-goal-modal
+  [isOpen]="showModal"
+  [editingGoal]="editingGoal"
+  (close)="closeModal()"
+  (save)="onSaveGoal($event)"
+  (validationError)="onValidationError($event)"
+/>
+
+<!-- Modal Abonar a Meta -->
+<app-add-funds-modal
+  [isOpen]="showAddFundsModal"
+  [goal]="selectedGoalForFunds"
+  [savingFunds]="savingFunds"
+  (close)="closeAddFundsModal()"
+  (save)="onSaveAddFunds($event)"
+  (validationError)="onValidationError($event)"
+/>

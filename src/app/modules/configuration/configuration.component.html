@@ -1,0 +1,115 @@
+<div class="flex flex-col h-full bg-transparent">
+  <div class="flex-1 flex flex-col min-w-0">
+    <main class="flex-1 p-6">
+      <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div id="tour-config-header" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-1">
+              Configuración
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 text-sm">
+              Personaliza tu experiencia y gestiona tu cuenta
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="startTour()"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 self-start sm:self-auto"
+            title="Ver guía interactiva de configuración"
+          >
+            <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
+            <span>Guía de Configuración</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+          <!-- Sidebar -->
+          <div class="lg:col-span-1 flex-shrink-0">
+            <div id="tour-config-tabs" class="bg-white/60 dark:bg-slate-900/50 rounded-xl shadow-sm border border-white/50 dark:border-slate-700/50 p-4">
+              <nav class="space-y-1">
+                @for (tab of settingsTabs; track tab.id) {
+                  <button
+                    type="button"
+                    (click)="setActiveTab(tab.id)"
+                    [class]="'w-full flex items-center px-3 py-2.5 rounded-lg transition-all ' +
+                    (activeTab === tab.id
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 cursor-pointer'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-transparent cursor-pointer')"
+                  >
+                    <lucide-icon [img]="tab.icon" class="w-5 h-5 mr-3"></lucide-icon>
+                    <span class="text-sm font-medium">{{ tab.label }}</span>
+                  </button>
+                }
+              </nav>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="lg:col-span-3">
+            <div id="tour-config-content" class="bg-white/60 dark:bg-slate-900/50 rounded-xl shadow-sm border border-white/50 dark:border-slate-700/50 p-6">
+
+              <!-- ================= PERFIL ================= -->
+              @if (isProfileTab) {
+                <app-profile-settings
+                  [data]="profileData"
+                  [loading]="loadingProfile"
+                  (save)="handleProfileSave($event)"
+                />
+              }
+
+              <!-- ================= SEGURIDAD ================= -->
+              @if (isSecurityTab) {
+                <app-security-settings
+                  [loading]="loadingSecurity"
+                  (save)="handleSecuritySave($event)"
+                />
+              }
+
+              <!-- ================= APARIENCIA ================= -->
+              @if (isAppearanceTab) {
+                <app-appearance-settings
+                  [currentTheme]="appearanceSettings.theme"
+                  [currentLanguage]="appearanceSettings.language"
+                  (themeChange)="setTheme($event)"
+                  (languageChange)="setLanguage($event)"
+                  (restartTour)="restartTour()"
+                />
+              }
+
+              <!-- ================= CONFIGURACIÓN FINANCIERA ================= -->
+              @if (isFinancialTab) {
+                <app-financial-settings
+                  [profile]="userProfile"
+                  [currencies]="currencies"
+                  [incomeFrequencies]="incomeFrequencies"
+                  [loading]="loadingFinancial"
+                  (save)="handleFinancialSave($event)"
+                />
+              }
+
+              <!-- ================= CATEGORÍAS ================= -->
+              @if (isCategoriesTab) {
+                <app-categories-settings
+                  [categories]="categories"
+                  [recordTypes]="recordTypes"
+                  [loading]="loadingCategories"
+                  [creatingCategory]="creatingCategory"
+                  [(showNewCategoryModal)]="showNewCategoryModal"
+                  (createCategory)="handleCreateCategory($event)"
+                  (deleteCategory)="handleDeleteCategory($event)"
+                  (validationError)="handleValidationError($event)"
+                />
+              }
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

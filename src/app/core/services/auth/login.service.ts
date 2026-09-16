@@ -10,12 +10,13 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   user: {
+    id: number;
     name: string;
     email: string;
-    salary: number;
-    currency: string;
   };
   access_token: string;
+  refresh_token?: string;
+  is_demo?: boolean;
 }
 
 @Injectable({
@@ -31,4 +32,7 @@ export class LoginService {
     return this.http.post<LoginResponse>(this.apiUrl, data);
   }
 
+  loginAsDemo(): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/demo-login/`, {});
+  }
 }

@@ -1,0 +1,457 @@
+<div class=" p-4 md:p-6 xl:p-8 2xl:p-10 text-gray-900 dark:text-gray-100">
+ <div class="max-w-screen-2xl mx-auto space-y-6 md:space-y-10">
+ <div class="mb-6">
+ <button
+ (click)="goBack()"
+ class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl
+ bg-white/60 dark:bg-slate-900/50 
+ border border-gray-200 dark:border-slate-700
+ hover:bg-gray-100 dark:hover:bg-slate-800
+ hover:shadow-md hover:-translate-y-0.5
+ transition-all duration-200 cursor-pointer">
+
+ <lucide-angular [img]="ChevronLeft" class="w-4 h-4"></lucide-angular>
+ <span class="font-medium">Volver a dashboards</span>
+ </button>
+ </div>
+ <!-- HEADER -->
+ <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+ <div>
+ <h2 class="text-3xl font-bold tracking-tight text-gray-800 dark:text-gray-100 mb-2">{{ selectedDashboard?.name || 'Dashboard' }}</h2>
+ <p class="text-base text-gray-500 dark:text-gray-500">
+ {{
+ selectedDashboard?.description ||
+ ( isExpenseOnly ? 'Gestiona tus gastos' : isIncomeOnly ? 'Gestiona tus ingresos' : 'Gestiona tus ingresos y gastos')
+ }}
+ </p>
+ </div>
+
+ <button
+ (click)="openCreateModal()"
+ class="bg-emerald-600 hover:bg-emerald-700
+ text-white px-5 py-3 rounded-2xl
+ font-semibold shadow-lg shadow-emerald-500/20
+ transition-all duration-200 cursor-pointer">
+
+ <div class="flex items-center gap-2">
+ <lucide-angular [img]="Plus" class="w-5 h-5"></lucide-angular>
+ <span>Agregar {{ currentRecordTypeName }}</span>
+ </div>
+ </button>
+ </div>
+
+ <!-- ERROR -->
+ @if (error && !loading) {
+ <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-6">
+ <p class="text-red-800 dark:text-red-300">{{ error }}</p>
+ </div>
+ }
+
+ <!-- CONTENT -->
+ @if (dashboardData && !loading) {
+ <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+ 
+ <!-- COLUMNA IZQUIERDA (Principal) -->
+ <div class="lg:col-span-8 space-y-6">
+ 
+ <div class="flex flex-col xl:flex-row items-start xl:items-center gap-4 mb-6">
+ <!-- TABS (Segmented Control) -->
+ @if (isBoth) {
+ <div class="flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/50 w-full sm:w-auto border border-slate-200/50 dark:border-slate-700/50">
+ <button
+ type="button"
+ (click)="switchTab('expenses')"
+ class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+ [ngClass]="isExpenses
+ ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+ : 'text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'">
+ <lucide-angular [img]="TrendingDown" class="w-4 h-4"></lucide-angular>
+ Gastos
+ </button>
+ <button
+ type="button"
+ (click)="switchTab('income')"
+ class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+ [ngClass]="!isExpenses
+ ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+ : 'text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'">
+ <lucide-angular [img]="TrendingUp" class="w-4 h-4"></lucide-angular>
+ Ingresos
+ </button>
+ </div>
+ }
+
+ <!-- PERIOD TABS (Segmented Control) -->
+ <div class="flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/50 w-full sm:w-auto border border-slate-200/50 dark:border-slate-700/50 overflow-x-auto">
+ <button
+ type="button"
+ (click)="switchPeriod('month')"
+ class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer whitespace-nowrap"
+ [ngClass]="selectedPeriod === 'month'
+ ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+ : 'text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'">
+ Mes Completo
+ </button>
+ <button
+ type="button"
+ (click)="switchPeriod('q1')"
+ class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer whitespace-nowrap"
+ [ngClass]="selectedPeriod === 'q1'
+ ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+ : 'text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'">
+ 1ra Quincena
+ </button>
+ <button
+ type="button"
+ (click)="switchPeriod('q2')"
+ class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer whitespace-nowrap"
+ [ngClass]="selectedPeriod === 'q2'
+ ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+ : 'text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'">
+ 2da Quincena
+ </button>
+ </div>
+ </div>
+
+  <!-- ALERTA DE PRESUPUESTO SUPERADO -->
+  @if (isExpenses && periodLimit > 0 && isOverLimit) {
+    <app-alert-banner
+      variant="danger"
+      [icon]="AlertTriangle"
+      title="¡Límite de presupuesto superado!"
+      [badgeText]="(budgetUsagePercentage | number:'1.0-1') + '% utilizado'"
+      class="block mb-6"
+    >
+      <p class="text-xs sm:text-sm text-red-700 dark:text-red-300 mt-1 leading-relaxed">
+        Tus gastos de este periodo (<strong>{{ formatCurrency(dashboardData.expense_summary.total_amount) }}</strong>) han superado tu límite de <strong>{{ formatCurrency(periodLimit) }}</strong> por un exceso de <strong class="text-red-950 dark:text-red-100 font-extrabold">{{ formatCurrency(exceededAmount) }}</strong>.
+      </p>
+    </app-alert-banner>
+  }
+
+  <!-- ALERTA DE PRESUPUESTO CERCA DEL LÍMITE -->
+  @if (isExpenses && periodLimit > 0 && isNearLimit) {
+    <app-alert-banner
+      variant="warning"
+      [icon]="AlertTriangle"
+      title="¡Cuidado! Estás cerca de tu límite de presupuesto"
+      [badgeText]="(budgetUsagePercentage | number:'1.0-1') + '% utilizado'"
+      class="block mb-6"
+    >
+      <p class="text-xs sm:text-sm text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
+        Has acumulado <strong>{{ formatCurrency(dashboardData.expense_summary.total_amount) }}</strong> en gastos de tu límite de <strong>{{ formatCurrency(periodLimit) }}</strong>. Te restan <strong class="text-amber-950 dark:text-amber-100 font-extrabold">{{ formatCurrency(remainingBudget) }}</strong> disponibles para este periodo.
+      </p>
+    </app-alert-banner>
+  }
+
+ <!-- SUMMARY CARDS (Atomic Molecule) -->
+ <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 mb-8">
+ @if (isExpenses) {
+ <app-stat-card
+   title="Debo este periodo"
+   [value]="formatCurrency(dashboardData.expense_summary.total_amount)"
+   [subtitle]="dashboardData.expense_summary.total_records + ' registros en total'"
+   [icon]="DollarSign"
+   colorScheme="neutral"
+ />
+ <app-stat-card
+   title="Pagado"
+   [value]="formatCurrency(dashboardData.expense_summary.paid_amount)"
+   [subtitle]="dashboardData.expense_summary.paid_records + ' pagos cubiertos'"
+   [icon]="CheckCircle"
+   colorScheme="emerald"
+ />
+ <app-stat-card
+   title="Falta pagar"
+   [value]="formatCurrency(dashboardData.expense_summary.pending_amount)"
+   [subtitle]="dashboardData.expense_summary.pending_records + ' por liquidar'"
+   [icon]="Clock"
+   colorScheme="amber"
+ />
+ }
+
+ @if (!isExpenses) {
+ <app-stat-card
+   title="Total del periodo"
+   [value]="formatCurrency(dashboardData.income_summary.total_amount)"
+   [subtitle]="dashboardData.income_summary.total_records + ' registros'"
+   [icon]="DollarSign"
+   colorScheme="blue"
+ />
+ <app-stat-card
+   title="Recibido"
+   [value]="formatCurrency(dashboardData.income_summary.paid_amount)"
+   [subtitle]="dashboardData.income_summary.paid_records + ' recibos'"
+   [icon]="CheckCircle"
+   colorScheme="emerald"
+ />
+ <app-stat-card
+   title="Por recibir"
+   [value]="formatCurrency(dashboardData.income_summary.pending_amount)"
+   [subtitle]="dashboardData.income_summary.pending_records + ' pendientes'"
+   [icon]="Clock"
+   colorScheme="amber"
+ />
+ }
+ </div>
+
+ <!-- HISTORIAL DE MOVIMIENTOS (Agrupado) -->
+ <div class="bg-white/60 dark:bg-slate-900/50 rounded-3xl border border-white/50 dark:border-slate-700/50 overflow-hidden shadow-sm">
+ 
+ <div class="p-6 md:px-8 md:py-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-800/50">
+ <div>
+ <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+ {{ isExpenses ? 'Historial de Gastos' : 'Historial de Ingresos' }}
+ </h3>
+ <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">Todos tus movimientos del periodo</p>
+ </div>
+  <div class="flex gap-2 bg-white/60 dark:bg-slate-900/50 p-1 rounded-xl border border-white/50 dark:border-slate-700/50 shadow-sm overflow-x-auto">
+  <button (click)="setFilter('all')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5" [ngClass]="recordFilter === 'all' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200'">
+    <span>Todos</span>
+    <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold">{{ allCount }}</span>
+  </button>
+  <button (click)="setFilter('pending')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5" [ngClass]="recordFilter === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400' : 'text-slate-500 hover:text-yellow-700 dark:text-slate-500 dark:hover:text-yellow-400'">
+    <span>Pendientes</span>
+    @if (pendingCount > 0) {
+      <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-yellow-200 dark:bg-yellow-800/60 text-yellow-800 dark:text-yellow-300 font-bold">{{ pendingCount }}</span>
+    }
+  </button>
+  <button (click)="setFilter('msi')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5" [ngClass]="recordFilter === 'msi' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400' : 'text-slate-500 hover:text-blue-700 dark:text-slate-500 dark:hover:text-blue-400'">
+    <span>MSI</span>
+    @if (msiCount > 0) {
+      <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-blue-200 dark:bg-blue-800/60 text-blue-800 dark:text-blue-300 font-bold">{{ msiCount }}</span>
+    }
+  </button>
+  <button (click)="setFilter('recurrent')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5" [ngClass]="recordFilter === 'recurrent' ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400' : 'text-slate-500 hover:text-purple-700 dark:text-slate-500 dark:hover:text-purple-400'">
+    <span>Recurrentes</span>
+    @if (recurrentCount > 0) {
+      <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-purple-200 dark:bg-purple-800/60 text-purple-800 dark:text-purple-300 font-bold">{{ recurrentCount }}</span>
+    }
+  </button>
+  </div>
+  </div>
+
+  @if (loadingRecords && currentPage === 1) {
+  <div class="p-6 md:px-8 space-y-4">
+  @for (i of [1, 2, 3]; track i) {
+  <div class="animate-pulse flex items-center justify-between py-2">
+  <div class="flex items-center gap-4">
+  <div class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+  <div class="space-y-2">
+  <div class="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
+  <div class="h-3 w-48 bg-slate-200 dark:bg-slate-700 rounded"></div>
+  </div>
+  </div>
+  <div class="h-6 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+  </div>
+  }
+  </div>
+  }
+
+  @if (!loadingRecords && filteredRecords.length === 0) {
+  <app-empty-state
+    [icon]="emptyStateIcon"
+    [title]="emptyStateTitle"
+    [description]="emptyStateDescription"
+    [actionText]="recordFilter === 'all' ? (isExpenses ? 'Registrar gasto' : 'Registrar ingreso') : ''"
+    padding="large"
+    (actionClick)="openCreateModal()"
+  />
+  }
+
+  <div class="divide-y divide-slate-100 dark:divide-slate-800">
+  @for (record of filteredRecords; track record.id) {
+    <app-record-item
+      [record]="record"
+      [isExpense]="isRecordExpense(record)"
+      [isPaid]="isRecordPaid(record)"
+      [isPending]="isRecordPending(record)"
+      (edit)="openEditModal($event)"
+      (delete)="deleteRecord($event)"
+    />
+  }
+  </div>
+
+ @if (recordsData?.next) {
+ <div class="p-4 border-t border-slate-100 dark:border-slate-700 text-center">
+ <button (click)="loadMoreRecords()" [disabled]="loadingRecords" class="px-6 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+ {{ loadingRecords ? 'Cargando...' : 'Cargar más movimientos' }}
+ </button>
+ </div>
+ }
+ </div>
+ </div>
+
+ <!-- COLUMNA DERECHA (Panel Lateral) -->
+  <div class="lg:col-span-4 space-y-4 mt-8 lg:mt-0 lg:sticky lg:top-8">
+  
+  <!-- CARD UNIFICADA: CONTROL DE PRESUPUESTO & GASTOS -->
+  @if (isExpenses) {
+  <div class="bg-white/70 dark:bg-slate-900/60 rounded-2xl md:rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm backdrop-blur-md relative overflow-hidden">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Presupuesto del Periodo</h3>
+        <p class="text-[11px] text-slate-500 font-medium">Control de gastos {{ currentPeriodLabel.toLowerCase() }}</p>
+      </div>
+      <app-badge [variant]="isOverLimit ? 'danger' : isNearLimit ? 'warning' : 'success'">
+        {{ currentPeriodLabel }}
+      </app-badge>
+    </div>
+
+    <div class="flex items-baseline justify-between mb-2">
+      <div>
+        <p class="text-2xl xl:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+          {{ formatCurrency(dashboardData.expense_summary.total_amount) }}
+        </p>
+        @if (periodLimit > 0) {
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">
+            de {{ formatCurrency(periodLimit) }} {{ isCustomBudget ? 'límite asignado' : 'límite disponible' }}
+          </p>
+        }
+      </div>
+      @if (periodLimit > 0) {
+        <div class="text-right">
+          <span class="text-lg font-black"
+                [ngClass]="isOverLimit ? 'text-red-600 dark:text-red-400' : isNearLimit ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'">
+            {{ budgetUsagePercentage | number:'1.0-0' }}%
+          </span>
+        </div>
+      }
+    </div>
+
+    <!-- Progress Bar -->
+    @if (periodLimit > 0) {
+      <app-progress-bar
+        [value]="budgetUsagePercentage"
+        variant="dynamic"
+        height="sm"
+        class="block mb-3"
+      />
+    }
+
+    <!-- Micro-Pills de Información Clave -->
+    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+      <div class="p-2 rounded-xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100/80 dark:border-slate-700/40">
+        <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500 block">
+          {{ isOverLimit ? 'Sobregiro' : 'Disponible' }}
+        </span>
+        <p class="font-bold text-xs mt-0.5" [ngClass]="isOverLimit ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">
+          {{ formatCurrency(isOverLimit ? exceededAmount : remainingBudget) }}
+        </p>
+      </div>
+      <div class="p-2 rounded-xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100/80 dark:border-slate-700/40 text-right">
+        <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500 block">Por liquidar</span>
+        <p class="font-bold text-xs mt-0.5 text-yellow-600 dark:text-yellow-400">
+          {{ formatCurrency(dashboardData.expense_summary.pending_amount) }}
+        </p>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- CARD UNIFICADA: INGRESOS DEL PERIODO -->
+  @if (!isExpenses) {
+  <div class="bg-white/70 dark:bg-slate-900/60 rounded-2xl md:rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm backdrop-blur-md relative overflow-hidden">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Ingresos del Periodo</h3>
+        <p class="text-[11px] text-slate-500 font-medium">{{ currentPeriodLabel }}</p>
+      </div>
+      <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400">
+        {{ currentPeriodLabel }}
+      </span>
+    </div>
+
+    <div class="mb-3">
+      <p class="text-2xl xl:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+        {{ formatCurrency(dashboardData.income_summary.total_amount) }}
+      </p>
+      <p class="text-[11px] text-slate-500 font-medium mt-0.5">
+        {{ dashboardData.income_summary.total_records }} registros en total
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+      <div class="p-2 rounded-xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100/80 dark:border-slate-700/40">
+        <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500 block">Recibido</span>
+        <p class="font-bold text-xs mt-0.5 text-emerald-600 dark:text-emerald-400">
+          {{ formatCurrency(dashboardData.income_summary.paid_amount) }}
+        </p>
+      </div>
+      <div class="p-2 rounded-xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100/80 dark:border-slate-700/40 text-right">
+        <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500 block">Por recibir</span>
+        <p class="font-bold text-xs mt-0.5 text-yellow-600 dark:text-yellow-400">
+          {{ formatCurrency(dashboardData.income_summary.pending_amount) }}
+        </p>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- PRÓXIMOS PAGOS (Compacto) -->
+  @if (dashboardData.pending_to_pay && dashboardData.pending_to_pay.length > 0) {
+  <div class="bg-white/70 dark:bg-slate-900/60 rounded-2xl md:rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm backdrop-blur-md">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Próximos Pagos</h3>
+        <p class="text-[11px] text-slate-500 font-medium">Atención prioritaria</p>
+      </div>
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-xs font-bold text-red-600 dark:text-red-400 shadow-sm">
+        {{ dashboardData.pending_to_pay.length }}
+      </span>
+    </div>
+    
+    <div class="space-y-2.5">
+      @for (pending of dashboardData.pending_to_pay; track pending.id) {
+      <div class="p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white/70 dark:bg-slate-800/50 hover:border-orange-300 dark:hover:border-orange-500/40 transition-colors flex items-center justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <h4 class="font-bold text-slate-900 dark:text-slate-100 text-xs truncate">{{ pending.description }}</h4>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{{ pending.category || 'General' }}</span>
+            @if (pending.total_installments > 1) {
+              <span class="text-[10px] text-blue-600 dark:text-blue-400 font-medium">({{ pending.current_installment || 1 }}/{{ pending.total_installments }})</span>
+            }
+          </div>
+        </div>
+
+        <div class="text-right shrink-0 flex items-center gap-2">
+          <p class="text-xs font-black tracking-tight text-slate-900 dark:text-white">{{ formatCurrency(toNumber(pending.amount)) }}</p>
+          <button (click)="markAsPaid(pending.id)" title="Marcar como pagado" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all cursor-pointer">
+            Pagar
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- CONSEJOS FINANCIEROS (Compacto) -->
+  <div class="bg-white/70 dark:bg-slate-900/60 rounded-2xl md:rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm backdrop-blur-md relative overflow-hidden">
+    <app-financial-advice-card [context]="adviceContext" [allowToggle]="true" />
+  </div>
+
+  </div>
+  </div>
+  }
+
+ </div>
+</div>
+<!-- ORGANISM: RECORD MODAL -->
+<app-record-modal
+  [isOpen]="showCreateModal"
+  [editingRecord]="editingRecord"
+  [isExpenses]="isExpenses"
+  [currentRecordTypeName]="currentRecordTypeName"
+  [periodLimit]="periodLimit"
+  [currentPeriodLabel]="currentPeriodLabel"
+  [categories]="categories"
+  [paymentStatuses]="paymentStatuses"
+  [paidStatusId]="paidStatusId"
+  [pendingStatusId]="pendingStatusId"
+  [currentExpenseAmount]="dashboardData?.expense_summary?.total_amount || 0"
+  [creatingRecord]="creatingRecord"
+  [installmentOptions]="installmentOptions"
+  (close)="closeCreateModal()"
+  (save)="handleModalSave($event)"
+  (validationError)="onValidationError($event)"
+/>

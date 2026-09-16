@@ -1,0 +1,90 @@
+<div class="flex-1 w-full h-full p-4 md:p-6 xl:p-8 text-gray-900 dark:text-gray-100">
+  <div class="max-w-screen-xl mx-auto flex flex-col gap-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Generador de Reportes</h2>
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Audita tus movimientos y descarga informes financieros detallados</p>
+      </div>
+
+      <button
+        type="button"
+        (click)="startTour()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 self-start sm:self-auto"
+        title="Ver guía interactiva de reportes"
+      >
+        <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
+        <span>Guía de Reportes</span>
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <app-report-filters
+      id="tour-reports-filters"
+      [dashboards]="dashboards"
+      [selectedDashboardId]="selectedDashboardId"
+      (selectedDashboardIdChange)="selectedDashboardId = $event"
+      [startDate]="startDate"
+      (startDateChange)="startDate = $event"
+      [endDate]="endDate"
+      (endDateChange)="endDate = $event"
+      [isLoading]="isLoading"
+      [canDownload]="canDownload"
+      (generate)="generateReport()"
+      (downloadPdf)="download('pdf')"
+      (downloadExcel)="download('excel')"
+    />
+
+    @if (reportData) {
+      <!-- Summary KPIs -->
+      <div id="tour-reports-kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        <app-stat-card
+          title="Ingresos Totales"
+          [value]="formatCurrencyValue(reportData.summary.total_income)"
+          [icon]="TrendingUp"
+          colorScheme="emerald"
+        />
+        <app-stat-card
+          title="Gastos Totales"
+          [value]="formatCurrencyValue(reportData.summary.total_expense)"
+          [icon]="TrendingDown"
+          colorScheme="rose"
+        />
+        <app-stat-card
+          title="Balance Neto"
+          [value]="(reportData.summary.balance < 0 ? '-' : '') + formatCurrencyValue(reportData.summary.balance >= 0 ? reportData.summary.balance : -reportData.summary.balance)"
+          [icon]="DollarSign"
+          [colorScheme]="reportData.summary.balance >= 0 ? 'blue' : 'rose'"
+          [isNegative]="reportData.summary.balance < 0"
+        />
+      </div>
+
+      <!-- Data Table -->
+      <app-report-table id="tour-reports-table" [records]="reportData.records" />
+    } @else {
+      <!-- Placeholder mientras se cargan los datos o antes de consultar -->
+      <div id="tour-reports-kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        <app-stat-card
+          title="Ingresos Totales"
+          [value]="formatCurrencyValue(0)"
+          [icon]="TrendingUp"
+          colorScheme="emerald"
+        />
+        <app-stat-card
+          title="Gastos Totales"
+          [value]="formatCurrencyValue(0)"
+          [icon]="TrendingDown"
+          colorScheme="rose"
+        />
+        <app-stat-card
+          title="Balance Neto"
+          [value]="formatCurrencyValue(0)"
+          [icon]="DollarSign"
+          colorScheme="blue"
+        />
+      </div>
+
+      <app-report-table id="tour-reports-table" [records]="[]" />
+    }
+  </div>
+</div>
