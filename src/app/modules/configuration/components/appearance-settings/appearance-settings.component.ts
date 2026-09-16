@@ -80,7 +80,7 @@ export type AppTheme = 'light' | 'dark' | 'auto';
             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-98 shrink-0"
           >
             <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
-            <span>Reiniciar Tour</span>
+            <span>Reiniciar tour</span>
           </button>
         </div>
       </div>

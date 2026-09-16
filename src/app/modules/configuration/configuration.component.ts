@@ -423,7 +423,7 @@ export class ConfigurationComponent implements OnInit {
     }
 
     const confirmed = await this.alert.askConfirm(
-      'Eliminar Categoría',
+      '¿Eliminar categoría?',
       `¿Estás seguro de eliminar la categoría "${cat.name}"?`,
       'Eliminar',
       'danger'

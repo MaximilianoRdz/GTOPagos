@@ -175,7 +175,7 @@ export class DashboardsComponent implements OnInit {
 
   async deleteDashboard(dashboard: DashboardItem): Promise<void> {
     const confirmed = await this.alert.askConfirm(
-      'Eliminar Dashboard',
+      '¿Eliminar espacio de dinero?',
       `¿Estás seguro de eliminar el espacio "${dashboard.name}" permanentemente? No podrás recuperarlo después.`,
       'Sí, eliminar',
       'danger'
