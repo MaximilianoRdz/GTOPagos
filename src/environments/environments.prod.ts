@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api'
+  apiUrl: 'https://gtopagos-api.loca.lt/api'
 };
+

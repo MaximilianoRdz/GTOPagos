@@ -12,15 +12,18 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
   const alertsService = inject(AlertsService);
 
   const token = authService.token;
-  let authReq = req;
+  const headers: Record<string, string> = {
+    'Bypass-Tunnel-Reminder': 'true',
+  };
 
   if (token) {
-    authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    headers['Authorization'] = `Bearer ${token}`;
   }
+
+  const authReq = req.clone({
+    setHeaders: headers,
+  });
+
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
