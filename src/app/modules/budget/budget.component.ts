@@ -318,10 +318,10 @@ export class BudgetComponent implements OnInit {
 
   get emptyStateDescription(): string {
     switch (this.recordFilter) {
-      case 'pending': return 'No tienes movimientos pendientes en este periodo. ¡Excelente control!';
-      case 'msi': return 'No tienes compras a meses sin intereses en este periodo.';
-      case 'recurrent': return 'No tienes movimientos marcados como recurrentes en este periodo.';
-      default: return 'No tienes movimientos en este periodo. ¡Excelente control de tus finanzas!';
+      case 'pending': return 'No tienes movimientos pendientes en este período. ¡Excelente control!';
+      case 'msi': return 'No tienes compras a meses sin intereses en este período.';
+      case 'recurrent': return 'No tienes movimientos marcados como recurrentes en este período.';
+      default: return 'No tienes movimientos en este período. ¡Excelente control de tus finanzas!';
     }
   }
 

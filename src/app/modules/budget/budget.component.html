@@ -123,7 +123,7 @@
       class="block mb-6"
     >
       <p class="text-xs sm:text-sm text-red-700 dark:text-red-300 mt-1 leading-relaxed">
-        Tus gastos de este periodo (<strong>{{ formatCurrency(dashboardData.expense_summary.total_amount) }}</strong>) han superado tu límite de <strong>{{ formatCurrency(periodLimit) }}</strong> por un exceso de <strong class="text-red-950 dark:text-red-100 font-extrabold">{{ formatCurrency(exceededAmount) }}</strong>.
+        Tus gastos de este período (<strong>{{ formatCurrency(dashboardData.expense_summary.total_amount) }}</strong>) han superado tu límite de <strong>{{ formatCurrency(periodLimit) }}</strong> por un exceso de <strong class="text-red-950 dark:text-red-100 font-extrabold">{{ formatCurrency(exceededAmount) }}</strong>.
       </p>
     </app-alert-banner>
   }
@@ -138,7 +138,7 @@
       class="block mb-6"
     >
       <p class="text-xs sm:text-sm text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
-        Has acumulado <strong>{{ formatCurrency(dashboardData.expense_summary.total_amount) }}</strong> en gastos de tu límite de <strong>{{ formatCurrency(periodLimit) }}</strong>. Te restan <strong class="text-amber-950 dark:text-amber-100 font-extrabold">{{ formatCurrency(remainingBudget) }}</strong> disponibles para este periodo.
+        Has acumulado <strong>{{ formatCurrency(dashboardData.expense_summary.total_amount) }}</strong> en gastos de tu límite de <strong>{{ formatCurrency(periodLimit) }}</strong>. Te restan <strong class="text-amber-950 dark:text-amber-100 font-extrabold">{{ formatCurrency(remainingBudget) }}</strong> disponibles para este período.
       </p>
     </app-alert-banner>
   }
@@ -147,7 +147,7 @@
  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 mb-8">
  @if (isExpenses) {
  <app-stat-card
-   title="Debo este periodo"
+   title="Total a pagar"
    [value]="formatCurrency(dashboardData.expense_summary.total_amount)"
    [subtitle]="dashboardData.expense_summary.total_records + ' registros en total'"
    [icon]="DollarSign"
@@ -161,7 +161,7 @@
    colorScheme="emerald"
  />
  <app-stat-card
-   title="Falta pagar"
+   title="Pendiente de pago"
    [value]="formatCurrency(dashboardData.expense_summary.pending_amount)"
    [subtitle]="dashboardData.expense_summary.pending_records + ' por liquidar'"
    [icon]="Clock"
@@ -171,7 +171,7 @@
 
  @if (!isExpenses) {
  <app-stat-card
-   title="Total del periodo"
+   title="Total del período"
    [value]="formatCurrency(dashboardData.income_summary.total_amount)"
    [subtitle]="dashboardData.income_summary.total_records + ' registros'"
    [icon]="DollarSign"
@@ -289,7 +289,7 @@
   <div class="bg-white/70 dark:bg-slate-900/60 rounded-2xl md:rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm backdrop-blur-md relative overflow-hidden">
     <div class="flex items-center justify-between mb-3">
       <div>
-        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Presupuesto del Periodo</h3>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Presupuesto del período</h3>
         <p class="text-[11px] text-slate-500 font-medium">Control de gastos {{ currentPeriodLabel.toLowerCase() }}</p>
       </div>
       <app-badge [variant]="isOverLimit ? 'danger' : isNearLimit ? 'warning' : 'success'">
@@ -348,12 +348,12 @@
   </div>
   }
 
-  <!-- CARD UNIFICADA: INGRESOS DEL PERIODO -->
+  <!-- CARD UNIFICADA: INGRESOS DEL PERÍODO -->
   @if (!isExpenses) {
   <div class="bg-white/70 dark:bg-slate-900/60 rounded-2xl md:rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm backdrop-blur-md relative overflow-hidden">
     <div class="flex items-center justify-between mb-3">
       <div>
-        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Ingresos del Periodo</h3>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Ingresos del período</h3>
         <p class="text-[11px] text-slate-500 font-medium">{{ currentPeriodLabel }}</p>
       </div>
       <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400">

@@ -109,7 +109,7 @@ Mantén las importaciones de cada archivo TypeScript ordenadas en bloques bien d
 
 ```typescript
 // 1. Angular Core y Framework
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 
 // 2. Librerías de terceros (RxJS, Lucide, XLSX, etc.)
@@ -119,7 +119,38 @@ import { Plus, Trash, Pencil } from 'lucide-angular';
 // 3. Core, Servicios y Guards propios
 import { DashboardService } from '../../core/services/dashboard/dashboard.service';
 import { AlertsService } from '../../core/services/alerts/Alerts.service';
+import { TourService } from '../../core/services/tour/tour.service';
 
 // 4. Módulos compartidos e Interfaces
 import { SHARED_IMPORTS } from '../../shared/shared.config';
 ```
+
+---
+
+## ⚛️ Jerarquía de Atomic Design en Angular
+
+Al crear o refactorizar componentes en `src/app/shared/ui/`, respeta el principio de dependencias unidireccionales:
+
+1. **Átomos (`ui/atoms/`)**:
+   - Componentes más pequeños e indivisibles.
+   - **Regla**: Nunca deben importar moléculas ni organismos.
+2. **Moléculas (`ui/molecules/`)**:
+   - Combinaciones de uno o varios átomos para resolver una tarea simple.
+   - **Regla**: Pueden importar átomos, pero nunca organismos.
+3. **Organismos (`ui/organisms/`)**:
+   - Estructuras visuales complejas con datos de negocio.
+   - **Regla**: Pueden importar átomos y moléculas. Son consumidos directamente por los componentes de página (`modules/`).
+
+---
+
+## ✍️ Normas de Redacción y Gramática en Español
+
+Para mantener la máxima coherencia ortotipográfica en la plataforma:
+
+1. **Signos de Puntuación Dobles**:
+   - En preguntas y exclamaciones en español, es mandatorio abrir con `¿` y `¡` (ej. `¿Deseas eliminar este registro?`, no `Deseas eliminar este registro?`).
+2. **Acentuación Rigurosa**:
+   - Conservar siempre las tildes normativas en términos técnicos y financieros (`período`, `categoría`, `ícono`, `gráfica`, `límite`, `mínimo`, `máximo`).
+3. **Estilo de Mayúsculas (Sentence Case)**:
+   - En títulos de sección, botones y opciones de menú, utilizar mayúscula únicamente en la primera letra de la frase u oración (ej. "Iniciar sesión", "Crear cuenta", "Total a pagar", "Pendiente de pago"), evitando la capitalización indiscriminada de cada palabra típica del inglés (*Title Case*).
+

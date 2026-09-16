@@ -55,7 +55,7 @@ export class TourService {
         id: 'dash-quick-actions',
         targetSelector: '#tour-quick-actions',
         title: '4. Presupuesto y Accesos Rápidos',
-        description: 'Consulta el presupuesto disponible de tu periodo y accede directamente a presupuestos, metas o reportes.',
+        description: 'Consulta el presupuesto disponible de tu período y accede directamente a presupuestos, metas o reportes.',
         iconName: 'trendingUp',
         placement: 'left',
         highlightPadding: 10
@@ -160,7 +160,7 @@ export class TourService {
         id: 'reports-kpis',
         targetSelector: '#tour-reports-kpis',
         title: '2. Resumen Ejecutivo (KPIs)',
-        description: 'Visualiza de inmediato los totales consolidados: Ingresos Totales, Gastos Totales y Balance Neto del periodo.',
+        description: 'Visualiza de inmediato los totales consolidados: Ingresos Totales, Gastos Totales y Balance Neto del período.',
         iconName: 'trendingUp',
         placement: 'bottom',
         highlightPadding: 12
@@ -239,7 +239,7 @@ export class TourService {
         targetSelector: '#tour-config-content',
         configTab: 'categories',
         title: '7. Gestión de Categorías',
-        description: 'Administra las categorías para clasificar tus gastos e ingresos con colores e iconos, o añade tus propias categorías personalizadas.',
+        description: 'Administra las categorías para clasificar tus gastos e ingresos con colores e íconos, o añade tus propias categorías personalizadas.',
         iconName: 'trendingUp',
         placement: 'auto',
         highlightPadding: 12

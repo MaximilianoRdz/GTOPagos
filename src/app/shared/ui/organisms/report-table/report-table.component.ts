@@ -64,7 +64,7 @@ import { EmptyStateComponent } from '../../molecules/empty-state/empty-state.com
                   <app-empty-state
                     [icon]="FileText"
                     title="Sin movimientos"
-                    description="No hay movimientos en el periodo seleccionado."
+                    description="No hay movimientos en el período seleccionado."
                     colorScheme="neutral"
                   />
                 </td>

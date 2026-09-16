@@ -79,7 +79,7 @@ export interface RecordModalSaveEvent {
                     <div>
                       <span class="font-bold text-amber-800 dark:text-amber-200">¡Cerca de tu límite!</span>
                       <p class="mt-0.5 leading-relaxed">
-                        Este movimiento te dejará al <strong>{{ projectedUsagePercentage | number:'1.0-1' }}%</strong> de tu presupuesto disponible para este periodo.
+                        Este movimiento te dejará al <strong>{{ projectedUsagePercentage | number:'1.0-1' }}%</strong> de tu presupuesto disponible para este período.
                       </p>
                     </div>
                   </div>
@@ -114,7 +114,7 @@ export interface RecordModalSaveEvent {
 
             <!-- ESTADO DE PAGO -->
             <div>
-              <label class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Estado de Pago</label>
+              <label class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Estado de pago</label>
               <select
                 [(ngModel)]="formData.payment_status_id"
                 class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
