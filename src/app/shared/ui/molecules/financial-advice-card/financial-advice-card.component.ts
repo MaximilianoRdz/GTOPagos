@@ -117,7 +117,7 @@ export class FinancialAdviceCardComponent implements OnInit, OnChanges {
     '<strong>Cuentas separadas:</strong> Guarda el dinero de tus metas en apartados o cuentas de inversión distintas a tu cuenta de gastos diarios para no tocarlo.',
     '<strong>Celebra los hitos:</strong> Reconoce tu disciplina al alcanzar el <strong>25%, 50% y 75%</strong> de tu meta. Celebrar tus avances refuerza el hábito del ahorro.',
     '<strong>Interés compuesto:</strong> La constancia vence a la cantidad. Empezar hoy con poco dinero rinde mucho más que esperar a juntar grandes sumas.',
-    '<strong>Divide y vencerás:</strong> Divide metas grandes en pequeños aportes semanales o quincenales para que el objetivo se salga alcanzable y continuo.'
+    '<strong>Divide y vencerás:</strong> Divide metas grandes en pequeños aportes semanales o quincenales para que el objetivo sea alcanzable y continuo.'
   ];
 
   readonly creditAdvices: string[] = [

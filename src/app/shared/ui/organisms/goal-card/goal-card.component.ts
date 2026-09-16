@@ -83,23 +83,23 @@ export interface GoalMetrics {
             <div class="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-full mb-2">
               <lucide-angular [img]="Trophy" class="w-6 h-6 text-yellow-600 dark:text-yellow-500"></lucide-angular>
             </div>
-            <h4 class="text-sm font-bold text-yellow-800 dark:text-yellow-400">¡Meta Lograda!</h4>
+            <h4 class="text-sm font-bold text-yellow-800 dark:text-yellow-400">¡Meta lograda!</h4>
             <p class="text-xs text-yellow-700 dark:text-yellow-500 mt-1">Felicidades por alcanzar tu objetivo.</p>
           </div>
         } @else {
           <h4 class="text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-3 flex items-center gap-2">
             <lucide-angular [img]="goal.target_date ? CalendarClock : Sparkles" class="w-4 h-4"></lucide-angular>
-            {{ goal.target_date ? 'Plan para Fecha Límite' : 'Plan de Ahorro Recomendado' }}
+            {{ goal.target_date ? 'Plan para fecha límite' : 'Plan de ahorro recomendado' }}
           </h4>
 
           @if (goal.monthsToReach && goal.monthsToReach < 999) {
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <p class="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase tracking-wider">Tiempo Estimado</p>
+                <p class="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase tracking-wider">Tiempo estimado</p>
                 <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ goal.monthsToReach }} meses</p>
               </div>
               <div>
-                <p class="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase tracking-wider">Ahorro Mensual</p>
+                <p class="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase tracking-wider">Ahorro mensual</p>
                 <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ formatCurrency(goal.recommendedSavings || 0) }}</p>
               </div>
             </div>

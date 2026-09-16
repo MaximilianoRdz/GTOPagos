@@ -14,8 +14,16 @@ Este documento registra las decisiones de diseño técnico, el diccionario de en
 - **Razón**: Tailwind v4 ofrece una compilación ultrarrápida impulsada por PostCSS (`@tailwindcss/postcss`). La inclusión de la fuente 'Outfit' otorga una estética visual premium y moderna.
 - **Implementación**: En `src/styles.css` se configura la regla de importación tipográfica y la variante de tema oscuro `@custom-variant dark (&:where(.dark, .dark *));`.
 
-### 3. Persistencia en `localStorage`
-El estado persistente del lado del cliente se administra exclusivamente mediante la API `localStorage`:
+### 3. Arquitectura de UI con Atomic Design
+- **Razón**: Favorecer la reutilización sistemática de controles y simplificar el mantenimiento visual separando la presentación básica (`atoms`) de composiciones contextuales (`molecules`) y bloques complejos de negocio (`organisms`).
+- **Implementación**: Componentes organizados en `src/app/shared/ui/` bajo las carpetas `atoms/`, `molecules/` y `organisms/`.
+
+### 4. Sistema de Tours Interactivos sin Dependencias Externas
+- **Razón**: Evitar sobrecargar el bundle con librerías pesadas como Shepherd.js o Intro.js, manteniendo compatibilidad total con Angular 21 Standalone y Signals.
+- **Implementación**: `TourService` computa coordenadas rectangulares vía `getBoundingClientRect()` del elemento seleccionado con atributo `id` o `class`, renderizando un overlay SVG con spotlight y tooltips flotantes en `TourComponent`.
+
+### 5. Persistencia en `localStorage`
+El estado persistente del lado del cliente se administra mediante la API `localStorage`:
 
 | Clave | Tipo | Valor / Descripción |
 | :--- | :--- | :--- |
@@ -23,12 +31,14 @@ El estado persistente del lado del cliente se administra exclusivamente mediante
 | `refresh_token` | `string` | Token de refresco JWT para renovación de sesión. |
 | `theme` | `'light' \| 'dark' \| 'auto'` | Preferencia visual del usuario gestionada por `ThemeService`. |
 | `language` | `'es' \| 'en'` | Idioma preferido de la interfaz gestionado por `I18nService`. |
+| `is_demo` | `'true' \| 'false'` | Bandera indicativa de sesión en Modo Demo / Invitado. |
+| `gtopagos_tour_<module>_<id>` | `'completed'` | Bandera de tour completado por módulo específico para cada usuario. |
 
 ---
 
 ## 🗂️ Modelo de Datos y Entidades Clave
 
-Las entidades principales del sistema están definidas en `src/app/core/services/dashboard/dashboard.service.ts` y `src/app/core/services/auth/auth.service.ts`:
+Las entidades principales del sistema están definidas en `src/app/core/services/` y `src/app/shared/models/`:
 
 ### 1. `AuthUser`
 Representa al usuario autenticado en la plataforma:
@@ -37,6 +47,7 @@ export interface AuthUser {
   id: number;
   name: string;
   email: string;
+  phone?: string;
 }
 ```
 
@@ -73,22 +84,46 @@ export interface FinancialRecord {
   category_name: string | null;
   payment_method_id: number | null;
   payment_status_id: number | null;
+  financial_goal?: number | null;
 }
 ```
 
-### 4. `Category` y `PaymentStatus`
+### 4. `FinancialGoal`
+Meta de ahorro con seguimiento de saldo objetivo y progreso:
 ```typescript
-export interface Category {
+export interface FinancialGoal {
   id: number;
   name: string;
-  record_type_id: number;
+  target_amount: number | string;
+  saved_amount: number | string;
+  target_date?: string;
+  created_at: string;
+  updated_at?: string;
 }
+```
 
-export interface PaymentStatus {
-  id: number;
-  status: string;
-  code: string;  // e.g. 'paid', 'pending'
-  color: string;
+### 5. `TourStep`
+Definición de cada paso del tutorial guiado interactivo:
+```typescript
+export interface TourStep {
+  targetSelector: string;
+  titleKey: string;
+  contentKey: string;
+  position?: 'top' | 'bottom' | 'left' | 'right';
+}
+```
+
+### 6. `NotificationPreferences`
+Preferencias de alertas y avisos del usuario:
+```typescript
+export interface NotificationPreferences {
+  notification_method: 'email' | 'sms' | 'both';
+  budget_alerts: boolean;
+  goal_reminders: boolean;
+  weekly_reports: boolean;
+  monthly_reports: boolean;
+  transaction_alerts: boolean;
+  payment_reminders: boolean;
 }
 ```
 
@@ -96,23 +131,29 @@ export interface PaymentStatus {
 
 ## 🧠 Algoritmos Especiales e Inteligencia de Datos
 
-### Detección Inteligente de Movimientos desde Excel (`detectFinancialRows`)
+### 1. Detección Inteligente de Movimientos desde Excel (`detectFinancialRows`)
 Ubicado en `dashboards.component.ts`, este algoritmo analiza las filas extraídas de un archivo `.xlsx` mediante la librería `xlsx`:
 1. **Detección de Recurrencia**: Ocurrencias $\ge 6$ se marcan automáticamente como pago recurrente (`isRecurring = true`).
 2. **Detección de Cuotas / Meses sin Intereses**: Ocurrencias $> 1$ y $< 6$ se clasifican como compra a plazos (`isInstallment = true`).
-3. **Mapeo Automático de Categorías (`detectCategory`)**: Compara la descripción del gasto contra palabras clave registradas en la lista de categorías del sistema para sugerir la categoría más adecuada.
+3. **Mapeo Automático de Categorías (`detectCategory`)**: Compara la descripción del gasto contra palabras clave registradas en el catálogo de categorías (`CategoryKeyword`) para sugerir la categoría más adecuada.
+
+### 2. Estandarización de Nomenclatura Financiera
+Para garantizar total claridad y apego a las expectativas de usabilidad contable:
+- Se reemplazó el término "Debo este período" por **"Total a pagar"**: Refleja la suma neta consolidada de obligaciones del corte mensual.
+- Se reemplazó el término "Falta pagar" por **"Pendiente de pago"**: Denota con precisión el remanente de movimientos aún no liquidados.
 
 ---
 
 ## ⚠️ Limitaciones Conocidas y Deuda Técnica
 
 1. **Configuración de la API Endpoint**: Por defecto se apunta a `http://localhost:8000/api` en `environments.ts`. Debe actualizarse para entornos de homologación y producción.
-2. **Manejo de Errores en Paginación**: La carga de registros actualmente soporta paginación simple de la API backend (`RecordsResponse`), pero el filtrado por pestaña de gastos e ingresos se realiza en memoria en el frontend (`filteredRecords`).
+2. **Filtrado Mixto en Paginación**: La carga de registros soporta paginación en backend, complementada con filtros por tipo de movimiento (`filteredRecords`) calculados reactivamente en el cliente.
 
 ---
 
 ## 🔮 Roadmap Futuro
 
-- Implementación de Cache Offline y Progressive Web App (PWA).
-- Gráficas estadísticas con Chart.js o ApexCharts.
-- Soporte para múltiples divisas (`currency_id`).
+- Integración de autenticación OAuth2 (Google Sign-In).
+- Soporte para presupuestos colaborativos / multi-usuario por tablero.
+- Notificaciones push nativas vía Service Worker en segundo plano.
+

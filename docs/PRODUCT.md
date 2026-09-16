@@ -31,52 +31,70 @@ Este documento especifica los requerimientos de producto, la visión, la propues
 
 ```mermaid
 flowchart LR
-    A[Inicio / Login] --> B[Dashboard General]
+    A[Inicio de Sesión / Registro] --> B[Dashboard General]
+    Demo[Acceso Modo Demo / Invitado] --> B
     B --> C[Gestor de Tableros]
     C --> D[Detalle de Presupuesto]
     D --> E[Gestión de Movimientos]
     C --> F[Importador de Excel]
-    B --> G[Configuración: Tema / Idioma]
+    B --> G[Metas Financieras]
+    B --> H[Reportes y Exportación]
+    B --> I[Configuración Multisección]
+    Tour[Tour Guiado Contextual] -.-> B
+    Tour -.-> D
+    Tour -.-> G
+    Tour -.-> H
+    Tour -.-> I
 ```
 
-### 1. Módulo de Autenticación y Seguridad
-- **Inicio de Sesión**: Validación de credenciales email/password y recepción de token JWT.
-- **Registro de Usuarios**: Creación de nueva cuenta de usuario en el sistema.
-- **Recuperación de Contraseña**: Flujo de solicitud de restablecimiento para usuarios que olvidaron su clave.
-- **Persistencia de Sesión**: Mantener sesión activa mediante tokens almacenados de forma segura.
+### 1. Módulo de Autenticación, Seguridad y Modo Demo
+- **Inicio de Sesión Estándar**: Validación de credenciales email/contraseña y recepción de token JWT.
+- **Modo Demo / Invitado**: Acceso directo con un solo clic a un entorno completamente funcional con datos de ejemplo interactivos, ideal para evaluación de portafolio y pruebas de concepto sin registro previo.
+- **Registro de Usuarios**: Creación de nueva cuenta con validación de fortaleza de credenciales.
+- **Recuperación de Contraseña**: Solicitud de restablecimiento vía correo electrónico con token seguro.
 
 ### 2. Módulo de Tableros / Presupuestos (`DashboardsComponent`)
-- **Creación de Tableros**: Definición de nombre, descripción y tipo de tablero (`Solo gastos`, `Solo ingresos`, `Ambos`).
-- **Vista de Tarjetas**: Visualización rápida del balance total, ingresos agregados, gastos agregados y recuento de registros.
-- **Edición y Eliminación**: Modificación de datos del tablero y eliminación confirmada mediante modales interactivos.
+- **Gestión de Tableros**: Creación y edición con tipo de tablero (`Solo gastos`, `Solo ingresos`, `Ambos`), descripción y balances acumulados.
+- **Tarjetas de Resumen**: Vista rápida del balance global, total de ingresos, total de gastos y número de movimientos registrados.
+- **Tarjetas de Consejos Financieros (`AdviceCards`)**: Recomendaciones contextuales sobre salud financiera y control presupuestal.
 
 ### 3. Módulo de Detalle de Presupuesto (`BudgetComponent`)
-- **Navegación por Pestañas**: Alternancia entre vistas de *Gastos* e *Ingresos*.
-- **Indicadores Clave (KPIs)**:
-  - Total de Ingresos del período.
-  - Total de Gastos del período.
-  - Balance neto disponible.
-- **Resumen por Categorías**: Barras de progreso visuales con porcentaje de cumplimiento y presupuesto consumido por categoría.
-- **Sección de Pagos Pendientes**: Lista rápida de transacciones pendientes por saldar.
-- **Tabla Paginada de Movimientos**:
-  - Creación de nuevo movimiento con selección de monto, descripción, fecha, categoría, tipo de pago (Contado/Crédito) y cantidad de cuotas.
-  - Edición y eliminación de registros existentes.
-  - Paginación interactiva.
+- **Indicadores Clave Estandarizados (KPIs)**:
+  - **Total de ingresos**: Suma total devengada del período.
+  - **Total a pagar**: Suma consolidada de compromisos y gastos del corte actual.
+  - **Pendiente de pago**: Montos pendientes por liquidar.
+  - **Gastos pagados**: Obligaciones ya cubiertas.
+  - **Balance neto disponible**: Diferencia entre ingresos y gastos totales.
+- **Navegación por Pestañas**: Segmentación instantánea entre *Gastos* e *Ingresos*.
+- **Distribución por Categorías**: Visualización de avance y porcentaje de consumo presupuestal por categoría.
+- **Tabla Paginada de Movimientos**: CRUD completo con soporte de compras al contado (`DEBIT`) o crédito (`CREDIT`) a cuotas/parcialidades y gastos recurrentes.
 
-### 4. Módulo de Importación Inteligente desde Excel
-- **Carga de Archivos**: Arrastrar o seleccionar un archivo de hoja de cálculo `.xlsx`.
-- **Análisis Automatizado**: Identificación de nombres de columnas, montos, cálculo de total acumulado y frecuencias.
-- **Sugerencia de Tipo**: Clasificación automática entre pago único, cuotas/parcialidades o gasto recurrente.
-- **Vista Previa y Mapeo**: Confirmación del usuario antes de guardar masivamente las transacciones en los tableros elegidos.
+### 4. Módulo de Metas Financieras (`GoalsComponent`)
+- **Establecimiento de Objetivos**: Registro de metas con monto objetivo, monto acumulado y fecha estimada de finalización.
+- **Visualización de Progreso**: Indicadores porcentuales, barras de progreso y cálculo dinámico del tiempo y aportes restantes.
+- **Vinculación de Movimientos**: Asociación de registros financieros a metas específicas para trazabilidad de ahorro.
 
-### 5. Módulo de Configuración y Personalización (`ConfigurationComponent`)
-- **Selector de Tema**: Alternar entre Modo Claro (Light), Modo Oscuro (Dark) y Ajuste Automático por Sistema Operativo.
-- **Selector de Idioma**: Cambiar instantáneamente entre Español e Inglés en toda la interfaz sin necesidad de recargar la página.
+### 5. Módulo de Reportes y Analítica (`ReportsComponent`)
+- **Consolidación Financiera**: Métricas analíticas con filtros por rango de fechas (mensual, trimestral, anual).
+- **Desglose de Gastos**: Visualización por categorías, tasas de ahorro y proyecciones financieras.
+- **Exportación Multi-formato**: Descarga instantánea de reportes en documentos ejecutivos **PDF** y hojas de cálculo **Excel** (`.xlsx`).
+
+### 6. Módulo de Configuración (`ConfigurationComponent`)
+- **Estructura por Pestañas**:
+  - **Perfil**: Datos personales, teléfono de contacto y salarios de referencia.
+  - **Notificaciones**: Preferencias de alertas de presupuesto, recordatorios de pago, avisos de metas y reportes periódicos.
+  - **Apariencia**: Conmutador dinámico de Tema Claro (Light), Tema Oscuro (Dark) y Detección Automática del Sistema Operativo.
+  - **Idioma**: Selección instantánea entre Español (`es`) e Inglés (`en`).
+
+### 7. Sistema de Tours Guiados Interactivos
+- **Acompañamiento en Pantalla**: Asistente visual con foco interactivo (spotlight), oscurecimiento periférico y tooltips explicativos paso a paso para acelerar la curva de aprendizaje en cada sección del sistema.
 
 ---
 
 ## 🎨 Requerimientos No Funcionales
 
-- **Rendimiento**: Tiempo de respuesta de interfaz $\le 100\text{ ms}$ en interacciones locales.
-- **Accesibilidad y Legibilidad**: Contraste alto en textos y tarjetas tanto en modo claro como en modo oscuro.
-- **Diseño Responsivo**: Adaptabilidad completa para pantallas de escritorio, laptops, tablets y smartphones.
+- **Rendimiento**: Tiempo de renderizado inicial $\le 100\text{ ms}$ en operaciones locales y transiciones de Signals.
+- **Accesibilidad y Legibilidad**: Contraste calibrado según directivas WCAG 2.1 tanto en modo claro como en modo oscuro.
+- **Diseño Responsivo**: Adaptabilidad completa para resoluciones móviles, tablets, laptops y pantallas ultrawide.
+- **Soporte Offline & PWA**: Capacidad de instalación como Progressive Web App y almacenamiento en caché de activos estáticos.
+

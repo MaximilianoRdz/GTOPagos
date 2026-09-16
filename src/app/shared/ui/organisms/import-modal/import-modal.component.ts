@@ -55,7 +55,7 @@ export interface ImportedTransactionItem {
 
           <!-- ASIGNACIÓN MASIVA -->
           <div class="bg-slate-100 dark:bg-slate-800/50 p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-4 items-center justify-between shrink-0">
-            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">Asignación Rápida:</div>
+            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">Asignación rápida:</div>
             <div class="flex gap-4 flex-wrap">
               @if (hasExpenses()) {
                 <div class="flex items-center gap-2">
@@ -148,7 +148,7 @@ export interface ImportedTransactionItem {
                     }
 
                     @if (item.is_duplicate) {
-                      <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">Posible Duplicado</span>
+                      <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">Posible duplicado</span>
                     } @else if (!item.is_recurrent && !item.is_installment) {
                       <span class="px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium">Nuevo</span>
                     }
