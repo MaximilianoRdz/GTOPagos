@@ -66,4 +66,19 @@ export class AuthService {
         })
       );
   }
+
+  /* ================= PASSWORD RESET ================= */
+
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/forgot-password/`, { email });
+  }
+
+  confirmPasswordReset(data: {
+    uid: string;
+    token: string;
+    new_password: string;
+    confirm_password: string;
+  }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password/`, data);
+  }
 }

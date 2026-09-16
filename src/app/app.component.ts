@@ -1,15 +1,15 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AlertsComponent } from "./shared/ui/alerts/alerts.component";
-import { SidebarComponent } from "./shared/ui/sidebar/sidebar.component";
+import { TourComponent } from "./shared/ui/molecules/tour/tour.component";
 import { ThemeService } from "./core/services/theme/theme.service";
 import { AuthService } from './core/services/auth/auth.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, AlertsComponent],
+  imports: [RouterOutlet, AlertsComponent, TourComponent],
   templateUrl: './app.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.Default,
   styleUrl: './app.component.css'
 })
 export class AppComponent {

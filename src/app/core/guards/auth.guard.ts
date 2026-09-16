@@ -7,18 +7,19 @@ export const AuthGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  // Ya validado
-  if (auth.isAuthenticated()) {
-    return true;
-  }
-
-  // No hay token
+  // No hay token en absoluto
   if (!auth.token) {
     router.navigate(['/login']);
     return false;
   }
 
-  // Validar token con backend
+  // Si ya tenemos el usuario cargado en memoria, la sesión es válida y activa
+  if (auth.user()) {
+    return true;
+  }
+
+  // Tenemos token pero no usuario (p. ej. recarga de página o abrir el proyecto)
+  // Validamos el token contra el backend
   return auth.validateToken().pipe(
     map(() => true),
     catchError(() => {

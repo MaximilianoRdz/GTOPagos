@@ -1,113 +1,72 @@
-import { CommonModule } from '@angular/common';
-import { Component, effect, ChangeDetectorRef, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ConfigurationService, Currency, IncomeFrequency } from '../../core/services/configuration/configuration.service';
+import { Component, ChangeDetectorRef, OnInit, effect } from '@angular/core';
+import { Router } from '@angular/router';
+import { SHARED_IMPORTS } from '../../shared/shared.config';
+import { ConfigurationService, Currency, IncomeFrequency, UserProfile } from '../../core/services/configuration/configuration.service';
 import {
-  LucideAngularModule,
-  DollarSign,
-  Menu,
   User,
-  Eye,
-  EyeOff,
-  Save,
-  Mail,
-  Phone,
   Shield,
-  Sun,
-  Moon,
-  Monitor,
-  LayoutDashboard,
-  Wallet,
-  Target,
-  BarChart3,
-  Settings,
-  Bell,
   Palette,
   CreditCard,
+  Tags,
+  Sparkles,
 } from 'lucide-angular';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AlertsService } from '../../core/services/alerts/Alerts.service';
-
+import { TourService } from '../../core/services/tour/tour.service';
+import { DashboardService, Category, FinancialRecordType } from '../../core/services/dashboard/dashboard.service';
+import { ProfileSettingsComponent, ProfileData } from './components/profile-settings/profile-settings.component';
+import { SecuritySettingsComponent, SecurityData } from './components/security-settings/security-settings.component';
+import { AppearanceSettingsComponent, AppTheme } from './components/appearance-settings/appearance-settings.component';
+import { FinancialSettingsComponent } from './components/financial-settings/financial-settings.component';
+import { CategoriesSettingsComponent } from './components/categories-settings/categories-settings.component';
 
 /* ===================== INTERFACES ===================== */
 
-interface ProfileData {
-  firstName: string;
-  lastName: string;
-  phone: string;
-}
-
-interface SecurityData {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-export type NotificationMethod = 'email' | 'sms' | 'both';
-
-interface NotificationSettings {
-  budgetAlerts: boolean;
-  goalReminders: boolean;
-  weeklyReports: boolean;
-  monthlyReports: boolean;
-  transactionAlerts: boolean;
-  paymentReminders: boolean;
-}
-
 interface AppearanceSettings {
-  theme: 'light' | 'dark' | 'auto';
+  theme: AppTheme;
   language: string;
 }
 
-interface UserProfile {
-  firstName?: string | null;
-  lastName?: string | null;
-  currency: Currency | null;
-  salary: number | null;
-  income_frequency: IncomeFrequency | null;
-  phone?: string | null;
-}
-
-
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: any;
-  hasDropdown?: boolean;
-}
-
-type Tab = 'profile' | 'security' | 'notifications' | 'appearance' | 'financial';
-type NotificationKey = keyof NotificationSettings;
+type Tab = 'profile' | 'security' | 'appearance' | 'financial' | 'categories';
 
 /* ===================== COMPONENT ===================== */
 
 @Component({
   selector: 'app-configuration',
   standalone: true,
-  imports: [LucideAngularModule, FormsModule, CommonModule],
+  imports: [
+    ...SHARED_IMPORTS,
+    ProfileSettingsComponent,
+    SecuritySettingsComponent,
+    AppearanceSettingsComponent,
+    FinancialSettingsComponent,
+    CategoriesSettingsComponent,
+  ],
   templateUrl: './configuration.component.html',
 })
-export class ConfigurationComponent {
+export class ConfigurationComponent implements OnInit {
   constructor(
-    public i18n: I18nService, 
+    public i18n: I18nService,
     private configService: ConfigurationService,
+    private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
-    private alert: AlertsService
-  ) {}
-
-  loadProfile(): void {
-    this.configService.getProfile().subscribe(profile => {
-      if (profile?.phone) {
-        this.profileData.phone = profile.phone;
+    private alert: AlertsService,
+    private router: Router,
+    private tourService: TourService
+  ) {
+    effect(() => {
+      const step = this.tourService.currentStep();
+      if (step?.configTab && this.activeTab !== step.configTab) {
+        this.setActiveTab(step.configTab as Tab);
+        this.cdr.detectChanges();
       }
     });
   }
 
-
   ngOnInit(): void {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
+    const savedTheme = localStorage.getItem('theme') as AppTheme | null;
     const savedLang = localStorage.getItem('language') as 'es' | 'en' | null;
-    
+
     if (savedTheme) {
       this.appearanceSettings.theme = savedTheme;
       this.applyTheme(savedTheme);
@@ -119,52 +78,26 @@ export class ConfigurationComponent {
     this.loadCurrencies();
     this.loadIncomeFrequencies();
     this.loadUserProfile();
-
+    this.tourService.checkAndStartAuto('configuration', 1000);
   }
 
   /* ===================== STATE ===================== */
 
-  activeSection: string = 'settings';
+  readonly Sparkles = Sparkles;
+
+  startTour(): void {
+    this.tourService.start('configuration', true);
+  }
+
   activeTab: Tab = 'profile';
-
-  showCurrentPassword = false;
-  showNewPassword = false;
-  showConfirmPassword = false;
-
-  /* ===================== ICONS ===================== */
-
-  DollarSign = DollarSign;
-  Menu = Menu;
-  User = User;
-  Eye = Eye;
-  EyeOff = EyeOff;
-  Save = Save;
-  Mail = Mail;
-  Phone = Phone;
-  Shield = Shield;
-  Sun = Sun;
-  Moon = Moon;
-  Monitor = Monitor;
-  Settings = Settings;
-
-  /* ===================== MENU ===================== */
-
-  menuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'budget', label: 'Presupuesto', icon: Wallet },
-    { id: 'goals', label: 'Metas', icon: Target },
-    { id: 'reports', label: 'Reportes', icon: BarChart3 },
-    { id: 'settings', label: 'Configuración', icon: Settings },
-  ];
 
   settingsTabs: { id: Tab; label: string; icon: any }[] = [
     { id: 'profile', label: 'Perfil', icon: User },
     { id: 'security', label: 'Seguridad', icon: Shield },
-    { id: 'notifications', label: 'Notificaciones', icon: Bell },
-    { id: 'appearance', label: 'Apariencia e Idioma', icon: Palette },
+    { id: 'appearance', label: 'Apariencia', icon: Palette },
     { id: 'financial', label: 'Configuración Financiera', icon: CreditCard },
+    { id: 'categories', label: 'Categorías', icon: Tags },
   ];
-
 
   /* ===================== DATA ===================== */
 
@@ -172,24 +105,6 @@ export class ConfigurationComponent {
     firstName: '',
     lastName: '',
     phone: '',
-  };
-
-  securityData: SecurityData = {
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  };
-
-  // Método de notificación
-  notificationMethod: NotificationMethod = 'email';
-
-  notificationSettings: NotificationSettings = {
-    budgetAlerts: true,
-    goalReminders: true,
-    weeklyReports: false,
-    monthlyReports: true,
-    transactionAlerts: true,
-    paymentReminders: true,
   };
 
   appearanceSettings: AppearanceSettings = {
@@ -207,76 +122,18 @@ export class ConfigurationComponent {
   };
 
   loadingProfile = false;
-
-  themeOptions = [
-    {
-      value: 'light' as const,
-      label: 'Claro',
-      icon: Sun,
-      description: 'Tema claro',
-      color: 'text-yellow-500',
-    },
-    {
-      value: 'dark' as const,
-      label: 'Oscuro',
-      icon: Moon,
-      description: 'Tema oscuro',
-      color: 'text-indigo-500',
-    },
-    {
-      value: 'auto' as const,
-      label: 'Automático',
-      icon: Monitor,
-      description: 'Sigue el sistema',
-      color: 'text-gray-500',
-    },
-  ];
-
-  notificationOptions: {
-  key: NotificationKey;
-  label: string;
-  description: string;
-  }[] = [
-    {
-      key: 'budgetAlerts',
-      label: 'Alertas de presupuesto',
-      description: 'Te avisamos cuando te acerques al límite',
-    },
-    {
-      key: 'goalReminders',
-      label: 'Recordatorios de metas',
-      description: 'Recordatorios para cumplir tus objetivos',
-    },
-    {
-      key: 'weeklyReports',
-      label: 'Reportes semanales',
-      description: 'Resumen semanal de tus finanzas',
-    },
-    {
-      key: 'monthlyReports',
-      label: 'Reportes mensuales',
-      description: 'Análisis detallado mensual',
-    },
-    {
-      key: 'transactionAlerts',
-      label: 'Alertas de transacciones',
-      description: 'Notificaciones de nuevas transacciones',
-    },
-    {
-      key: 'paymentReminders',
-      label: 'Recordatorios de pagos',
-      description: 'Recordatorios de pagos pendientes',
-    },
-  ];
+  loadingSecurity = false;
+  loadingFinancial = false;
 
   currencies: Currency[] = [];
-
   incomeFrequencies: IncomeFrequency[] = [];
 
-
-  /* ===================== LIFECYCLE ===================== */
-
-
+  /* ===================== CATEGORIES STATE ===================== */
+  categories: Category[] = [];
+  recordTypes: FinancialRecordType[] = [];
+  loadingCategories = false;
+  showNewCategoryModal = false;
+  creatingCategory = false;
 
   /* ===================== GETTERS (TABS) ===================== */
 
@@ -288,10 +145,6 @@ export class ConfigurationComponent {
     return this.activeTab === 'security';
   }
 
-  get isNotificationsTab() {
-    return this.activeTab === 'notifications';
-  }
-
   get isAppearanceTab() {
     return this.activeTab === 'appearance';
   }
@@ -300,157 +153,27 @@ export class ConfigurationComponent {
     return this.activeTab === 'financial';
   }
 
-  /* ===================== ACTIONS ===================== */
+  get isCategoriesTab() {
+    return this.activeTab === 'categories';
+  }
+
+  /* ===================== TAB SELECTION ===================== */
 
   setActiveTab(tab: Tab): void {
     this.activeTab = tab;
-  }
-
-  compareFn(c1: any, c2: any): boolean {
-    return c1 && c2 ? c1.id === c2.id : c1 === c2;
-  }
-
-  updateNotificationSetting(key: NotificationKey, value: boolean): void {
-    this.notificationSettings[key] = value;
-    
-    // Convertir de camelCase a snake_case para el backend
-    const snakeCaseKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-    
-    this.configService.updateProfile({ [snakeCaseKey]: value }).subscribe({
-      next: () => this.alert.show('Preferencia actualizada exitosamente', 'success'),
-      error: () => this.alert.show('Error al guardar preferencia', 'error')
-    });
-  }
-
-  handleMethodChange(): void {
-    this.configService.updateProfile({ notification_method: this.notificationMethod }).subscribe({
-      next: () => this.alert.show('Método de notificación actualizado', 'success'),
-      error: () => this.alert.show('Error al guardar método', 'error')
-    });
-  }
-
-  setTheme(theme: 'light' | 'dark' | 'auto'): void {
-    this.appearanceSettings.theme = theme;
-    localStorage.setItem('theme', theme);
-    this.applyTheme(theme);
-  }
-
-  applyTheme(theme: 'light' | 'dark' | 'auto'): void {
-    const root = document.documentElement;
-
-    if (theme === 'light') {
-      root.classList.remove('dark');
-    }
-
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    }
-
-    if (theme === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', prefersDark);
+    if (tab === 'categories') {
+      if (!this.categories.length) this.loadCategories();
+      if (!this.recordTypes.length) this.loadRecordTypes();
     }
   }
 
-  setLanguage(lang: 'es' | 'en') {
-    this.appearanceSettings.language = lang;
-    this.i18n.setLanguage(lang);
-    localStorage.setItem('language', lang);
-  }
-
-  formatPhone(value: string) {
-    const numbers = value.replace(/\D/g, '').slice(0, 10);
-
-    if (numbers.length <= 3) {
-      this.profileData.phone = numbers;
-    } else if (numbers.length <= 6) {
-      this.profileData.phone = `${numbers.slice(0, 3)} ${numbers.slice(3)}`;
-    } else {
-      this.profileData.phone = `${numbers.slice(0, 3)} ${numbers.slice(3, 6)} ${numbers.slice(6)}`;
-    }
-  }
-
-  handleProfileSave(): void {
-    const payload: any = {};
-
-    if (this.profileData.firstName?.trim()) {
-      payload.first_name = this.profileData.firstName.trim();
-    }
-
-    if (this.profileData.lastName?.trim()) {
-      payload.last_name = this.profileData.lastName.trim();
-    }
-
-    if (this.profileData.phone?.trim()) {
-      payload.phone = this.profileData.phone.trim();
-    }
-
-    if (!Object.keys(payload).length) return;
-
-    this.configService.updateProfile(payload).subscribe();
-  }
-
-
-  handleSecuritySave(): void {
-    if (!this.securityData.currentPassword ||
-        !this.securityData.newPassword ||
-        !this.securityData.confirmPassword) {
-      return;
-    }
-
-    if (this.securityData.newPassword !== this.securityData.confirmPassword) {
-      console.error('Las contraseñas no coinciden');
-      return;
-    }
-
-    const payload = {
-      current_password: this.securityData.currentPassword,
-      new_password: this.securityData.newPassword,
-      confirm_password: this.securityData.confirmPassword,
-    };
-
-    this.configService.changePassword(payload).subscribe({
-      next: () => {
-        console.log('Contraseña actualizada correctamente');
-
-        // Limpiar campos
-        this.securityData.currentPassword = '';
-        this.securityData.newPassword = '';
-        this.securityData.confirmPassword = '';
-      },
-      error: (err) => {
-        console.error('Error cambiando contraseña', err);
-      }
-    });
-  }
-
-
-  handleFinancialSave(): void {
-    const payload = {
-      salary: this.userProfile.salary ?? null,
-      currency_id: this.userProfile.currency?.id ?? null,
-      income_frequency_id: this.userProfile.income_frequency?.id ?? null,
-    };
-
-    this.configService.updateProfile(payload).subscribe({
-      next: (updatedProfile) => {
-        // Mantener objetos completos si quieres mostrar
-        this.userProfile.salary = updatedProfile.salary;
-        // Opcional: podrías volver a cargar profile desde backend si necesitas los objetos currency y frequency
-        console.log('Perfil financiero actualizado');
-      },
-      error: (err) => {
-        console.error('Error actualizando perfil', err);
-      },
-    });
-  }
+  /* ===================== API LOADERS ===================== */
 
   loadCurrencies(): void {
     this.configService.getCurrencies().subscribe({
       next: (data) => {
         this.currencies = data;
 
-        // seleccionar MXN por defecto si no hay moneda aún
         if (!this.userProfile.currency && data.length) {
           const mxn = data.find(c => c.code === 'MXN');
           if (mxn) {
@@ -459,7 +182,7 @@ export class ConfigurationComponent {
         } else if (!this.userProfile.currency && (this.userProfile as any)._temp_currency_id) {
           this.userProfile.currency = data.find(c => c.id === (this.userProfile as any)._temp_currency_id) ?? null;
         }
-        
+
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error cargando monedas', err),
@@ -470,7 +193,7 @@ export class ConfigurationComponent {
     this.configService.getIncomeFrequencies().subscribe({
       next: (data) => {
         this.incomeFrequencies = data;
-        
+
         if (!this.userProfile.income_frequency && (this.userProfile as any)._temp_frequency_id) {
           this.userProfile.income_frequency = data.find(f => f.id === (this.userProfile as any)._temp_frequency_id) ?? null;
         }
@@ -488,43 +211,21 @@ export class ConfigurationComponent {
       next: (profile) => {
         this.userProfile = profile;
 
-        // Perfil básico
         this.profileData.phone = profile.phone ?? '';
         this.profileData.firstName = profile.first_name ?? '';
         this.profileData.lastName = profile.last_name ?? '';
-        
-        this.cdr.detectChanges();
 
-        // ---- Currency ----
         const currencyId = (profile as any).currency_id;
         (this.userProfile as any)._temp_currency_id = currencyId;
         if (this.currencies.length) {
           this.userProfile.currency = this.currencies.find(c => c.id === currencyId) ?? null;
         }
 
-        // ---- Income frequency ----
         const frequencyId = (profile as any).income_frequency_id;
         (this.userProfile as any)._temp_frequency_id = frequencyId;
         if (this.incomeFrequencies.length) {
           this.userProfile.income_frequency = this.incomeFrequencies.find(f => f.id === frequencyId) ?? null;
         }
-
-        // ---- Notifications ----
-        if (profile.notification_method) {
-          this.notificationMethod = profile.notification_method as NotificationMethod;
-        }
-        
-        if (profile.budget_alerts !== undefined) {
-          this.notificationSettings = {
-            budgetAlerts: profile.budget_alerts ?? true,
-            goalReminders: profile.goal_reminders ?? true,
-            weeklyReports: profile.weekly_reports ?? false,
-            monthlyReports: profile.monthly_reports ?? true,
-            transactionAlerts: profile.transaction_alerts ?? true,
-            paymentReminders: profile.payment_reminders ?? true,
-          };
-        }
-
         this.loadingProfile = false;
         this.cdr.detectChanges();
       },
@@ -534,5 +235,215 @@ export class ConfigurationComponent {
     });
   }
 
+  loadCategories(): void {
+    this.loadingCategories = true;
+    this.dashboardService.getCategories().subscribe({
+      next: (data) => {
+        this.categories = data;
+        this.loadingCategories = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando categorías', err);
+        this.loadingCategories = false;
+      }
+    });
+  }
 
+  loadRecordTypes(): void {
+    this.dashboardService.getRecordTypes().subscribe({
+      next: (types) => {
+        this.recordTypes = types;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando tipos de movimiento', err),
+    });
+  }
+
+  /* ===================== PROFILE ACTIONS ===================== */
+
+  handleProfileSave(data?: ProfileData): void {
+    const d = data || this.profileData;
+    const payload: any = {};
+
+    if (d.firstName?.trim()) {
+      payload.first_name = d.firstName.trim();
+    }
+
+    if (d.lastName?.trim()) {
+      payload.last_name = d.lastName.trim();
+    }
+
+    if (d.phone?.trim()) {
+      payload.phone = d.phone.trim();
+    }
+
+    if (!Object.keys(payload).length) return;
+
+    this.loadingProfile = true;
+    this.configService.updateProfile(payload).subscribe({
+      next: () => {
+        this.loadingProfile = false;
+        this.alert.show('Información personal actualizada', 'success');
+        this.loadUserProfile();
+      },
+      error: () => {
+        this.loadingProfile = false;
+        this.alert.show('Error al actualizar información', 'error');
+      }
+    });
+  }
+
+  /* ===================== SECURITY ACTIONS ===================== */
+
+  handleSecuritySave(data: SecurityData): void {
+    if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
+      this.alert.show('Completa todos los campos de contraseña', 'error');
+      return;
+    }
+
+    if (data.newPassword !== data.confirmPassword) {
+      this.alert.show('Las contraseñas no coinciden', 'error');
+      return;
+    }
+
+    const payload = {
+      current_password: data.currentPassword,
+      new_password: data.newPassword,
+      confirm_password: data.confirmPassword,
+    };
+
+    this.loadingSecurity = true;
+    this.configService.changePassword(payload).subscribe({
+      next: () => {
+        this.loadingSecurity = false;
+        this.alert.show('Contraseña actualizada correctamente', 'success');
+        data.currentPassword = '';
+        data.newPassword = '';
+        data.confirmPassword = '';
+      },
+      error: (err) => {
+        this.loadingSecurity = false;
+        console.error('Error cambiando contraseña', err);
+        const errorMsg = err.error?.confirm_password?.[0] || err.error?.current_password?.[0] || err.error?.new_password?.[0] || 'Error al cambiar la contraseña';
+        this.alert.show(errorMsg, 'error');
+      }
+    });
+  }
+
+  /* ===================== APPEARANCE ACTIONS ===================== */
+
+  setTheme(theme: AppTheme): void {
+    this.appearanceSettings.theme = theme;
+    localStorage.setItem('theme', theme);
+    this.applyTheme(theme);
+  }
+
+  applyTheme(theme: AppTheme): void {
+    const root = document.documentElement;
+
+    if (theme === 'light') {
+      root.classList.remove('dark');
+    }
+
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    }
+
+    if (theme === 'auto') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', prefersDark);
+    }
+  }
+
+  setLanguage(lang: string): void {
+    const validLang = lang === 'en' ? 'en' : 'es';
+    this.appearanceSettings.language = validLang;
+    this.i18n.setLanguage(validLang);
+    localStorage.setItem('language', validLang);
+  }
+
+  restartTour(): void {
+    this.tourService.reset('configuration');
+    this.alert.show('Iniciando guía interactiva de configuración...', 'success');
+  }
+
+  /* ===================== FINANCIAL ACTIONS ===================== */
+
+  handleFinancialSave(profile?: UserProfile): void {
+    const p = profile || this.userProfile;
+    const payload = {
+      salary: p.salary ?? null,
+      currency_id: p.currency?.id ?? null,
+      income_frequency_id: p.income_frequency?.id ?? null,
+    };
+
+    this.loadingFinancial = true;
+    this.configService.updateProfile(payload).subscribe({
+      next: (updatedProfile) => {
+        this.loadingFinancial = false;
+        this.userProfile.salary = updatedProfile.salary;
+        this.alert.show('Perfil financiero actualizado', 'success');
+      },
+      error: (err) => {
+        this.loadingFinancial = false;
+        console.error('Error actualizando perfil', err);
+        this.alert.show('Error al actualizar perfil financiero', 'error');
+      },
+    });
+  }
+
+  /* ===================== CATEGORIES ACTIONS ===================== */
+
+  handleCreateCategory(data: { name: string; record_type_id: number; color: string }): void {
+    this.creatingCategory = true;
+    this.dashboardService.createCategory({
+      name: data.name.trim(),
+      record_type_id: Number(data.record_type_id),
+      color: data.color
+    }).subscribe({
+      next: (cat) => {
+        this.alert.show(`Categoría "${cat.name}" creada con éxito`, 'success');
+        this.showNewCategoryModal = false;
+        this.creatingCategory = false;
+        this.loadCategories();
+      },
+      error: (err) => {
+        this.creatingCategory = false;
+        const msg = err.error?.detail || err.error?.name?.[0] || 'Error al crear la categoría';
+        this.alert.show(msg, 'error');
+      }
+    });
+  }
+
+  async handleDeleteCategory(cat: Category): Promise<void> {
+    if (!cat.is_custom) {
+      this.alert.show('No puedes eliminar categorías predeterminadas del sistema', 'error');
+      return;
+    }
+
+    const confirmed = await this.alert.askConfirm(
+      'Eliminar Categoría',
+      `¿Estás seguro de eliminar la categoría "${cat.name}"?`,
+      'Eliminar',
+      'danger'
+    );
+
+    if (confirmed) {
+      this.dashboardService.deleteCategory(cat.id).subscribe({
+        next: () => {
+          this.alert.show('Categoría eliminada con éxito', 'success');
+          this.loadCategories();
+        },
+        error: (err) => {
+          const msg = err.error?.detail || 'No se pudo eliminar la categoría';
+          this.alert.show(msg, 'error');
+        }
+      });
+    }
+  }
+
+  handleValidationError(msg: string): void {
+    this.alert.show(msg, 'error');
+  }
 }

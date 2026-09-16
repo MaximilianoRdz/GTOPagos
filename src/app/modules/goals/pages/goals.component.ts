@@ -1,24 +1,19 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Target, Plus, TrendingUp, Calendar, CheckCircle2, ChevronRight, X, Sparkles, DollarSign, Edit, Trash2, PiggyBank, Trophy, CalendarClock } from 'lucide-angular';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SHARED_IMPORTS } from '../../../shared/shared.config';
+import { Target, Plus, TrendingUp, Sparkles, DollarSign, Trophy } from 'lucide-angular';
 import { GoalsService, Goal } from '../../../core/services/goals/goals.service';
 import { ConfigurationService, UserProfile } from '../../../core/services/configuration/configuration.service';
 import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
 import { AlertsService } from '../../../core/services/alerts/Alerts.service';
+import { ProjectedGoal } from '../../../shared/models';
 import { forkJoin } from 'rxjs';
-
-interface ProjectedGoal extends Goal {
-  disposableIncome: number;
-  monthsToReach: number;
-  recommendedSavings: number;
-  progressPercentage: number;
-}
+import { TourService } from '../../../core/services/tour/tour.service';
 
 @Component({
   selector: 'app-goals',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: SHARED_IMPORTS,
   templateUrl: './goals.component.html'
 })
 export class GoalsComponent implements OnInit {
@@ -26,17 +21,13 @@ export class GoalsComponent implements OnInit {
   Target = Target;
   Plus = Plus;
   TrendingUp = TrendingUp;
-  Calendar = Calendar;
-  CheckCircle2 = CheckCircle2;
-  ChevronRight = ChevronRight;
-  X = X;
   Sparkles = Sparkles;
   DollarSign = DollarSign;
-  Edit = Edit;
-  Trash2 = Trash2;
-  PiggyBank = PiggyBank;
   Trophy = Trophy;
-  CalendarClock = CalendarClock;
+
+  startTour(): void {
+    this.tourService.start('goals', true);
+  }
 
   goals: ProjectedGoal[] = [];
   userProfile: UserProfile | null = null;
@@ -49,21 +40,16 @@ export class GoalsComponent implements OnInit {
   activeTab: 'active' | 'completed' = 'active';
 
   showModal = false;
-  editingGoalId: number | null = null;
+  editingGoal: Goal | null = null;
   deletingGoal = false;
-  newGoal: Partial<Goal> = {
-    name: '',
-    target_amount: 0,
-    saved_amount: 0,
-    target_date: null
-  };
 
   showAddFundsModal = false;
-  addFundsAmount: number | null = null;
   selectedGoalForFunds: Goal | null = null;
   savingFunds = false;
 
   loading = true;
+  private destroyRef = inject(DestroyRef);
+  private tourService = inject(TourService);
 
   constructor(
     private goalsService: GoalsService,
@@ -75,6 +61,7 @@ export class GoalsComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
+    this.tourService.checkAndStartAuto('goals', 1000);
   }
 
   loadData() {
@@ -83,7 +70,9 @@ export class GoalsComponent implements OnInit {
       goals: this.goalsService.getGoals(),
       profile: this.configService.getProfile(),
       dashboard: this.dashboardService.getDashboards()
-    }).subscribe({
+    }).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: (res) => {
         this.userProfile = res.profile;
         this.totalExpenses = res.dashboard.reduce((sum, d) => sum + (d.total_expense || 0), 0);
@@ -154,36 +143,20 @@ export class GoalsComponent implements OnInit {
   }
 
   openModal(goal?: Goal) {
-    if (goal) {
-      this.editingGoalId = goal.id!;
-      this.newGoal = { 
-        name: goal.name, 
-        target_amount: goal.target_amount, 
-        saved_amount: goal.saved_amount,
-        target_date: goal.target_date || null
-      };
-    } else {
-      this.editingGoalId = null;
-      this.newGoal = { name: '', target_amount: 0, saved_amount: 0, target_date: null };
-    }
+    this.editingGoal = goal || null;
     this.showModal = true;
   }
 
   closeModal() {
     this.showModal = false;
-    this.editingGoalId = null;
+    this.editingGoal = null;
   }
 
-  saveGoal() {
-    if (!this.newGoal.name || !this.newGoal.target_amount) {
-      this.alert.show('Por favor llena todos los campos requeridos', 'error');
-      return;
-    }
-
-    if (this.editingGoalId) {
-      this.goalsService.updateGoal(this.editingGoalId, this.newGoal).subscribe({
+  onSaveGoal(data: { name: string; target_amount: number; saved_amount: number; target_date: string | null }) {
+    if (this.editingGoal && this.editingGoal.id) {
+      this.goalsService.updateGoal(this.editingGoal.id, data).subscribe({
         next: (updatedGoal) => {
-          const index = this.goals.findIndex(g => g.id === this.editingGoalId);
+          const index = this.goals.findIndex(g => g.id === this.editingGoal!.id);
           if (index !== -1) {
             this.goals[index] = this.calculateProjections(updatedGoal);
           }
@@ -191,23 +164,27 @@ export class GoalsComponent implements OnInit {
           this.closeModal();
           this.cdr.detectChanges();
         },
-        error: (err) => {
+        error: () => {
           this.alert.show('Error actualizando la meta', 'error');
         }
       });
     } else {
-      this.goalsService.createGoal(this.newGoal).subscribe({
+      this.goalsService.createGoal(data).subscribe({
         next: (goal) => {
           this.goals.push(this.calculateProjections(goal));
           this.alert.show('Meta creada exitosamente', 'success');
           this.closeModal();
           this.cdr.detectChanges();
         },
-        error: (err) => {
+        error: () => {
           this.alert.show('Error creando la meta', 'error');
         }
       });
     }
+  }
+
+  onValidationError(msg: string) {
+    this.alert.show(msg, 'error');
   }
 
   deleteGoal(id: number) {
@@ -222,7 +199,7 @@ export class GoalsComponent implements OnInit {
             this.deletingGoal = false;
             this.cdr.detectChanges();
           },
-          error: (err) => {
+          error: () => {
             this.alert.show('Error eliminando la meta', 'error');
             this.deletingGoal = false;
           }
@@ -233,24 +210,19 @@ export class GoalsComponent implements OnInit {
 
   openAddFundsModal(goal: Goal) {
     this.selectedGoalForFunds = goal;
-    this.addFundsAmount = null;
     this.showAddFundsModal = true;
   }
 
   closeAddFundsModal() {
     this.showAddFundsModal = false;
     this.selectedGoalForFunds = null;
-    this.addFundsAmount = null;
   }
 
-  saveAddFunds() {
-    if (!this.selectedGoalForFunds || !this.addFundsAmount || this.addFundsAmount <= 0) {
-      this.alert.show('Ingresa un monto válido a abonar', 'error');
-      return;
-    }
+  onSaveAddFunds(amount: number) {
+    if (!this.selectedGoalForFunds) return;
 
     this.savingFunds = true;
-    const newSavedAmount = Number(this.selectedGoalForFunds.saved_amount) + Number(this.addFundsAmount);
+    const newSavedAmount = Number(this.selectedGoalForFunds.saved_amount) + Number(amount);
 
     this.goalsService.updateGoal(this.selectedGoalForFunds.id!, { saved_amount: newSavedAmount }).subscribe({
       next: (updatedGoal) => {
@@ -269,7 +241,7 @@ export class GoalsComponent implements OnInit {
         this.closeAddFundsModal();
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.alert.show('Error al registrar el abono', 'error');
         this.savingFunds = false;
         this.cdr.detectChanges();

@@ -12,7 +12,7 @@ import { LucideAngularModule, DollarSign, ChartNoAxesCombined } from 'lucide-ang
     CommonModule,
     LucideAngularModule,
   ],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './auth.component.html',
 })
 export class AuthComponent {

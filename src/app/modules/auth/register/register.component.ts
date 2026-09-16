@@ -11,7 +11,7 @@ import { LucideAngularModule, User } from 'lucide-angular';
     ReactiveFormsModule,
     LucideAngularModule
 ],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {

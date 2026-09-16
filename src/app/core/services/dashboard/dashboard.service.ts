@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environments';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 
 export interface Category {
   id: number;
   name: string;
   record_type_id: number;
+  color?: string;
+  icon?: string;
+  is_custom?: boolean;
 }
 
 export interface CategorySummary {
@@ -53,6 +56,7 @@ export interface DashboardItem {
   id: number;
   name: string;
   description: string;
+  monthly_budget?: number | null;
   dashboard_type: 'EXPENSES' | 'INCOME' | 'BOTH';
   total_income: number;
   total_expense: number;
@@ -63,6 +67,7 @@ export interface DashboardItem {
 export interface CreateDashboardPayload {
   name: string;
   description?: string;
+  monthly_budget?: number | null;
   dashboard_type: 'EXPENSES' | 'INCOME' | 'BOTH';
 }
 
@@ -81,12 +86,14 @@ export interface FinancialRecord {
   category_name: string | null;
   payment_method_id: number | null;
   payment_status_id: number | null;
+  record_behavior?: 'INCOME' | 'EXPENSE';
 }
 
 export interface FinancialRecordType {
   id: number;
   name: string;
   description: string;
+  behavior?: string;
 }
 
 export interface CreateFinancialRecordPayload {
@@ -143,6 +150,12 @@ export class DashboardService {
     );
   }
 
+  getRecentTransactions(): Observable<FinancialRecord[]> {
+    return this.http.get<FinancialRecord[]>(
+      `${this.apiUrl}/dashboard/recent-transactions/`
+    );
+  }
+
   getDashboards(): Observable<DashboardItem[]> {
     return this.http.get<DashboardItem[]>(
       `${this.apiUrl}/dashboards/`
@@ -182,21 +195,26 @@ export class DashboardService {
     return this.http.get<Category[]>(url);
   }
 
-  // Obtiene el historial completo paginado
   getRecords(
     dashboardId: number,
     page: number = 1,
     period: string = 'month'
   ): Observable<RecordsResponse> {
     return this.http.get<RecordsResponse>(
-      `${this.apiUrl}/dashboards/${dashboardId}/records/?page=${page}&period=${period}`
+      `${this.apiUrl}/dashboards/${dashboardId}/records/?page=${page}&period=${period}&page_size=50`
     );
   }
 
+  private recordTypes$?: Observable<FinancialRecordType[]>;
+  private paymentStatuses$?: Observable<PaymentStatus[]>;
+
   getRecordTypes(): Observable<FinancialRecordType[]> {
-    return this.http.get<FinancialRecordType[]>(
-      `${this.apiUrl}/financial-record-types/`
-    );
+    if (!this.recordTypes$) {
+      this.recordTypes$ = this.http.get<FinancialRecordType[]>(
+        `${this.apiUrl}/financial-record-types/`
+      ).pipe(shareReplay(1));
+    }
+    return this.recordTypes$;
   }
 
   createRecord(data: CreateFinancialRecordPayload): Observable<FinancialRecord> {
@@ -220,9 +238,23 @@ export class DashboardService {
   }
 
   getPaymentStatuses(): Observable<PaymentStatus[]> {
-    return this.http.get<PaymentStatus[]>(
-      `${this.apiUrl}/payment-statuses/`
-    );
+    if (!this.paymentStatuses$) {
+      this.paymentStatuses$ = this.http.get<PaymentStatus[]>(
+        `${this.apiUrl}/payment-statuses/`
+      ).pipe(shareReplay(1));
+    }
+    return this.paymentStatuses$;
   }
-  
+
+  createCategory(data: { name: string; record_type_id: number; color?: string; icon?: string }): Observable<Category> {
+    return this.http.post<Category>(`${this.apiUrl}/finance-categories/`, data);
+  }
+
+  deleteCategory(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/finance-categories/${id}/`);
+  }
+
+  getUpcomingDuePayments(): Observable<{ count: number; records: any[] }> {
+    return this.http.get<{ count: number; records: any[] }>(`${this.apiUrl}/dashboard/upcoming-due/`);
+  }
 }

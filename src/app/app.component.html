@@ -1,2 +1,10 @@
-<app-alerts/>
+<!-- Global Aurora Background (Optimized - No CSS Blur) -->
+<div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none transition-colors duration-300 bg-slate-50 dark:bg-slate-950">
+ <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] opacity-40 dark:opacity-20 pointer-events-none" style="background: radial-gradient(circle, rgba(52,211,153,0.8) 0%, rgba(52,211,153,0) 70%);"></div>
+ <div class="absolute top-[10%] right-[-10%] w-[500px] h-[500px] opacity-40 dark:opacity-20 pointer-events-none" style="background: radial-gradient(circle, rgba(45,212,191,0.8) 0%, rgba(45,212,191,0) 70%);"></div>
+ <div class="absolute bottom-[-20%] left-[10%] w-[700px] h-[700px] opacity-40 dark:opacity-20 pointer-events-none" style="background: radial-gradient(circle, rgba(59,130,246,0.8) 0%, rgba(59,130,246,0) 70%);"></div>
+</div>
+
+<app-alerts class="relative z-50"/>
+<app-tour class="relative z-50"/>
 <router-outlet />
