@@ -1,12 +1,6 @@
 import { Routes } from "@angular/router";
 import { LayoutComponent } from "./layout.component";
-import { DashboardComponent } from "../modules/dashboard/dashboard.component";
-import { ConfigurationComponent } from "../modules/configuration/configuration.component";
 import { AuthGuard } from "../core/guards/auth.guard";
-import { BudgetComponent } from "../modules/budget/budget.component";
-import { DashboardsComponent } from "../modules/budget/dashboards/pages/dashboards.component";
-import { GoalsComponent } from "../modules/goals/pages/goals.component";
-import { ReportsComponent } from "../modules/reports/pages/reports.component";
 
 export const layoutRoutes: Routes = [
   {
@@ -16,27 +10,27 @@ export const layoutRoutes: Routes = [
     children: [
       {
         path: 'dashboard',
-        component: DashboardComponent,
+        loadComponent: () => import("../modules/dashboard/dashboard.component").then(m => m.DashboardComponent),
       },
       {
         path: 'budgets',
-        component: DashboardsComponent,
+        loadComponent: () => import("../modules/budget/dashboards/pages/dashboards.component").then(m => m.DashboardsComponent),
       },
       {
         path: 'budgets/:id',
-        component: BudgetComponent,
+        loadComponent: () => import("../modules/budget/budget.component").then(m => m.BudgetComponent),
       },
       {
         path: 'configuration',
-        component: ConfigurationComponent,
+        loadComponent: () => import("../modules/configuration/configuration.component").then(m => m.ConfigurationComponent),
       },
       {
         path: 'goals',
-        component: GoalsComponent,
+        loadComponent: () => import("../modules/goals/pages/goals.component").then(m => m.GoalsComponent),
       },
       {
         path: 'reports',
-        component: ReportsComponent,
+        loadComponent: () => import("../modules/reports/pages/reports.component").then(m => m.ReportsComponent),
       },
     ],
   },

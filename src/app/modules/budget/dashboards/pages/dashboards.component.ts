@@ -1,14 +1,18 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SHARED_IMPORTS } from '../../../../shared/shared.config';
 import { Router } from '@angular/router';
 import * as XLSX from 'xlsx';
-import { forkJoin } from 'rxjs';
+import { forkJoin, finalize } from 'rxjs';
 import { AlertsService } from '../../../../core/services/alerts/Alerts.service';
 import {
   Plus,
   Trash2,
   X,
   Pencil,
+  LayoutDashboard,
+  CheckCircle,
+  Sparkles,
 } from 'lucide-angular';
 
 import {
@@ -16,6 +20,8 @@ import {
   DashboardItem,
 } from '../../../../core/services/dashboard/dashboard.service';
 import { ExcelService, ImportedTransaction } from '../../../../core/services/excel/excel.service';
+import { Category } from '../../../../shared/models';
+import { TourService } from '../../../../core/services/tour/tour.service';
 
 @Component({
   selector: 'app-dashboards',
@@ -29,24 +35,29 @@ export class DashboardsComponent implements OnInit {
   readonly Trash2 = Trash2;
   readonly X = X;
   readonly Pencil = Pencil;
+  readonly Sparkles = Sparkles;
+  LayoutDashboard = LayoutDashboard;
+  CheckCircle = CheckCircle;
+
+  startTour(): void {
+    this.tourService.start('budgets', true);
+  }
 
   dashboards: DashboardItem[] = [];
   expenseDashboardsList: DashboardItem[] = [];
   incomeDashboardsList: DashboardItem[] = [];
   editingDashboard: DashboardItem | null = null;
-
-  showDeleteModal = false;
-  dashboardToDelete: number | null = null;
+  showCreateModal = false;
 
   importedTransactions: ImportedTransaction[] = [];
   importedRecords: any[] = [];
   showImportModal = false;
 
-  categories: any[] = [];
-
+  categories: Category[] = [];
+  isConfirmingImport = false;
   loading = true;
-
-  showCreateModal = false;
+  private destroyRef = inject(DestroyRef);
+  private tourService = inject(TourService);
 
   dashboardTypes = [
     {
@@ -63,13 +74,6 @@ export class DashboardsComponent implements OnInit {
     }
   ];
 
-  dashboardForm = {
-    name: '',
-    description: '',
-    dashboard_type: 'BOTH' as 'EXPENSES' | 'INCOME' | 'BOTH',
-  };
-  
-
   constructor(
     private dashboardService: DashboardService,
     private excelService: ExcelService,
@@ -81,18 +85,13 @@ export class DashboardsComponent implements OnInit {
   ngOnInit(): void {
     this.loadDashboards();
     this.loadCategories();
+    this.tourService.checkAndStartAuto('budgets', 1000);
   }
 
   // =========================
   // GETTERS
   // =========================
 
-  getDashboardsForItem(item: ImportedTransaction) {
-    if (item.behavior === 'INCOME') {
-      return this.incomeDashboardsList;
-    }
-    return this.expenseDashboardsList;
-  }
 
   formatCurrency(amount: number): string {
 
@@ -105,8 +104,9 @@ export class DashboardsComponent implements OnInit {
 
   loadDashboards(): void {
 
-    this.dashboardService.getDashboards()
-      .subscribe({
+    this.dashboardService.getDashboards().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
         next: (data) => {
           const validData = Array.isArray(data) ? data : [];
           this.dashboards = validData;
@@ -133,134 +133,66 @@ export class DashboardsComponent implements OnInit {
   }
 
   openCreateModal(dashboard?: DashboardItem): void {
-
+    this.editingDashboard = dashboard || null;
     this.showCreateModal = true;
-
-    if (dashboard) {
-      this.editingDashboard = dashboard;
-
-      this.dashboardForm = {
-        name: dashboard.name,
-        description: dashboard.description,
-        dashboard_type: dashboard.dashboard_type,
-      };
-
-      return;
-    }
-
-    this.editingDashboard = null;
-
-    this.dashboardForm = {
-      name: '',
-      description: '',
-      dashboard_type: 'BOTH',
-    };
   }
 
   closeCreateModal(): void {
-
     this.showCreateModal = false;
-
     this.editingDashboard = null;
-
-    this.dashboardForm = {
-      name: '',
-      description: '',
-      dashboard_type: 'BOTH',
-    };
   }
 
-  createDashboard(): void {
-
-    if (!this.dashboardForm.name.trim()) {
-
-      this.alert.show(
-        'El nombre del dashboard es requerido',
-        'error'
-      );
-
-      return;
-    }
-
+  handleDashboardSave(data: { name: string; description: string; monthly_budget?: number | null; dashboard_type: 'EXPENSES' | 'INCOME' | 'BOTH' }): void {
     if (this.editingDashboard) {
       this.dashboardService
-        .updateDashboard(this.editingDashboard.id, this.dashboardForm)
+        .updateDashboard(this.editingDashboard.id, data)
         .subscribe({
           next: () => {
-            this.alert.show(
-              'Dashboard actualizado correctamente',
-              'success'
-            );
+            this.alert.show('Dashboard actualizado correctamente', 'success');
             this.closeCreateModal();
             this.loadDashboards();
-
           },
-
-          error: (err) => {
+          error: () => {
             this.alert.show('Error al actualizar el dashboard', 'error');
           }
         });
-
       return;
+    }
+
+    this.dashboardService
+      .createDashboard(data)
+      .subscribe({
+        next: () => {
+          this.alert.show('Dashboard creado correctamente', 'success');
+          this.closeCreateModal();
+          this.loadDashboards();
+        },
+        error: () => {
+          this.alert.show('Error al crear el dashboard', 'error');
+        }
+      });
   }
 
-  this.dashboardService
-    .createDashboard(this.dashboardForm)
-    .subscribe({
-      next: () => {
+  async deleteDashboard(dashboard: DashboardItem): Promise<void> {
+    const confirmed = await this.alert.askConfirm(
+      'Eliminar Dashboard',
+      `¿Estás seguro de eliminar el espacio "${dashboard.name}" permanentemente? No podrás recuperarlo después.`,
+      'Sí, eliminar',
+      'danger'
+    );
 
-        this.alert.show(
-          'Dashboard creado correctamente',
-          'success'
-        );
-        this.closeCreateModal();
-        this.loadDashboards();
-
-      },
-
-      error: (err) => {
-        this.alert.show('Error al crear el dashboard', 'error');
-      }
-    });
+    if (confirmed) {
+      this.dashboardService.deleteDashboard(dashboard.id).subscribe({
+        next: () => {
+          this.alert.show('Dashboard eliminado correctamente', 'success');
+          this.loadDashboards();
+        },
+        error: () => {
+          this.alert.show('Error al eliminar el dashboard', 'error');
+        }
+      });
+    }
   }
-
-  deleteDashboard(dashboardId: number, event: MouseEvent): void {
-    event.stopPropagation();
-
-    this.dashboardToDelete = dashboardId;
-    this.showDeleteModal = true;
-  }
-
-  closeDeleteModal(): void {
-
-  this.showDeleteModal = false;
-  this.dashboardToDelete = null;
-}
-
-confirmDelete(): void {
-
-  if (!this.dashboardToDelete) return;
-
-  this.dashboardService.deleteDashboard(this.dashboardToDelete).subscribe({
-      next: () => {
-
-        this.alert.show(
-          'Dashboard eliminado correctamente',
-          'success'
-        );
-
-        this.closeDeleteModal();
-        this.loadDashboards();
-      },
-
-      error: (err) => {
-        this.alert.show(
-          'Error al eliminar el dashboard',
-          'error'
-        );
-      }
-    });
-}
 
 onFileChange(event: any): void {
   const file = event.target.files?.[0];
@@ -295,67 +227,46 @@ closeImportModal(): void {
   this.importedTransactions = [];
 }
 
-  canImport(): boolean {
-    const selected = this.importedTransactions.filter(item => item.selected);
-    if (selected.length === 0) return false;
-    return selected.every(item => item.dashboardId != null);
-  }
+handleImportConfirm(itemsToImport: any[]): void {
+  this.isConfirmingImport = true;
+  const grouped = itemsToImport.reduce((acc, curr) => {
+    const dId = curr.dashboardId;
+    if (!acc[dId]) acc[dId] = [];
+    acc[dId].push(curr);
+    return acc;
+  }, {} as Record<number, any[]>);
 
-  confirmImport(): void {
-    const itemsToImport = this.importedTransactions.filter(item => item.selected);
-    
-    if (itemsToImport.length === 0) {
-      this.alert.show('Debes seleccionar al menos un movimiento para importar', 'error');
-      return;
-    }
-
-    const invalidItems = itemsToImport.filter(item => (item as any).dashboardId == null);
-
-    if (invalidItems.length) {
-      this.alert.show('Todos los movimientos seleccionados deben tener un dashboard asignado', 'error');
-      return;
-    }
-  
-    // We need to send them grouped by dashboard_id
-    const grouped = itemsToImport.reduce((acc, curr) => {
-        const dId = (curr as any).dashboardId;
-        if (!acc[dId]) acc[dId] = [];
-        acc[dId].push(curr);
-        return acc;
-    }, {} as Record<number, any[]>);
-    
-    const requests = Object.keys(grouped).map(dId => {
-        return this.excelService.confirmImport({
-            dashboard_id: Number(dId),
-            records: grouped[Number(dId)]
-        });
+  const requests = Object.keys(grouped).map(dId => {
+    return this.excelService.confirmImport({
+      dashboard_id: Number(dId),
+      records: grouped[Number(dId)]
     });
+  });
 
-    forkJoin(requests).subscribe({
+  forkJoin(requests)
+    .pipe(finalize(() => { this.isConfirmingImport = false; }))
+    .subscribe({
       next: () => {
         this.alert.show('Movimientos importados correctamente', 'success');
         this.closeImportModal();
         this.loadDashboards();
       },
-      error: (err) => {
+      error: () => {
         this.alert.show('Error al importar movimientos', 'error');
       }
     });
-  }
+}
 
 loadCategories(): void {
-
   this.dashboardService
-    .getCategories()
+    .getCategories().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    )
     .subscribe({
-
       next: (data) => {
-        this.categories =
-          data;
+        this.categories = data as Category[];
       },
-
-      error: (err) => {
-
+      error: () => {
         this.alert.show(
           'No se pudieron cargar las categorías',
           'error'

@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { LayoutService } from '../../../core/services/layout/layout.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router, NavigationEnd } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { Subscription, filter } from 'rxjs';
 import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, User, Settings, LogOut, Menu } from 'lucide-angular';
 
 interface MenuItem {
@@ -19,7 +19,7 @@ interface MenuItem {
   selector: 'app-sidebar',
   imports: [CommonModule, LucideAngularModule ],
   templateUrl: './sidebar.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent implements OnDestroy {
@@ -38,14 +38,19 @@ export class SidebarComponent implements OnDestroy {
   private subscription!: Subscription;
   private layoutSub!: Subscription;
 
-  menuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: this.Layers, hasDropdown: true, route: '/dashboard' },
-    { id: 'budgets', label: 'Presupuesto', icon: this.Wallet, route: '/budgets' },
-    { id: 'goals', label: 'Metas', icon: this.Target, route: '/goals' },
-    { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing, route: '/reports' },
-  ];
+  menuItems = computed<MenuItem[]>(() => [
+    { id: 'dashboard', label: this.i18n.t().dashboard, icon: this.Layers, hasDropdown: true, route: '/dashboard' },
+    { id: 'budgets', label: this.i18n.t().budgets, icon: this.Wallet, route: '/budgets' },
+    { id: 'goals', label: this.i18n.t().goals, icon: this.Target, route: '/goals' },
+    { id: 'reports', label: this.i18n.t().reports, icon: this.ChartColumnDecreasing, route: '/reports' },
+  ]);
 
-  constructor(private layoutService: LayoutService, private router: Router, public auth: AuthService) {
+  constructor(
+    private layoutService: LayoutService, 
+    private router: Router, 
+    public auth: AuthService, 
+    public i18n: I18nService
+  ) {
     this.subscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -65,7 +70,7 @@ export class SidebarComponent implements OnDestroy {
   }
 
   setActiveSection(sectionId: string) {
-    const item = this.menuItems.find(m => m.id === sectionId);
+    const item = this.menuItems().find((m: MenuItem) => m.id === sectionId);
     if (!item) return;
 
     this.activeSection = sectionId;

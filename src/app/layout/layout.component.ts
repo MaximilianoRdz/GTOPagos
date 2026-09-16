@@ -6,7 +6,7 @@ import { SidebarComponent } from "../shared/ui/sidebar/sidebar.component";
 @Component({
   selector: 'app-layout',
   imports: [RouterOutlet, SidebarComponent],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './layout.component.html',
 })
 export class LayoutComponent { 

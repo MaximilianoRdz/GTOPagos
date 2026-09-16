@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../../environments/environments';
 
 export interface Currency {
@@ -59,15 +59,24 @@ export class ConfigurationService {
 
   constructor(private http: HttpClient) {}
 
+  private currencies$?: Observable<Currency[]>;
+  private incomeFrequencies$?: Observable<IncomeFrequency[]>;
+
   /* ====== Catalogs ====== */
   getCurrencies(): Observable<Currency[]> {
-    return this.http.get<Currency[]>(`${this.baseUrl}/currencies/`);
+    if (!this.currencies$) {
+      this.currencies$ = this.http.get<Currency[]>(`${this.baseUrl}/currencies/`).pipe(shareReplay(1));
+    }
+    return this.currencies$;
   }
 
   getIncomeFrequencies(): Observable<IncomeFrequency[]> {
-    return this.http.get<IncomeFrequency[]>(
-      `${this.baseUrl}/income-frequencies/`
-    );
+    if (!this.incomeFrequencies$) {
+      this.incomeFrequencies$ = this.http.get<IncomeFrequency[]>(
+        `${this.baseUrl}/income-frequencies/`
+      ).pipe(shareReplay(1));
+    }
+    return this.incomeFrequencies$;
   }
 
   /* ====== Profile ====== */

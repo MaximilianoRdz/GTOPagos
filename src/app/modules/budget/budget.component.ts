@@ -1,9 +1,11 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SHARED_IMPORTS } from '../../shared/shared.config';
+import { RecordModalSaveEvent } from '../../shared/ui/organisms/record-modal/record-modal.component';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin, of, catchError } from 'rxjs';
 import { AlertsService } from '../../core/services/alerts/Alerts.service';
+import { ConfigurationService, UserProfile, IncomeFrequency } from '../../core/services/configuration/configuration.service';
 import {
   TrendingUp,
   TrendingDown,
@@ -12,12 +14,15 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   ChevronRight,
   ChevronLeft,
   Plus,
   X,
   Pencil,
   Trash,
+  Repeat,
+  CreditCard,
 } from 'lucide-angular';
 
 import {
@@ -36,7 +41,7 @@ import {
   selector: 'app-budget',
   standalone: true,
   imports: SHARED_IMPORTS,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './budget.component.html',
 })
 export class BudgetComponent implements OnInit {
@@ -49,17 +54,32 @@ export class BudgetComponent implements OnInit {
   readonly Clock = Clock;
   readonly CheckCircle = CheckCircle;
   readonly AlertCircle = AlertCircle;
+  readonly AlertTriangle = AlertTriangle;
   readonly ChevronRight = ChevronRight;
   readonly ChevronLeft = ChevronLeft;
   readonly Plus = Plus;
   readonly X = X;
   readonly Pencil = Pencil;
   readonly Trash = Trash;
+  readonly Repeat = Repeat;
+  readonly CreditCard = CreditCard;
 
   // Tab activo
   activeTab: 'expenses' | 'income' = 'expenses';
   selectedPeriod: 'month' | 'q1' | 'q2' = 'month';
-  recordFilter: 'all' | 'pending' | 'msi' = 'all';
+  recordFilter: 'all' | 'pending' | 'msi' | 'recurrent' = 'all';
+
+  // Perfil de usuario y límites de presupuesto
+  userProfile: UserProfile | null = null;
+  incomeFrequencies: IncomeFrequency[] = [];
+  periodLimit: number = 0;
+  budgetUsagePercentage: number = 0;
+  isNearLimit: boolean = false;
+  isOverLimit: boolean = false;
+  remainingBudget: number = 0;
+  exceededAmount: number = 0;
+  totalGlobalExpenses: number = 0;
+  isCustomBudget: boolean = false;
 
   // Datos dashboard
   dashboardData: DashboardResponse | null = null;
@@ -111,19 +131,13 @@ export class BudgetComponent implements OnInit {
   paidStatusId: number | null = null;
   pendingStatusId: number | null = null;
 
-  isCredit: boolean = false;
-
-  formData = {
-    amount: null as number | null,
-    description: '',
-    category_id: null as number | null,
-    payment_status_id: null as number | null,
-    payment_type: 'DEBIT' as 'DEBIT' | 'CREDIT',
-    total_installments: 1,
-    record_date: new Date().toISOString().split('T')[0],
-  };
-
-  constructor(private dashboardService: DashboardService, private route: ActivatedRoute, private location: Location, private alert: AlertsService) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private configService: ConfigurationService,
+    private route: ActivatedRoute,
+    private location: Location,
+    public alert: AlertsService
+  ) {}
 
   ngOnInit(): void {
     const id = Number(
@@ -132,6 +146,7 @@ export class BudgetComponent implements OnInit {
 
     this.selectedDashboardId = id;
 
+    this.loadUserProfile();
     this.loadDashboardInfo();
     this.loadDashboard();
     this.loadRecords(1);
@@ -155,6 +170,15 @@ export class BudgetComponent implements OnInit {
   // GETTERS
   // =========================
 
+  get currentPeriodLabel(): string {
+    switch (this.selectedPeriod) {
+      case 'q1': return '1ra Quincena';
+      case 'q2': return '2da Quincena';
+      case 'month': return 'Mes Completo';
+      default: return 'Periodo';
+    }
+  }
+
   get isExpenses(): boolean {
     return this.activeTab === 'expenses';
   }
@@ -175,32 +199,139 @@ export class BudgetComponent implements OnInit {
     return this.selectedDashboard?.dashboard_type === 'BOTH';
   }
 
-  get filteredRecords(): FinancialRecord[] {
+  get isCreditCardDashboard(): boolean {
+    if (!this.selectedDashboard) return false;
+    const name = (this.selectedDashboard.name || '').toLowerCase();
+    const desc = (this.selectedDashboard.description || '').toLowerCase();
+    return (
+      name.includes('tarjeta') ||
+      name.includes('crédito') ||
+      name.includes('credito') ||
+      name.includes('credit') ||
+      name.includes('bbva') ||
+      name.includes('amex') ||
+      name.includes('nu') ||
+      desc.includes('tarjeta') ||
+      desc.includes('crédito') ||
+      desc.includes('credito')
+    );
+  }
 
+  get adviceContext(): 'budget' | 'credit' {
+    return this.isCreditCardDashboard ? 'credit' : 'budget';
+  }
+
+  get currentTabRecords(): FinancialRecord[] {
     if (!this.recordsData?.results || !this.selectedDashboardId) {
       return [];
     }
 
     const currentTypeId = this.getCurrentRecordTypeId();
 
-    return this.recordsData.results.filter(
-      (record) => {
-        const typeMatch = Number(record.record_type_id) === Number(currentTypeId);
-        const dashMatch = Number(record.dashboard_id) === Number(this.selectedDashboardId);
-        
-        if (!typeMatch || !dashMatch) return false;
+    return this.recordsData.results.filter((record) => {
+      const dashMatch = Number(record.dashboard_id) === Number(this.selectedDashboardId);
+      if (!dashMatch) return false;
 
-        if (this.recordFilter === 'pending') {
-          return record.payment_status_id === this.pendingStatusId;
-        }
+      const typeMatch = this.isExpenses
+        ? (currentTypeId && Number(record.record_type_id) === Number(currentTypeId)) || record.record_behavior === 'EXPENSE'
+        : (currentTypeId && Number(record.record_type_id) === Number(currentTypeId)) || record.record_behavior === 'INCOME';
 
-        if (this.recordFilter === 'msi') {
-          return record.payment_type === 'CREDIT' && (record.total_installments || 1) > 1;
-        }
+      return typeMatch;
+    });
+  }
 
-        return true;
-      }
-    );
+  get allCount(): number {
+    return this.currentTabRecords.length;
+  }
+
+  get pendingCount(): number {
+    return this.currentTabRecords.filter((r) => this.isRecordPending(r)).length;
+  }
+
+  get msiCount(): number {
+    return this.currentTabRecords.filter((r) => this.isRecordMsi(r)).length;
+  }
+
+  get recurrentCount(): number {
+    return this.currentTabRecords.filter((r) => this.isRecordRecurrent(r)).length;
+  }
+
+  isRecordPending(record: FinancialRecord): boolean {
+    if (this.pendingStatusId !== null) {
+      return Number(record.payment_status_id) === Number(this.pendingStatusId);
+    }
+    if (this.paidStatusId !== null) {
+      return Number(record.payment_status_id) !== Number(this.paidStatusId);
+    }
+    return false;
+  }
+
+  isRecordPaid(record: FinancialRecord): boolean {
+    if (this.paidStatusId !== null) {
+      return Number(record.payment_status_id) === Number(this.paidStatusId);
+    }
+    return false;
+  }
+
+  isRecordMsi(record: FinancialRecord): boolean {
+    const totalInst = Number(record.total_installments || 1);
+    return totalInst > 1 || (record.payment_type === 'CREDIT' && totalInst > 1);
+  }
+
+  isRecordRecurrent(record: FinancialRecord): boolean {
+    return record.is_recurrent === true;
+  }
+
+  isRecordExpense(record: FinancialRecord): boolean {
+    if (this.expenseRecordTypeId !== null && Number(record.record_type_id) === Number(this.expenseRecordTypeId)) {
+      return true;
+    }
+    return record.record_behavior === 'EXPENSE' || this.isExpenses;
+  }
+
+  get filteredRecords(): FinancialRecord[] {
+    const records = this.currentTabRecords;
+
+    if (this.recordFilter === 'pending') {
+      return records.filter((r) => this.isRecordPending(r));
+    }
+
+    if (this.recordFilter === 'msi') {
+      return records.filter((r) => this.isRecordMsi(r));
+    }
+
+    if (this.recordFilter === 'recurrent') {
+      return records.filter((r) => this.isRecordRecurrent(r));
+    }
+
+    return records;
+  }
+
+  get emptyStateTitle(): string {
+    switch (this.recordFilter) {
+      case 'pending': return '¡Todo al día!';
+      case 'msi': return 'Sin compras a MSI';
+      case 'recurrent': return 'Sin movimientos recurrentes';
+      default: return 'Todo al día';
+    }
+  }
+
+  get emptyStateDescription(): string {
+    switch (this.recordFilter) {
+      case 'pending': return 'No tienes movimientos pendientes en este periodo. ¡Excelente control!';
+      case 'msi': return 'No tienes compras a meses sin intereses en este periodo.';
+      case 'recurrent': return 'No tienes movimientos marcados como recurrentes en este periodo.';
+      default: return 'No tienes movimientos en este periodo. ¡Excelente control de tus finanzas!';
+    }
+  }
+
+  get emptyStateIcon(): any {
+    switch (this.recordFilter) {
+      case 'pending': return this.Clock;
+      case 'msi': return this.CreditCard;
+      case 'recurrent': return this.Repeat;
+      default: return this.CheckCircle;
+    }
   }
 
   // =========================
@@ -225,26 +356,9 @@ export class BudgetComponent implements OnInit {
   }
 
   closeCreateModal(): void {
-
     this.showCreateModal = false;
     this.categories = [];
-
     this.editingRecord = null;
-
-    this.resetForm();
-  }
-
-  resetForm(): void {
-    this.isCredit = false;
-    this.formData = {
-      amount: null,
-      description: '',
-      category_id: null,
-      payment_status_id: null,
-      payment_type: 'DEBIT',
-      total_installments: 1,
-      record_date: new Date().toISOString().split('T')[0],
-    };
   }
 
   // =========================
@@ -263,6 +377,7 @@ export class BudgetComponent implements OnInit {
         next: (data) => {
           this.dashboardData = data;
           this.loading = false;
+          this.calculateBudgetLimits();
         },
         error: (err) => {
           this.error = 'Error al cargar el dashboard';
@@ -271,15 +386,113 @@ export class BudgetComponent implements OnInit {
       });
   }
 
-  loadDashboardInfo(): void {
+  loadUserProfile(): void {
+    forkJoin({
+      profile: this.configService.getProfile().pipe(catchError(() => of(null))),
+      frequencies: this.configService.getIncomeFrequencies().pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ profile, frequencies }) => {
+        this.userProfile = profile;
+        this.incomeFrequencies = frequencies;
+        if (this.userProfile && frequencies.length > 0) {
+          const freqId = (profile as any)?.income_frequency_id || (profile as any)?.income_frequency?.id;
+          if (freqId) {
+            this.userProfile.income_frequency = frequencies.find(f => Number(f.id) === Number(freqId)) || null;
+          }
+        }
+        this.calculateBudgetLimits();
+      }
+    });
+  }
 
+  calculateBudgetLimits(): void {
+    let salary = 0;
+    if (this.userProfile && this.userProfile.salary) {
+      salary = Number(this.userProfile.salary);
+    }
+
+    let freqName = '';
+    if (this.userProfile) {
+      if (this.userProfile.income_frequency?.name) {
+        freqName = this.userProfile.income_frequency.name.toLowerCase();
+      } else {
+        const freqId = (this.userProfile as any)?.income_frequency_id;
+        if (freqId && this.incomeFrequencies.length > 0) {
+          const match = this.incomeFrequencies.find(f => Number(f.id) === Number(freqId));
+          if (match) freqName = match.name.toLowerCase();
+        }
+      }
+    }
+
+    // Sueldo base ajustado según frecuencia y período seleccionado
+    let baseSalary = 0;
+    if (salary > 0) {
+      if (freqName.includes('quincen') || freqName.includes('catorcen')) {
+        baseSalary = this.selectedPeriod === 'month' ? salary * 2 : salary;
+      } else if (freqName.includes('seman')) {
+        baseSalary = this.selectedPeriod === 'month' ? salary * 4 : salary * 2;
+      } else {
+        baseSalary = this.selectedPeriod === 'month' ? salary : salary / 2;
+      }
+    }
+
+    // Gasto en este espacio específico
+    const currentExpense = Number(this.dashboardData?.expense_summary?.total_amount || 0);
+
+    // Gastos en los otros dashboards (excluyendo este espacio)
+    const otherDashboardsExpenses = Math.max(0, this.totalGlobalExpenses - currentExpense);
+
+    // OPCIÓN B: ¿Este dashboard tiene un límite / presupuesto mensual propio asignado por el usuario?
+    const customBudget = this.selectedDashboard?.monthly_budget != null && Number(this.selectedDashboard.monthly_budget) > 0
+      ? Number(this.selectedDashboard.monthly_budget)
+      : null;
+
+    if (customBudget !== null) {
+      // Tiene presupuesto / límite propio (ej. tarjeta de crédito con línea de $15,000)
+      this.isCustomBudget = true;
+      this.periodLimit = this.selectedPeriod === 'month' ? customBudget : customBudget / 2;
+
+      const usage = this.periodLimit > 0 ? (currentExpense / this.periodLimit) * 100 : 0;
+      this.budgetUsagePercentage = Math.round(usage * 10) / 10;
+      this.remainingBudget = Math.max(0, this.periodLimit - currentExpense);
+      this.exceededAmount = Math.max(0, currentExpense - this.periodLimit);
+      this.isNearLimit = this.budgetUsagePercentage >= 80 && this.budgetUsagePercentage < 100;
+      this.isOverLimit = this.budgetUsagePercentage >= 100;
+    } else if (baseSalary > 0) {
+      // OPCIÓN A: No tiene límite propio -> El límite es lo que realmente tienes DISPONIBLE de tu sueldo
+      this.isCustomBudget = false;
+      // Tu techo real de gasto para este espacio: sueldo menos lo que ya gastaste en otros dashboards
+      this.periodLimit = Math.max(0, baseSalary - otherDashboardsExpenses);
+
+      const usage = this.periodLimit > 0 ? (currentExpense / this.periodLimit) * 100 : 0;
+      this.budgetUsagePercentage = Math.round(usage * 10) / 10;
+      this.remainingBudget = Math.max(0, this.periodLimit - currentExpense);
+      this.exceededAmount = Math.max(0, currentExpense - this.periodLimit);
+      this.isNearLimit = this.budgetUsagePercentage >= 80 && this.budgetUsagePercentage < 100;
+      this.isOverLimit = this.budgetUsagePercentage >= 100;
+    } else {
+      this.isCustomBudget = false;
+      this.periodLimit = Number(this.dashboardData?.income_summary?.total_amount || 0);
+      const usage = this.periodLimit > 0 ? (currentExpense / this.periodLimit) * 100 : 0;
+      this.budgetUsagePercentage = Math.round(usage * 10) / 10;
+      this.remainingBudget = Math.max(0, this.periodLimit - currentExpense);
+      this.exceededAmount = Math.max(0, currentExpense - this.periodLimit);
+      this.isNearLimit = this.budgetUsagePercentage >= 80 && this.budgetUsagePercentage < 100;
+      this.isOverLimit = this.budgetUsagePercentage >= 100;
+    }
+  }
+
+  loadDashboardInfo(): void {
     if (!this.selectedDashboardId) return;
 
     this.dashboardService
       .getDashboards()
       .subscribe({
-
         next: (dashboards) => {
+          this.totalGlobalExpenses = dashboards.reduce(
+            (sum, d) => sum + Number(d.total_expense || 0),
+            0
+          );
 
           this.selectedDashboard =
             dashboards.find(
@@ -291,7 +504,6 @@ export class BudgetComponent implements OnInit {
           switch (
             this.selectedDashboard?.dashboard_type
           ) {
-
             case 'INCOME':
               this.activeTab = 'income';
               break;
@@ -305,8 +517,9 @@ export class BudgetComponent implements OnInit {
               this.activeTab = 'expenses';
               break;
           }
-        },
 
+          this.calculateBudgetLimits();
+        },
         error: (err) => {
           console.error(
             'Error loading dashboard info:',
@@ -340,92 +553,6 @@ export class BudgetComponent implements OnInit {
         },
         error: (err) => {
           this.loadingRecords = false;
-        },
-      });
-  }
-
-  createRecord(): void {
-    if (this.creatingRecord) return;
-    if (!this.selectedDashboardId) return;
-
-    const recordTypeId = this.getCurrentRecordTypeId();
-
-    if (!recordTypeId) {
-      this.alert.show(
-        'Los tipos de registros aún están cargando',
-        'info'
-      );
-      return;
-    }
-
-    if (this.paidStatusId === null || this.pendingStatusId === null) {
-      this.alert.show(
-        'Estados de pago aún cargando',
-        'info'
-      );
-      return;
-    }
-
-    if (this.formData.amount === null || this.formData.amount <= 0) {
-      this.alert.show(
-        'Monto requerido',
-        'info'
-      );
-      return;
-    }
-
-    if (!this.formData.category_id) {
-      this.alert.show(
-        'Categoría requerida',
-        'info'
-      );
-      return;
-    }
-
-
-    const payload: CreateFinancialRecordPayload = {
-      dashboard_id: this.selectedDashboardId,
-      record_type_id: recordTypeId,
-      amount: this.formData.amount,
-      description: this.formData.description,
-      record_date: this.formData.record_date,
-      category_id: this.formData.category_id,
-      payment_status_id: this.formData.payment_status_id 
-        ? this.formData.payment_status_id 
-        : (this.isCredit ? this.pendingStatusId : this.paidStatusId),
-      payment_type: (this.isCredit ? 'CREDIT' : 'DEBIT') as 'CREDIT' | 'DEBIT',
-      total_installments:
-        this.isCredit
-          ? this.formData.total_installments || 1
-          : 1,
-    };
-
-    this.creatingRecord = true;
-    this.dashboardService
-      .createRecord(payload)
-      .pipe(
-        finalize(() => {
-          this.creatingRecord = false;
-        })
-      )
-      .subscribe({
-        next: () => {
-
-          this.closeCreateModal();
-          this.loadDashboard();
-          this.loadRecords(1);
-
-          this.alert.show(
-            'Movimiento creado correctamente',
-            'success'
-          );
-        },
-
-        error: (err) => {
-          this.alert.show(
-            'Error al crear movimiento',
-            'error'
-          );
         },
       });
   }
@@ -480,7 +607,7 @@ export class BudgetComponent implements OnInit {
   // TABS & FILTERS
   // =========================
 
-  setFilter(filter: 'all' | 'pending' | 'msi'): void {
+  setFilter(filter: 'all' | 'pending' | 'msi' | 'recurrent'): void {
     this.recordFilter = filter;
   }
 
@@ -501,8 +628,6 @@ export class BudgetComponent implements OnInit {
     this.activeTab = tab;
     this.recordFilter = 'all';
 
-    this.formData.category_id = null;
-
     // refresca lista
     this.loadRecords(1);
 
@@ -519,102 +644,59 @@ export class BudgetComponent implements OnInit {
   openEditModal(record: FinancialRecord): void {
     this.editingRecord = record;
     this.showCreateModal = true;
-    this.isCredit = record.payment_type === 'CREDIT';
-
-    this.formData = {
-      amount: Number(record.amount),
-      description: record.description || '',
-      category_id: record.category_id,
-      payment_status_id: record.payment_status_id,
-      payment_type: record.payment_type,
-      total_installments: record.total_installments || 1,
-      record_date: record.record_date,
-    };
-
-    this.loadCategories(
-      record.record_type_id
-    );
+    this.loadCategories(record.record_type_id);
   }
 
-  updateRecord(): void {
-    if (this.creatingRecord) return;
-    if (!this.editingRecord) return;
+  handleModalSave(event: RecordModalSaveEvent): void {
+    if (!this.selectedDashboardId) return;
 
-    if (this.paidStatusId === null || this.pendingStatusId === null) {
-      this.alert.show(
-        'Estados de pago aún cargando',
-        'info'
-      );
-      return;
-    }
-
-    if (this.formData.amount === null || this.formData.amount <= 0) {
-      this.alert.show(
-        'Ingresa un monto válido',
-        'info'
-      );
-      return;
-    }
-
-    if (!this.formData.category_id) {
-      this.alert.show(
-        'Categoría requerida',
-        'info'
-      );
-      return;
-    }
-
-    const payload = {
-      amount: this.formData.amount,
-      description: this.formData.description,
-      category_id: this.formData.category_id,
-      record_date: this.formData.record_date,
-
-      payment_status_id: this.formData.payment_status_id 
-        ? this.formData.payment_status_id 
-        : (this.isCredit ? this.pendingStatusId : this.paidStatusId),
-      payment_type: (this.isCredit ? 'CREDIT' : 'DEBIT') as 'CREDIT' | 'DEBIT',
-
-      total_installments:
-        this.isCredit
-          ? this.formData.total_installments || 1
-          : 1,
-    };
-
-    this.creatingRecord = true;
-
-    this.dashboardService
-      .updateRecord(
-        this.editingRecord.id,
-        payload
-      )
-      .subscribe({
-
+    if (event.isEditing && event.recordId) {
+      this.creatingRecord = true;
+      this.dashboardService.updateRecord(event.recordId, event.payload).subscribe({
         next: () => {
-
           this.creatingRecord = false;
-
           this.closeCreateModal();
-
           this.loadDashboard();
           this.loadRecords(this.currentPage);
-
-          this.alert.show(
-            'Movimiento actualizado correctamente',
-            'success'
-          );
+          this.alert.show('Movimiento actualizado correctamente', 'success');
         },
-
-        error: (err) => {
-
+        error: () => {
           this.creatingRecord = false;
-
-          this.alert.show(
-            'Error al actualizar movimiento',
-            'error'
-          );
+          this.alert.show('Error al actualizar movimiento', 'error');
         },
       });
+    } else {
+      const recordTypeId = this.getCurrentRecordTypeId();
+      if (!recordTypeId) {
+        this.alert.show('Los tipos de registros aún están cargando', 'info');
+        return;
+      }
+
+      const fullPayload: CreateFinancialRecordPayload = {
+        ...event.payload as any,
+        dashboard_id: this.selectedDashboardId,
+        record_type_id: recordTypeId,
+      };
+
+      this.creatingRecord = true;
+      this.dashboardService.createRecord(fullPayload)
+        .pipe(finalize(() => { this.creatingRecord = false; }))
+        .subscribe({
+          next: () => {
+            this.closeCreateModal();
+            this.loadDashboard();
+            this.loadRecords(1);
+            this.alert.show('Movimiento creado correctamente', 'success');
+          },
+          error: () => {
+            this.alert.show('Error al crear movimiento', 'error');
+          },
+        });
+    }
+  }
+
+  onValidationError(message: string): void {
+    this.alert.show(message, 'info');
   }
 
   deleteRecord(recordId: number): void {

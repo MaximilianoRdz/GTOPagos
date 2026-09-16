@@ -1,312 +1,137 @@
-<div class="flex h-screen bg-white dark:bg-gray-900">
-  <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-    <main class="flex-1 p-6">
-      <div class="max-w-6xl mx-auto">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-              <lucide-icon [img]="Target" class="w-6 h-6 text-emerald-500"></lucide-icon>
-              Mis Metas
-            </h2>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">
-              Establece objetivos y calcula tu plan de ahorro ideal
-            </p>
+<div class="p-6 text-gray-900 dark:text-gray-100 w-full h-full">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div id="tour-goals-section" class="flex items-center justify-between mb-8">
+      <div id="tour-goals-header">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <lucide-angular [img]="Target" class="w-6 h-6 text-emerald-500"></lucide-angular>
+          Mis Metas
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">
+          Establece objetivos y calcula tu plan de ahorro ideal
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="startTour()"
+          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
+          title="Ver guía interactiva de metas de ahorro"
+        >
+          <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
+          <span>Guía de Metas</span>
+        </button>
+
+        <button
+          id="tour-goals-create"
+          (click)="openModal()"
+          class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm font-medium cursor-pointer"
+        >
+          <lucide-angular [img]="Plus" class="w-5 h-5"></lucide-angular>
+          Nueva Meta
+        </button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="flex items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    } @else {
+      <!-- Dashboard de Capacidad -->
+      <div id="tour-goals-capacity" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <app-stat-card
+          title="Ingreso Mensual"
+          [value]="formatCurrency(userProfile?.salary || 0)"
+          [icon]="DollarSign"
+          colorScheme="blue"
+        />
+        <app-stat-card
+          title="Gastos Mensuales"
+          [value]="formatCurrency(totalExpenses)"
+          [icon]="TrendingUp"
+          colorScheme="rose"
+        />
+        <app-stat-card
+          title="Capacidad de Ahorro"
+          [value]="formatCurrency(disposableIncome)"
+          [icon]="Sparkles"
+          colorScheme="emerald"
+        />
+      </div>
+
+      <!-- Contenedor Principal (Grid 3 Columnas) -->
+      <div id="tour-goals-list" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna Izquierda (Metas) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Tabs -->
+          <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 w-fit">
+            <button
+              (click)="activeTab = 'active'"
+              [class]="'px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ' + (activeTab === 'active' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300')"
+            >
+              Activas ({{ activeGoals.length }})
+            </button>
+            <button
+              (click)="activeTab = 'completed'"
+              [class]="'px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ' + (activeTab === 'completed' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300')"
+            >
+              Logradas ({{ completedGoals.length }})
+            </button>
           </div>
-          <button (click)="openModal()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm font-medium cursor-pointer">
-            <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
-            Nueva Meta
-          </button>
-        </div>
 
-        @if (loading) {
-          <div class="flex items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
-          </div>
-        } @else {
-          <!-- Dashboard de Capacidad -->
-          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div class="flex items-center gap-4">
-                <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                  <lucide-icon [img]="DollarSign" class="w-6 h-6 text-blue-500 dark:text-blue-400"></lucide-icon>
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Ingreso Mensual</p>
-                  <p class="text-xl font-bold text-gray-800 dark:text-white">{{ formatCurrency(userProfile?.salary || 0) }}</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl">
-                  <lucide-icon [img]="TrendingUp" class="w-6 h-6 text-red-500 dark:text-red-400"></lucide-icon>
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Gastos Mensuales</p>
-                  <p class="text-xl font-bold text-gray-800 dark:text-white">{{ formatCurrency(totalExpenses) }}</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">
-                  <lucide-icon [img]="Sparkles" class="w-6 h-6 text-emerald-500 dark:text-emerald-400"></lucide-icon>
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Capacidad de Ahorro</p>
-                  <p class="text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(disposableIncome) }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Contenedor Principal (Grid 3 Columnas) -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Columna Izquierda (Metas) -->
-            <div class="lg:col-span-2 space-y-6">
-              
-              <!-- Tabs -->
-              <div class="flex items-center gap-2 bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 w-fit">
-                <button (click)="activeTab = 'active'" [class]="'px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ' + (activeTab === 'active' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300')">
-                  Activas ({{ activeGoals.length }})
-                </button>
-                <button (click)="activeTab = 'completed'" [class]="'px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ' + (activeTab === 'completed' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300')">
-                  Logradas ({{ completedGoals.length }})
-                </button>
-              </div>
-
-              @if ((activeTab === 'active' ? activeGoals : completedGoals).length === 0) {
-                <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                  <div class="bg-emerald-50 dark:bg-emerald-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <lucide-icon [img]="activeTab === 'active' ? Target : Trophy" class="w-8 h-8 text-emerald-500"></lucide-icon>
-                  </div>
-                  <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ activeTab === 'active' ? 'No tienes metas aún' : 'Aún no has logrado ninguna meta' }}</h3>
-                  @if (activeTab === 'active') {
-                    <p class="text-gray-500 dark:text-gray-400 mt-2 mb-6">Crea una meta para descubrir cuánto tiempo te tomará alcanzarla.</p>
-                    <button (click)="openModal()" class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer">
-                      Crear mi primera meta
-                    </button>
-                  } @else {
-                    <p class="text-gray-500 dark:text-gray-400 mt-2 mb-6">¡Sigue ahorrando en tus metas activas para verlas aquí!</p>
-                  }
-                </div>
-              } @else {
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  @for (goal of (activeTab === 'active' ? activeGoals : completedGoals); track goal.id) {
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col">
-                      <!-- Meta Header -->
-                      <div class="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ goal.name }}</h3>
-                          <p class="text-sm text-gray-500 dark:text-gray-600">Objetivo: {{ formatCurrency(goal.target_amount) }}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                          <div class="bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-600">
-                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ goal.progressPercentage.toFixed(0) }}%</span>
-                          </div>
-                          @if (activeTab === 'active') {
-                            <button (click)="openAddFundsModal(goal)" class="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors cursor-pointer" title="Abonar a Meta">
-                              <lucide-icon [img]="PiggyBank" class="w-4 h-4"></lucide-icon>
-                            </button>
-                          }
-                          <button (click)="openModal(goal)" class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors cursor-pointer" title="Editar Meta">
-                            <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
-                          </button>
-                          <button (click)="deleteGoal(goal.id!)" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer" title="Eliminar Meta">
-                            <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- Progress Bar -->
-                      <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 mb-2 overflow-hidden">
-                        <div class="bg-emerald-500 h-3 rounded-full transition-all duration-1000 ease-out" 
-                             [style.width]="goal.progressPercentage + '%'"></div>
-                      </div>
-                      <div class="flex justify-between text-xs text-gray-500 font-medium mb-6">
-                        <span>Ahorrado: {{ formatCurrency(goal.saved_amount) }}</span>
-                        <span>Restante: {{ formatCurrency(goal.target_amount - goal.saved_amount) }}</span>
-                      </div>
-
-                      <!-- Proyection Box -->
-                      <div class="mt-auto bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-4 border border-emerald-100 dark:border-emerald-800/30">
-                        @if (activeTab === 'completed') {
-                          <div class="flex flex-col items-center justify-center text-center py-2">
-                            <div class="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-full mb-2">
-                              <lucide-icon [img]="Trophy" class="w-6 h-6 text-yellow-600 dark:text-yellow-500"></lucide-icon>
-                            </div>
-                            <h4 class="text-sm font-bold text-yellow-800 dark:text-yellow-400">¡Meta Lograda!</h4>
-                            <p class="text-xs text-yellow-700 dark:text-yellow-500 mt-1">Felicidades por alcanzar tu objetivo.</p>
-                          </div>
-                        } @else {
-                          <h4 class="text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-3 flex items-center gap-2">
-                            <lucide-icon [img]="goal.target_date ? CalendarClock : Sparkles" class="w-4 h-4"></lucide-icon>
-                            {{ goal.target_date ? 'Plan para Fecha Límite' : 'Plan de Ahorro Recomendado' }}
-                          </h4>
-                          
-                          @if (goal.monthsToReach < 999) {
-                            <div class="grid grid-cols-2 gap-4">
-                              <div>
-                                <p class="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase tracking-wider">Tiempo Estimado</p>
-                                <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ goal.monthsToReach }} meses</p>
-                              </div>
-                              <div>
-                                <p class="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase tracking-wider">Ahorro Mensual</p>
-                                <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ formatCurrency(goal.recommendedSavings) }}</p>
-                              </div>
-                            </div>
-                            <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-3 flex items-center gap-1">
-                              <lucide-icon [img]="CheckCircle2" class="w-3 h-3"></lucide-icon>
-                              {{ goal.target_date ? 'Ahorro requerido para cumplir la fecha.' : 'Basado en invertir el 30% de tu capacidad.' }}
-                            </p>
-                          } @else {
-                            <p class="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800/30 flex items-start gap-2">
-                              <lucide-icon [img]="TrendingUp" class="w-5 h-5 shrink-0"></lucide-icon>
-                              Tus gastos actuales superan tus ingresos. Reduce tus gastos mensuales para poder proyectar un plan de ahorro.
-                            </p>
-                          }
-                        }
-                      </div>
-                    </div>
-                  }
-                </div>
+          @if ((activeTab === 'active' ? activeGoals : completedGoals).length === 0) {
+            <app-empty-state
+              [icon]="activeTab === 'active' ? Target : Trophy"
+              [title]="activeTab === 'active' ? 'No tienes metas aún' : 'Aún no has logrado ninguna meta'"
+              [description]="activeTab === 'active' ? 'Crea una meta para descubrir cuánto tiempo te tomará alcanzarla.' : '¡Sigue ahorrando en tus metas activas para verlas aquí!'"
+              [actionText]="activeTab === 'active' ? 'Crear mi primera meta' : ''"
+              [bordered]="true"
+              padding="large"
+              (actionClick)="openModal()"
+            />
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              @for (goal of (activeTab === 'active' ? activeGoals : completedGoals); track goal.id) {
+                <app-goal-card
+                  [goal]="goal"
+                  [isCompleted]="activeTab === 'completed'"
+                  (addFunds)="openAddFundsModal($event)"
+                  (edit)="openModal($event)"
+                  (delete)="deleteGoal($event)"
+                />
               }
             </div>
+          }
+        </div>
 
-            <!-- Columna Derecha (Resumen) -->
-            <div class="lg:col-span-1 space-y-6">
-              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Resumen de Metas</h3>
-                <div class="space-y-4">
-                  <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                    <span class="text-gray-600 dark:text-gray-400 text-sm font-medium">Metas Activas</span>
-                    <span class="text-gray-900 dark:text-white font-bold">{{ activeGoals.length }}</span>
-                  </div>
-                  <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                    <span class="text-gray-600 dark:text-gray-400 text-sm font-medium">Ahorro Guardado</span>
-                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">
-                      {{ formatCurrency(totalSavedAmount) }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
-                  <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-3">Consejo Financiero</h4>
-                  <div class="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded-xl text-sm leading-relaxed">
-                    Destinar al menos el <strong>20%</strong> de tus ingresos al ahorro te ayudará a construir un fondo de emergencia y alcanzar tus objetivos más rápido.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        }
+        <!-- Columna Derecha (Resumen) -->
+        <div class="lg:col-span-1 space-y-6">
+          <app-goals-summary-card
+            [activeGoalsCount]="activeGoals.length"
+            [totalSavedAmount]="totalSavedAmount"
+          />
+        </div>
       </div>
-    </main>
+    }
   </div>
 </div>
 
-<!-- Modal Nueva Meta -->
-@if (showModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Overlay -->
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" (click)="closeModal()"></div>
-    
-    <!-- Modal Content -->
-    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
-      <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <lucide-icon [img]="Target" class="w-5 h-5 text-emerald-500"></lucide-icon>
-          {{ editingGoalId ? 'Editar Meta' : 'Establecer Nueva Meta' }}
-        </h3>
-        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
-        </button>
-      </div>
-
-      <div class="p-6 space-y-5">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Qué quieres lograr?</label>
-          <input type="text" [(ngModel)]="newGoal.name" placeholder="Ej. Silla Ergonómica" 
-                 class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white transition-all outline-none">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Cuánto cuesta?</label>
-          <div class="relative">
-            <lucide-icon [img]="DollarSign" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
-            <input type="number" [(ngModel)]="newGoal.target_amount" placeholder="18000" 
-                   class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white transition-all outline-none">
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Ya tienes algo ahorrado? (Opcional)</label>
-          <div class="relative">
-            <lucide-icon [img]="DollarSign" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
-            <input type="number" [(ngModel)]="newGoal.saved_amount" placeholder="0" 
-                   class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white transition-all outline-none">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha Límite (Opcional)</label>
-          <div class="relative">
-            <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
-            <input type="date" [(ngModel)]="newGoal.target_date" 
-                   class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white transition-all outline-none">
-          </div>
-        </div>
-      </div>
-
-      <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
-        <button (click)="closeModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer">
-          Cancelar
-        </button>
-        <button (click)="saveGoal()" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg transition-colors shadow-sm">
-          {{ editingGoalId ? 'Actualizar Meta' : 'Guardar Meta' }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
+<!-- Modal Nueva / Editar Meta -->
+<app-goal-modal
+  [isOpen]="showModal"
+  [editingGoal]="editingGoal"
+  (close)="closeModal()"
+  (save)="onSaveGoal($event)"
+  (validationError)="onValidationError($event)"
+/>
 
 <!-- Modal Abonar a Meta -->
-@if (showAddFundsModal && selectedGoalForFunds) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" (click)="!savingFunds && closeAddFundsModal()"></div>
-    
-    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all">
-      <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <lucide-icon [img]="PiggyBank" class="w-5 h-5 text-emerald-500"></lucide-icon>
-          Abonar a Meta
-        </h3>
-        <button [disabled]="savingFunds" (click)="closeAddFundsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50">
-          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
-        </button>
-      </div>
-
-      <div class="p-6">
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Meta: <span class="font-bold text-gray-900 dark:text-white">{{ selectedGoalForFunds.name }}</span><br>
-          Te faltan <span class="text-emerald-600 font-bold">{{ formatCurrency(selectedGoalForFunds.target_amount - selectedGoalForFunds.saved_amount) }}</span>
-        </p>
-
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Cuánto vas a abonar?</label>
-        <div class="relative">
-          <lucide-icon [img]="DollarSign" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
-          <input type="number" [(ngModel)]="addFundsAmount" placeholder="0" 
-                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white transition-all outline-none text-lg font-bold">
-        </div>
-      </div>
-
-      <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
-        <button [disabled]="savingFunds" (click)="closeAddFundsModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
-          Cancelar
-        </button>
-        <button [disabled]="savingFunds" (click)="saveAddFunds()" class="px-4 py-2 text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg transition-colors shadow-sm disabled:bg-emerald-400 disabled:cursor-not-allowed cursor-pointer">
-          {{ savingFunds ? 'Guardando...' : 'Abonar' }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
+<app-add-funds-modal
+  [isOpen]="showAddFundsModal"
+  [goal]="selectedGoalForFunds"
+  [savingFunds]="savingFunds"
+  (close)="closeAddFundsModal()"
+  (save)="onSaveAddFunds($event)"
+  (validationError)="onValidationError($event)"
+/>

@@ -1,37 +1,47 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, FileText, Download, Filter, TrendingUp, TrendingDown, DollarSign, Calendar, Search } from 'lucide-angular';
-import { ReportsService, ReportData } from '../../../core/services/reports/reports.service';
-import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
-import { AlertsService } from '../../../core/services/alerts/Alerts.service';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { formatCurrency } from '@angular/common';
 import { SHARED_IMPORTS } from '../../../shared/shared.config';
+import { TrendingUp, TrendingDown, DollarSign, Sparkles } from 'lucide-angular';
+import { ReportsService } from '../../../core/services/reports/reports.service';
+import { DashboardService } from '../../../core/services/dashboard/dashboard.service';
+import { AlertsService } from '../../../core/services/alerts/Alerts.service';
+import { UserFinanceDashboard, ReportData } from '../../../shared/models';
+import { TourService } from '../../../core/services/tour/tour.service';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ...SHARED_IMPORTS],
+  imports: SHARED_IMPORTS,
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit {
   // Icons
-  FileText = FileText;
-  Download = Download;
-  Filter = Filter;
   TrendingUp = TrendingUp;
   TrendingDown = TrendingDown;
   DollarSign = DollarSign;
-  Calendar = Calendar;
-  Search = Search;
+  Sparkles = Sparkles;
 
-  dashboards: any[] = [];
+  startTour(): void {
+    if (!this.reportData && this.selectedDashboardId) {
+      this.generateReport();
+    }
+    this.tourService.start('reports', true);
+  }
+
+  dashboards: UserFinanceDashboard[] = [];
   selectedDashboardId: number | null = null;
   startDate: string = '';
   endDate: string = '';
 
   reportData: ReportData | null = null;
   isLoading = false;
+  private destroyRef = inject(DestroyRef);
+  private tourService = inject(TourService);
+
+  get canDownload(): boolean {
+    return !!(this.reportData && this.reportData.records && this.reportData.records.length > 0);
+  }
 
   constructor(
     private reportsService: ReportsService,
@@ -50,18 +60,22 @@ export class ReportsComponent implements OnInit {
     
     this.startDate = firstDay.toISOString().split('T')[0];
     this.endDate = lastDay.toISOString().split('T')[0];
+    this.tourService.checkAndStartAuto('reports', 1000);
   }
 
   loadDashboards() {
-    this.dashboardService.getDashboards().subscribe({
-      next: (response) => {
-        this.dashboards = response;
+    this.dashboardService.getDashboards().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (response: any) => {
+        this.dashboards = response as UserFinanceDashboard[];
         if (this.dashboards.length > 0) {
           this.selectedDashboardId = this.dashboards[0].id;
+          this.generateReport();
         }
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.alertsService.show('No se pudieron cargar las cuentas.', 'error');
       }
     });
@@ -78,7 +92,9 @@ export class ReportsComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.reportsService.getReportData(this.selectedDashboardId, this.startDate, this.endDate).subscribe({
+    this.reportsService.getReportData(this.selectedDashboardId, this.startDate, this.endDate).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: (data) => {
         this.reportData = data;
         this.isLoading = false;
@@ -87,7 +103,7 @@ export class ReportsComponent implements OnInit {
         }
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.isLoading = false;
         this.alertsService.show('Hubo un error al generar el reporte.', 'error');
         this.cdr.detectChanges();
@@ -103,7 +119,9 @@ export class ReportsComponent implements OnInit {
 
     this.alertsService.show('Preparando tu archivo...', 'info');
 
-    this.reportsService.downloadReport(this.selectedDashboardId, this.startDate, this.endDate, format).subscribe({
+    this.reportsService.downloadReport(this.selectedDashboardId, this.startDate, this.endDate, format).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -115,7 +133,7 @@ export class ReportsComponent implements OnInit {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => {
+      error: () => {
         this.alertsService.show('Hubo un error al descargar el archivo.', 'error');
       }
     });
