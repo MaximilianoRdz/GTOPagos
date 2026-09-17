@@ -38,6 +38,10 @@ module.exports = async (req, res) => {
       }
     }
 
+    // Security headers for backend whitelist verification
+    headers['origin'] = 'https://gtopagos.maxrdzs.com';
+    headers['x-gtopagos-proxy-key'] = 'gtopagos-prod-vault-key-7712';
+
     // Build fetch options
     const fetchOptions = {
       method: req.method,
