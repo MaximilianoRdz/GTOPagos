@@ -5,10 +5,17 @@ module.exports = async (req, res) => {
 
     let targetPath = '';
     if (pathParam !== null && pathParam !== undefined) {
-      const cleanPath = pathParam.replace(/^\/+/, '');
+      let cleanPath = pathParam.replace(/^\/+/, '');
+      if (cleanPath && !cleanPath.endsWith('/') && !cleanPath.includes('.')) {
+        cleanPath += '/';
+      }
       targetPath = cleanPath ? `/api/${cleanPath}` : '/api/';
     } else if (parsedUrl.pathname.startsWith('/api') && !parsedUrl.pathname.startsWith('/api/index')) {
-      targetPath = parsedUrl.pathname;
+      let cleanPath = parsedUrl.pathname;
+      if (!cleanPath.endsWith('/') && !cleanPath.includes('.')) {
+        cleanPath += '/';
+      }
+      targetPath = cleanPath;
     } else {
       targetPath = '/api/';
     }
