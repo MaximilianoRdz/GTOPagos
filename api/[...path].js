@@ -1,5 +1,5 @@
-export default async function handler(req, res) {
-  // Construir la URL destino hacia el backend
+module.exports = async (req, res) => {
+  // Construir la URL destino hacia el backend local
   const targetUrl = `http://api.maxrdzs.com:1450${req.url}`;
 
   try {
@@ -38,8 +38,8 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(502).json({
       error: 'Proxy Error',
-      message: 'No se pudo conectar con el backend en http://api.maxrdzs.com:1450',
+      message: 'No se pudo conectar con el backend local en http://api.maxrdzs.com:1450',
       details: err.message
     });
   }
-}
+};
