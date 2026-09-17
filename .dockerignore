@@ -11,4 +11,3 @@ yarn-error.log*
 .editorconfig
 Dockerfile
 .dockerignore
-nginx.conf
