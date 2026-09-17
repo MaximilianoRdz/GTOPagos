@@ -1,19 +1,19 @@
 # ==========================================
 # 1. Build Stage: Compilar la app Angular
 # ==========================================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copiar definiciones de paquetes e instalar dependencias
-COPY package.json package-lock.json ./
+# Copiar definiciones de paquetes, lock y configuracion de npm (.npmrc con legacy-peer-deps)
+COPY package.json package-lock.json .npmrc* ./
 RUN npm ci
 
 # Copiar el codigo fuente
 COPY . .
 
-# Compilar la aplicacion para produccion
-RUN npm run build -- --configuration=production
+# Compilar la aplicacion para entorno Docker / Produccion
+RUN npm run build -- --configuration=docker
 
 # ==========================================
 # 2. Production Stage: Servir con Nginx Alpine

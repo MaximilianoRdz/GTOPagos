@@ -73,6 +73,33 @@
                 }
               ]
             },
+            "docker": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
+                "fonts": {
+                  "inline": false
+                }
+              },
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environments.ts",
+                  "with": "src/environments/environments.docker.ts"
+                }
+              ]
+            },
+            "local-proxy": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environments.ts",
+                  "with": "src/environments/environments.local-proxy.ts"
+                }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -83,12 +110,18 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "GTOPagos:build:production"
             },
             "development": {
               "buildTarget": "GTOPagos:build:development"
+            },
+            "local-proxy": {
+              "buildTarget": "GTOPagos:build:local-proxy"
             }
           },
           "defaultConfiguration": "development"
