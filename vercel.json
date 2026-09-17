@@ -1,1 +1,1 @@
-{"rewrites":[{"source":"/api/:path*","destination":"http://api.maxrdzs.com:1450/api/:path*"},{"source":"/(.*)","destination":"/index.html"}]}
+{"rewrites":[{"source":"/(.*)","destination":"/index.html"}]}
