@@ -1,13 +1,18 @@
 {
+  "id": "/?source=pwa",
   "name": "GTOPagos - Finanzas Personales",
   "short_name": "GTOPagos",
   "description": "Control de gastos, ingresos, presupuestos y metas financieras personales",
-  "start_url": "/",
+  "lang": "es",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0f172a",
   "theme_color": "#10b981",
+  "categories": ["finance", "productivity", "utilities"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",

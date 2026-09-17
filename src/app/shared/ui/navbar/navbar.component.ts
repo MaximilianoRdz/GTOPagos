@@ -3,7 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { LayoutService } from '../../../core/services/layout/layout.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import { LucideAngularModule, Menu, ChevronRight, LogOut, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, Menu, ChevronRight, LogOut, Sparkles, Settings } from 'lucide-angular';
 import { TourService } from '../../../core/services/tour/tour.service';
 
 @Component({
@@ -16,6 +16,7 @@ export class NavbarComponent implements OnDestroy {
   readonly LogOut = LogOut;
   readonly ChevronRight = ChevronRight;
   readonly Sparkles = Sparkles;
+  readonly Settings = Settings;
 
   isDemoUser = computed(() => this.auth.user()?.email === 'demo@gtopagos.com');
 
@@ -49,6 +50,10 @@ export class NavbarComponent implements OnDestroy {
 
   startTour() {
     this.tourService.start(undefined, true);
+  }
+
+  goToConfiguration() {
+    this.router.navigate(['/configuration']);
   }
 
   toggleSidebar() {

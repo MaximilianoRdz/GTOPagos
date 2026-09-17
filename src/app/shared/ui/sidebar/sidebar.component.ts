@@ -45,6 +45,11 @@ export class SidebarComponent implements OnDestroy {
     { id: 'reports', label: this.i18n.t().reports, icon: this.ChartColumnDecreasing, route: '/reports' },
   ]);
 
+  mobileMenuItems = computed<MenuItem[]>(() => [
+    ...this.menuItems(),
+    { id: 'configuration', label: this.i18n.t().settings, icon: this.Settings, route: '/configuration' },
+  ]);
+
   constructor(
     private layoutService: LayoutService, 
     private router: Router, 
@@ -70,7 +75,7 @@ export class SidebarComponent implements OnDestroy {
   }
 
   setActiveSection(sectionId: string) {
-    const item = this.menuItems().find((m: MenuItem) => m.id === sectionId);
+    const item = this.mobileMenuItems().find((m: MenuItem) => m.id === sectionId);
     if (!item) return;
 
     this.activeSection = sectionId;

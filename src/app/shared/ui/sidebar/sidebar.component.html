@@ -87,13 +87,13 @@
 </aside>
 
 <!-- MOBILE BOTTOM NAVIGATION -->
-<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/60 dark:bg-slate-900/50 border-t border-white/50 dark:border-slate-700/50 flex items-center justify-around px-2 py-1.5 z-[100] shadow-[0_-4px_24px_rgba(0,0,0,0.05)] dark:shadow-none pb-safe">
- @for (item of menuItems(); track item.id) {
- <button (click)="setActiveSection(item.id)" [attr.aria-label]="item.label" class="flex flex-col items-center justify-center p-1 rounded-xl min-w-[60px] gap-1 transition-colors cursor-pointer" [ngClass]="activeSection === item.id ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
- <div [class]="'p-1.5 rounded-full transition-all ' + (activeSection === item.id ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'bg-transparent')">
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-1.5 py-1 z-[100] shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-safe">
+ @for (item of mobileMenuItems(); track item.id) {
+ <button (click)="setActiveSection(item.id)" [attr.aria-label]="item.label" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl gap-0.5 transition-all cursor-pointer select-none" [ngClass]="activeSection === item.id ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
+ <div [class]="'p-1.5 rounded-full transition-all ' + (activeSection === item.id ? 'bg-emerald-50 dark:bg-emerald-500/20 scale-105' : 'bg-transparent')">
  <lucide-angular [img]="item.icon" class="w-5 h-5"></lucide-angular>
  </div>
- <span class="text-[10px] font-medium leading-none">{{ item.label }}</span>
+ <span class="text-[10px] truncate max-w-full leading-tight">{{ item.label }}</span>
  </button>
  }
 </nav>

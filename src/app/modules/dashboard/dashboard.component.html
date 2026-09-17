@@ -61,19 +61,19 @@
       <!-- Charts Section (New) -->
       <div id="tour-charts" class="lg:col-span-2 space-y-6">
         <!-- Monthly Chart -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
           <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ i18n.t().summaryByAccount }}</h3>
-          <div style="height: 250px; position: relative;">
+          <div class="h-[280px] sm:h-[300px] w-full relative">
             <canvas baseChart [data]="monthlyChartData" [options]="monthlyChartOptions" type="bar"></canvas>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           <!-- Category Chart -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 flex flex-col justify-between">
+          <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ i18n.t().expensesByCategory }}</h3>
-            <div class="flex-1 flex items-center justify-center min-h-[220px] w-full">
-              <div style="height: 220px; width: 100%; max-width: 260px; position: relative;">
+            <div class="flex-1 flex items-center justify-center min-h-[240px] w-full">
+              <div class="h-[240px] w-full max-w-[280px] relative">
                 <canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions" type="doughnut"></canvas>
               </div>
             </div>

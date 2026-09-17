@@ -6,41 +6,41 @@
         <p class="text-gray-500 dark:text-gray-400">Elige dónde quieres administrar tus pagos</p>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          (click)="startTour()"
-          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
-          title="Ver guía interactiva de presupuestos"
-        >
-          <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
-          <span>Guía de Presupuestos</span>
-        </button>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            (click)="startTour()"
+            class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
+            title="Ver guía interactiva de presupuestos"
+          >
+            <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"></lucide-angular>
+            <span class="truncate">Guía de Presupuestos</span>
+          </button>
 
-        <input #fileInput type="file" accept=".xlsx,.xls,.csv,.pdf" hidden (change)="onFileChange($event)"/>
-        <button
-          id="tour-budgets-import"
-          type="button"
-          (click)="fileInput.click()"
-          class="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-700
-          text-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-2xl
-          font-semibold shadow-sm border border-white/50 dark:border-slate-700/50
-          transition-all duration-200 cursor-pointer text-sm">
-          <span>Importar Excel o PDF</span>
-        </button>
+          <input #fileInput type="file" accept=".xlsx,.xls,.csv,.pdf" hidden (change)="onFileChange($event)"/>
+          <button
+            id="tour-budgets-import"
+            type="button"
+            (click)="fileInput.click()"
+            class="flex-1 sm:flex-none inline-flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-700
+            text-slate-700 dark:text-slate-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl
+            font-semibold shadow-sm border border-gray-200 dark:border-slate-700/50
+            transition-all duration-200 cursor-pointer text-xs sm:text-sm truncate">
+            <span>Importar</span>
+          </button>
+        </div>
 
         <button
           id="tour-budgets-create"
           type="button"
           (click)="openCreateModal()"
-          class="bg-emerald-600 hover:bg-emerald-700
-          text-white px-5 py-2.5 rounded-2xl
+          class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700
+          text-white px-4 sm:px-5 py-2.5 rounded-2xl
           font-semibold shadow-lg shadow-emerald-500/20
-          transition-all duration-200 cursor-pointer text-sm">
-          <div class="flex items-center gap-2">
-            <lucide-angular [img]="Plus" class="w-4 h-4"></lucide-angular>
-            <span>Crear espacio</span>
-          </div>
+          transition-all duration-200 cursor-pointer text-sm active:scale-95">
+          <lucide-angular [img]="Plus" class="w-4 h-4"></lucide-angular>
+          <span>Crear espacio</span>
         </button>
       </div>
     </div>

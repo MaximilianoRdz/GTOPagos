@@ -152,13 +152,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
           label: 'Gastos',
           data: dashboards.map(d => Number(d.total_expense || 0)),
           backgroundColor: '#f43f5e',
-          borderRadius: 6
+          borderRadius: 6,
+          maxBarThickness: 28
         },
         {
           label: 'Ingresos',
           data: dashboards.map(d => Number(d.total_income || 0)),
           backgroundColor: '#10b981',
-          borderRadius: 6
+          borderRadius: 6,
+          maxBarThickness: 28
         }
       ]
     };
@@ -192,6 +194,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
           titleFont: { family: "'Outfit', sans-serif", weight: 'bold' },
           bodyFont: { family: "'Outfit', sans-serif" },
           callbacks: {
+            title: (items: any[]) => {
+              if (items.length > 0) {
+                const idx = items[0].dataIndex;
+                return dashboards[idx]?.name || items[0].label;
+              }
+              return '';
+            },
             label: (context: any) => {
               let label = context.dataset.label || '';
               if (label) { label += ': '; }
@@ -210,7 +219,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
           },
           ticks: {
             color: isDark ? '#94a3b8' : '#64748b',
-            font: { family: "'Outfit', sans-serif", size: 11 }
+            font: { family: "'Outfit', sans-serif", size: 11 },
+            maxRotation: 0,
+            minRotation: 0,
+            callback: (_val: any, index: number) => {
+              const label = dashboards[index]?.name || '';
+              return label.length > 13 ? label.substring(0, 11) + '...' : label;
+            }
           }
         },
         y: {
@@ -246,7 +261,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         data: chartData,
         backgroundColor: bgColors,
         hoverBackgroundColor: bgColors,
-        borderWidth: 3,
+        borderWidth: 2,
         borderColor: isDark ? '#0f172a' : '#ffffff',
         hoverOffset: 4
       }]
@@ -263,12 +278,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
             color: isDark ? '#e2e8f0' : '#334155',
             font: {
               family: "'Outfit', sans-serif",
-              size: 12,
+              size: 11,
               weight: '500'
             },
-            padding: 14,
+            padding: 12,
+            boxWidth: 8,
+            boxHeight: 8,
             usePointStyle: true,
-            pointStyle: 'circle'
+            pointStyle: 'circle',
+            generateLabels: (chart: any) => {
+              const dataset = chart.data.datasets[0];
+              const chartLbls = chart.data.labels || [];
+              return chartLbls.map((l: string, i: number) => ({
+                text: l,
+                fillStyle: dataset.backgroundColor[i] || '#64748b',
+                strokeStyle: 'transparent',
+                lineWidth: 0,
+                hidden: !chart.getDataVisibility(i),
+                index: i,
+                pointStyle: 'circle'
+              }));
+            }
           }
         },
         tooltip: {
