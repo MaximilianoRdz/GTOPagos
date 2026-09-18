@@ -19,13 +19,18 @@ export const errorInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, n
       },
     }),
     catchError((error: HttpErrorResponse) => {
-      // Status 0: Network error / Offline / CORS rejection
-      if (error.status === 0) {
-        alertsService.show('Sin conexión a internet o el servidor no responde.', 'error');
-      } else if (error.status === 403) {
-        alertsService.show('No tienes permisos suficientes para realizar esta acción.', 'error');
-      } else if (error.status >= 500) {
-        alertsService.show('El servidor presentó una falla temporal. Intenta más tarde.', 'error');
+      // Evitar alertas duplicadas en rutas de autenticación donde el componente ya gestiona su mensaje
+      const isAuthUrl = req.url.includes('/token') || req.url.includes('/demo-login') || req.url.includes('/login');
+
+      if (!isAuthUrl) {
+        // Status 0: Network error / Offline / CORS rejection
+        if (error.status === 0) {
+          alertsService.show('Sin conexión a internet o el servidor no responde.', 'error');
+        } else if (error.status === 403) {
+          alertsService.show('No tienes permisos suficientes para realizar esta acción.', 'error');
+        } else if (error.status >= 500) {
+          alertsService.show('El servidor presentó una falla temporal. Intenta más tarde.', 'error');
+        }
       }
 
       return throwError(() => error);
