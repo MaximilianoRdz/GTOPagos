@@ -27,7 +27,12 @@ module.exports = async (req, res) => {
       }
     }
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
-    const targetUrl = `http://api.maxrdzs.com:1450${targetPath}${queryString}`;
+
+    const backendBaseUrl = (process.env.BACKEND_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const proxyVaultKey = process.env.PROXY_VAULT_KEY || '';
+    const frontendOrigin = process.env.FRONTEND_ORIGIN || 'https://gtopagos.maxrdzs.com';
+
+    const targetUrl = `${backendBaseUrl}${targetPath}${queryString}`;
 
     // Filter incoming headers
     const headers = {};
@@ -39,8 +44,10 @@ module.exports = async (req, res) => {
     }
 
     // Security headers for backend whitelist verification
-    headers['origin'] = 'https://gtopagos.maxrdzs.com';
-    headers['x-gtopagos-proxy-key'] = 'gtopagos-prod-vault-key-7712';
+    headers['origin'] = frontendOrigin;
+    if (proxyVaultKey) {
+      headers['x-gtopagos-proxy-key'] = proxyVaultKey;
+    }
 
     // Build fetch options
     const fetchOptions = {
@@ -90,7 +97,7 @@ module.exports = async (req, res) => {
     console.error('Proxy Error:', err);
     return res.status(502).json({
       error: 'Proxy Error',
-      message: 'No se pudo conectar con el backend en http://api.maxrdzs.com:1450',
+      message: 'No se pudo conectar con el servidor backend.',
       details: err.message
     });
   }
