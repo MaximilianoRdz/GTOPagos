@@ -143,6 +143,14 @@ export class AiAssistantComponent implements AfterViewChecked {
     });
   }
 
+  onHorizontalWheel(event: WheelEvent): void {
+    if (event.deltaY !== 0) {
+      event.preventDefault();
+      const target = event.currentTarget as HTMLElement;
+      target.scrollLeft += event.deltaY;
+    }
+  }
+
   formatMarkdown(text: string): string {
     if (!text) return '';
     // Formateo ligero y seguro de Markdown (negritas, cursivas, listas, código)
