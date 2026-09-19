@@ -6,7 +6,7 @@ import { environment } from '../../../../environments/environments';
 export interface AgentActionResponse {
   success: boolean;
   thought: string;
-  action_type: 'READ_ONLY' | 'MUTATION' | 'CALCULATION' | 'ALERT' | 'ADVICE';
+  action_type: 'READ_ONLY' | 'MUTATION' | 'MUTATION_PROPOSAL' | 'CALCULATION' | 'ALERT' | 'ADVICE';
   data: any;
   user_message: string;
 }
@@ -42,5 +42,12 @@ export class AiService {
 
   sendMcpRpc(request: Record<string, any>): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/mcp/`, request);
+  }
+
+  executeAction(action: string, payload: Record<string, any>): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/execute-action/`, {
+      action,
+      payload
+    });
   }
 }

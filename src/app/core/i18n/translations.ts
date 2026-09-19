@@ -40,6 +40,7 @@ export const TRANSLATIONS = {
     aiSuggestedCashflow: '📊 Flujo Quincenal',
     aiSuggestedTips: '💡 Regla 50/30/20',
     aiSuggestedAudit: '🧠 Auditoría 360°',
+    aiSuggestedNewRecord: '➕ Registrar Gasto',
     aiThinking: 'Calculando con Skills Financieras...',
   },
   en: {
@@ -83,6 +84,7 @@ export const TRANSLATIONS = {
     aiSuggestedCashflow: '📊 Cashflow Forecast',
     aiSuggestedTips: '💡 50/30/20 Rule',
     aiSuggestedAudit: '🧠 360° Audit',
+    aiSuggestedNewRecord: '➕ Record Expense',
     aiThinking: 'Calculating with Financial Skills...',
   },
 } as const;

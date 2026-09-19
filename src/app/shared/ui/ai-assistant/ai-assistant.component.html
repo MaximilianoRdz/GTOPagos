@@ -493,6 +493,128 @@
             }
 
             <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 8 - ACTION CONFIRMATION (HUMAN-IN-THE-LOOP) -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'action_confirmation') {
+              <div class="mt-3 p-3.5 rounded-2xl bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-800 shadow-sm space-y-3">
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-xs">
+                      <lucide-icon [img]="FileText" class="w-4 h-4"></lucide-icon>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-bold text-gray-900 dark:text-white">Borrador de Movimiento</h4>
+                      <span class="text-[10px] text-gray-500 dark:text-gray-400">Verifica antes de registrar en tu cuenta</span>
+                    </div>
+                  </div>
+
+                  <span 
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    [ngClass]="msg.data.behavior === 'INCOME' 
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' 
+                      : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'"
+                  >
+                    {{ msg.data.behavior === 'INCOME' ? 'Ingreso' : 'Gasto' }}
+                  </span>
+                </div>
+
+                <!-- Detalle del Movimiento -->
+                <div class="bg-gray-50 dark:bg-gray-900/60 p-3 rounded-xl space-y-2 border border-gray-100 dark:border-gray-800 text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                      <lucide-icon [img]="CreditCard" class="w-3.5 h-3.5 text-indigo-500"></lucide-icon>
+                      Monto a Registrar
+                    </span>
+                    <span class="text-base font-black text-gray-900 dark:text-white">
+                      ${{ msg.data.amount | number:'1.2-2' }} <span class="text-xs font-normal text-gray-400">MXN</span>
+                    </span>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-1 border-t border-gray-200/60 dark:border-gray-700/60">
+                    <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                      <lucide-icon [img]="Tag" class="w-3.5 h-3.5 text-purple-500"></lucide-icon>
+                      Categoría
+                    </span>
+                    <span class="font-semibold text-gray-800 dark:text-gray-200">{{ msg.data.category_name }}</span>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                      <lucide-icon [img]="FileText" class="w-3.5 h-3.5 text-blue-500"></lucide-icon>
+                      Concepto
+                    </span>
+                    <span class="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[180px]">{{ msg.data.description }}</span>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                      <lucide-icon [img]="Folder" class="w-3.5 h-3.5 text-amber-500"></lucide-icon>
+                      Espacio
+                    </span>
+                    <span class="font-medium text-gray-700 dark:text-gray-300">{{ msg.data.dashboard_name }}</span>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                      <lucide-icon [img]="Calendar" class="w-3.5 h-3.5 text-emerald-500"></lucide-icon>
+                      Fecha
+                    </span>
+                    <span class="text-gray-700 dark:text-gray-300">{{ msg.data.record_date }}</span>
+                  </div>
+                </div>
+
+                <!-- Botones de Acción (Human-in-the-Loop) -->
+                @if (!actionCompleted()[msg.id]) {
+                  <div class="flex items-center gap-2 pt-1">
+                    <button
+                      (click)="confirmAction(msg)"
+                      type="button"
+                      [disabled]="actionLoading()[msg.id]"
+                      class="cursor-pointer flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-xs hover:shadow-sm active:scale-98 transition flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      @if (actionLoading()[msg.id]) {
+                        <lucide-icon [img]="RefreshCw" class="w-3.5 h-3.5 animate-spin"></lucide-icon>
+                        <span>Guardando...</span>
+                      } @else {
+                        <lucide-icon [img]="Check" class="w-3.5 h-3.5"></lucide-icon>
+                        <span>Confirmar y Guardar</span>
+                      }
+                    </button>
+
+                    <button
+                      (click)="cancelAction(msg)"
+                      type="button"
+                      [disabled]="actionLoading()[msg.id]"
+                      class="cursor-pointer py-2 px-3 rounded-xl bg-gray-100 hover:bg-red-50 dark:bg-gray-700 dark:hover:bg-red-950/60 text-gray-600 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 font-semibold text-xs border border-gray-200 dark:border-gray-600 transition flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <lucide-icon [img]="Ban" class="w-3.5 h-3.5"></lucide-icon>
+                      <span>Cancelar</span>
+                    </button>
+                  </div>
+                } @else {
+                  <!-- Estado Final Tras Decisión -->
+                  @if (actionCompleted()[msg.id]?.confirmed) {
+                    <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2">
+                      <lucide-icon [img]="CheckCircle" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"></lucide-icon>
+                      <div>
+                        <span class="font-bold block">¡Guardado en base de datos!</span>
+                        <span class="text-[11px] text-emerald-700 dark:text-emerald-300">
+                          Movimiento registrado correctamente en tu espacio de trabajo.
+                        </span>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="p-2 rounded-xl bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-xs flex items-center gap-2">
+                      <lucide-icon [img]="Ban" class="w-4 h-4 text-gray-400 shrink-0"></lucide-icon>
+                      <span class="text-[11px]">Operación cancelada. No se modificó ningún dato.</span>
+                    </div>
+                  }
+                }
+              </div>
+            }
+
+            <!-- ========================================================= -->
             <!-- GENERATIVE UI: WIDGET 6 - CAPABILITIES QUICK PROMPTS -->
             <!-- ========================================================= -->
             @if (msg.data?.widget_type === 'assistant_capabilities') {
@@ -551,6 +673,13 @@
         class="cursor-pointer shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-500/15 to-indigo-500/15 hover:from-purple-500/25 hover:to-indigo-500/25 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors whitespace-nowrap shadow-2xs"
       >
         {{ i18n.t().aiSuggestedAudit }}
+      </button>
+      <button
+        (click)="sendPrompt('Registra un gasto de $350 en Oxxo')"
+        type="button"
+        class="cursor-pointer shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors whitespace-nowrap shadow-2xs"
+      >
+        {{ i18n.t().aiSuggestedNewRecord }}
       </button>
       <button
         (click)="sendPrompt('Compré una laptop de $12,000 a 12 meses sin intereses')"

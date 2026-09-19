@@ -1,8 +1,9 @@
 import { Component, signal, computed, ElementRef, ViewChild, AfterViewChecked, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Bot, Sparkles, Send, X, MessageSquare, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Clock, CreditCard, PieChart, ArrowRight, RefreshCw, Zap, Target, TrendingUp, Activity, Lightbulb, ShieldCheck } from 'lucide-angular';
+import { LucideAngularModule, Bot, Sparkles, Send, X, MessageSquare, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Clock, CreditCard, PieChart, ArrowRight, RefreshCw, Zap, Target, TrendingUp, Activity, Lightbulb, ShieldCheck, Check, Ban, FileText, Calendar, Tag, Folder } from 'lucide-angular';
 import { AiService, ChatMessage, AgentActionResponse } from '../../../core/services/ai/ai.service';
+import { AlertsService } from '../../../core/services/alerts/Alerts.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 
 @Component({
@@ -37,12 +38,20 @@ export class AiAssistantComponent implements AfterViewChecked {
   readonly Activity = Activity;
   readonly Lightbulb = Lightbulb;
   readonly ShieldCheck = ShieldCheck;
+  readonly Check = Check;
+  readonly Ban = Ban;
+  readonly FileText = FileText;
+  readonly Calendar = Calendar;
+  readonly Tag = Tag;
+  readonly Folder = Folder;
 
   isOpen = signal<boolean>(false);
   isLoading = signal<boolean>(false);
   userInput = signal<string>('');
   expandedThoughts = signal<Record<string, boolean>>({});
   expandedSchedules = signal<Record<string, boolean>>({});
+  actionLoading = signal<Record<string, boolean>>({});
+  actionCompleted = signal<Record<string, { confirmed: boolean; message?: string; recordId?: number }>>({});
 
   messages = signal<ChatMessage[]>([
     {
@@ -53,10 +62,10 @@ export class AiAssistantComponent implements AfterViewChecked {
       data: {
         widget_type: 'assistant_capabilities',
         capabilities: [
+          { title: 'Registrar Movimiento', example: 'Registra un gasto de $350 en Oxxo' },
           { title: 'Auditoría 360° del Sistema', example: 'Analiza todo el sistema con mis gastos e ingresos y metas' },
           { title: 'Cálculo de MSI', example: 'Compré una laptop de $12,000 a 12 meses sin intereses' },
-          { title: 'Semáforo de Pagos', example: '¿Cuáles son mis pagos más urgentes?' },
-          { title: 'Flujo Quincenal', example: 'Gano 20,000, ¿cómo está mi corte del 15?' }
+          { title: 'Semáforo de Pagos', example: '¿Cuáles son mis pagos más urgentes?' }
         ]
       }
     }
@@ -66,6 +75,7 @@ export class AiAssistantComponent implements AfterViewChecked {
 
   constructor(
     private aiService: AiService,
+    private alertsService: AlertsService,
     public i18n: I18nService
   ) {}
 
@@ -146,6 +156,54 @@ export class AiAssistantComponent implements AfterViewChecked {
         this.shouldScrollToBottom = true;
       }
     });
+  }
+
+  confirmAction(msg: ChatMessage): void {
+    if (!msg.data || this.actionLoading()[msg.id]) return;
+
+    this.actionLoading.update(m => ({ ...m, [msg.id]: true }));
+
+    const payload = {
+      dashboard_id: msg.data.dashboard_id,
+      record_type: msg.data.behavior,
+      amount: msg.data.amount,
+      description: msg.data.description,
+      category_name: msg.data.category_name,
+      record_date: msg.data.record_date
+    };
+
+    this.aiService.executeAction(msg.data.action || 'CREATE_RECORD', payload).subscribe({
+      next: (res) => {
+        this.actionLoading.update(m => ({ ...m, [msg.id]: false }));
+        this.actionCompleted.update(m => ({
+          ...m,
+          [msg.id]: {
+            confirmed: true,
+            message: res.user_message || 'Movimiento registrado con éxito.',
+            recordId: res.record_id
+          }
+        }));
+        this.alertsService.success('Movimiento registrado en base de datos correctamente');
+        this.shouldScrollToBottom = true;
+      },
+      error: (err) => {
+        this.actionLoading.update(m => ({ ...m, [msg.id]: false }));
+        const errorMsg = err?.error?.error || 'No se pudo registrar el movimiento.';
+        this.alertsService.error(errorMsg);
+      }
+    });
+  }
+
+  cancelAction(msg: ChatMessage): void {
+    this.actionCompleted.update(m => ({
+      ...m,
+      [msg.id]: {
+        confirmed: false,
+        message: 'Operación cancelada por el usuario.'
+      }
+    }));
+    this.alertsService.info('Registro cancelado.');
+    this.shouldScrollToBottom = true;
   }
 
   onHorizontalWheel(event: WheelEvent): void {
