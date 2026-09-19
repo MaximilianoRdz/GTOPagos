@@ -39,6 +39,7 @@ export const TRANSLATIONS = {
     aiSuggestedDueDates: '🚦 Semáforo Pagos',
     aiSuggestedCashflow: '📊 Flujo Quincenal',
     aiSuggestedTips: '💡 Regla 50/30/20',
+    aiSuggestedAudit: '🧠 Auditoría 360°',
     aiThinking: 'Calculando con Skills Financieras...',
   },
   en: {
@@ -81,6 +82,7 @@ export const TRANSLATIONS = {
     aiSuggestedDueDates: '🚦 Due Dates Priority',
     aiSuggestedCashflow: '📊 Cashflow Forecast',
     aiSuggestedTips: '💡 50/30/20 Rule',
+    aiSuggestedAudit: '🧠 360° Audit',
     aiThinking: 'Calculating with Financial Skills...',
   },
 } as const;

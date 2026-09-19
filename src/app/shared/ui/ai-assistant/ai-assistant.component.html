@@ -335,6 +335,164 @@
             }
 
             <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 7 - SYSTEM 360° FINANCIAL AUDIT -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'system_audit') {
+              <div class="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-white dark:from-gray-800 dark:via-gray-800/90 dark:to-gray-800 border border-indigo-100 dark:border-gray-700 shadow-xs space-y-3">
+                <!-- Header con Score Gauge -->
+                <div class="flex items-center justify-between pb-2.5 border-b border-gray-200/80 dark:border-gray-700/80">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                      <lucide-icon [img]="Activity" class="w-4 h-4"></lucide-icon>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-bold text-gray-900 dark:text-white">Diagnóstico Financiero 360°</h4>
+                      <span class="text-[10px] text-gray-500 dark:text-gray-400">Análisis holístico de ingresos, gastos y metas</span>
+                    </div>
+                  </div>
+
+                  <!-- Badge de Salud Financiera -->
+                  <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border"
+                    [ngClass]="{
+                      'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800': msg.data.health_status === 'EXCELENTE' || msg.data.health_status === 'SALUDABLE',
+                      'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800': msg.data.health_status === 'MEJORABLE',
+                      'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800': msg.data.health_status === 'CRÍTICO'
+                    }"
+                  >
+                    <lucide-icon [img]="ShieldCheck" class="w-3.5 h-3.5"></lucide-icon>
+                    <div class="text-right leading-none">
+                      <span class="text-[9px] font-bold block">{{ msg.data.health_status }}</span>
+                      <span class="text-xs font-black">{{ msg.data.health_score }}/100</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cuadrícula de Métricas Clave (KPIs) -->
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                    <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 block">Margen Libre Mensual</span>
+                    <span class="text-sm font-black text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                      ${{ msg.data.net_savings | number:'1.2-2' }}
+                    </span>
+                    <span class="text-[9px] text-gray-400">Tasa de ahorro: {{ msg.data.savings_rate }}%</span>
+                  </div>
+
+                  <div class="p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                    <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 block">Carga Fija / Cuotas</span>
+                    <span class="text-sm font-black text-indigo-600 dark:text-indigo-400 block mt-0.5">
+                      {{ msg.data.debt_burden_rate }}%
+                    </span>
+                    <span class="text-[9px] text-gray-400">Compromisos: ${{ msg.data.monthly_fixed_commitments | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+
+                <!-- Top Fugas y Concentración de Gastos -->
+                @if (msg.data.top_categories?.length) {
+                  <div class="p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 space-y-2">
+                    <div class="flex items-center justify-between text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                      <span class="flex items-center gap-1">
+                        <lucide-icon [img]="TrendingUp" class="w-3.5 h-3.5 text-indigo-500"></lucide-icon>
+                        Distribución de Gastos (Top Categorías)
+                      </span>
+                      <span class="text-[10px] text-gray-400 font-normal">Total: ${{ msg.data.total_expenses | number:'1.2-2' }}</span>
+                    </div>
+
+                    <div class="space-y-1.5">
+                      @for (cat of msg.data.top_categories; track cat.category) {
+                        <div>
+                          <div class="flex justify-between text-[10px] text-gray-600 dark:text-gray-300 mb-0.5">
+                            <span class="font-medium truncate">{{ cat.category }}</span>
+                            <span class="font-mono font-semibold">${{ cat.total_amount | number:'1.2-2' }} ({{ cat.percentage_of_expenses }}%)</span>
+                          </div>
+                          <div class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                            <div 
+                              class="h-full rounded-full bg-indigo-500"
+                              [style.width.%]="cat.percentage_of_expenses"
+                            ></div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Viabilidad de Metas de Ahorro -->
+                @if (msg.data.goals_feasibility?.length) {
+                  <div class="p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 space-y-2">
+                    <span class="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <lucide-icon [img]="Target" class="w-3.5 h-3.5 text-purple-500"></lucide-icon>
+                      Viabilidad de Metas de Ahorro
+                    </span>
+
+                    <div class="space-y-2">
+                      @for (goal of msg.data.goals_feasibility; track goal.name) {
+                        <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 text-xs">
+                          <div class="flex items-center justify-between mb-1">
+                            <span class="font-semibold text-gray-900 dark:text-white truncate">{{ goal.name }}</span>
+                            <span 
+                              class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                              [ngClass]="{
+                                'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300': goal.status === 'LOGRADA' || goal.status === 'VIABLE',
+                                'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300': goal.status === 'EN RIESGO'
+                              }"
+                            >
+                              {{ goal.status }}
+                            </span>
+                          </div>
+
+                          <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div 
+                              class="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"
+                              [style.width.%]="goal.progress_percentage"
+                            ></div>
+                          </div>
+
+                          <div class="flex justify-between items-center text-[10px] text-gray-500 dark:text-gray-400">
+                            <span>Progreso: {{ goal.progress_percentage }}% (${{ goal.saved_amount | number:'1.2-2' }} / ${{ goal.target_amount | number:'1.2-2' }})</span>
+                            <span class="font-semibold text-gray-700 dark:text-gray-300">${{ goal.monthly_required | number:'1.2-2' }}/mes</span>
+                          </div>
+
+                          <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 italic leading-tight">
+                            {{ goal.message }}
+                          </p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Recomendaciones Estratégicas Prescriptivas -->
+                @if (msg.data.recommendations?.length) {
+                  <div class="space-y-1.5 pt-1">
+                    <span class="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <lucide-icon [img]="Lightbulb" class="w-3.5 h-3.5 text-amber-500"></lucide-icon>
+                      Recomendaciones Estratégicas
+                    </span>
+
+                    @for (rec of msg.data.recommendations; track rec.title) {
+                      <div class="p-2 rounded-lg bg-amber-50/60 dark:bg-gray-800 border border-amber-200/60 dark:border-amber-900/40 text-xs">
+                        <div class="flex items-center justify-between mb-0.5">
+                          <span class="font-bold text-gray-900 dark:text-gray-100 text-[11px]">{{ rec.title }}</span>
+                          <span 
+                            class="text-[8px] font-bold px-1.5 py-0.2 rounded uppercase"
+                            [ngClass]="{
+                              'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300': rec.priority === 'ALTA',
+                              'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300': rec.priority === 'MEDIA',
+                              'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300': rec.priority === 'OPTIMIZACIÓN'
+                            }"
+                          >
+                            Prioridad {{ rec.priority }}
+                          </span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-[10px] leading-tight">{{ rec.detail }}</p>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- ========================================================= -->
             <!-- GENERATIVE UI: WIDGET 6 - CAPABILITIES QUICK PROMPTS -->
             <!-- ========================================================= -->
             @if (msg.data?.widget_type === 'assistant_capabilities') {
@@ -387,6 +545,13 @@
       class="px-3 py-2.5 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center gap-2 custom-horizontal-scrollbar overflow-x-auto flex-nowrap select-none"
       (wheel)="onHorizontalWheel($event)"
     >
+      <button
+        (click)="sendPrompt('Analiza todo el sistema con mis gastos e ingresos y metas')"
+        type="button"
+        class="cursor-pointer shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-500/15 to-indigo-500/15 hover:from-purple-500/25 hover:to-indigo-500/25 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors whitespace-nowrap shadow-2xs"
+      >
+        {{ i18n.t().aiSuggestedAudit }}
+      </button>
       <button
         (click)="sendPrompt('Compré una laptop de $12,000 a 12 meses sin intereses')"
         type="button"

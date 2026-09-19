@@ -1,7 +1,7 @@
 import { Component, signal, computed, ElementRef, ViewChild, AfterViewChecked, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Bot, Sparkles, Send, X, MessageSquare, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Clock, CreditCard, PieChart, ArrowRight, RefreshCw, Zap } from 'lucide-angular';
+import { LucideAngularModule, Bot, Sparkles, Send, X, MessageSquare, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Clock, CreditCard, PieChart, ArrowRight, RefreshCw, Zap, Target, TrendingUp, Activity, Lightbulb, ShieldCheck } from 'lucide-angular';
 import { AiService, ChatMessage, AgentActionResponse } from '../../../core/services/ai/ai.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 
@@ -32,6 +32,11 @@ export class AiAssistantComponent implements AfterViewChecked {
   readonly ArrowRight = ArrowRight;
   readonly RefreshCw = RefreshCw;
   readonly Zap = Zap;
+  readonly Target = Target;
+  readonly TrendingUp = TrendingUp;
+  readonly Activity = Activity;
+  readonly Lightbulb = Lightbulb;
+  readonly ShieldCheck = ShieldCheck;
 
   isOpen = signal<boolean>(false);
   isLoading = signal<boolean>(false);
@@ -48,10 +53,10 @@ export class AiAssistantComponent implements AfterViewChecked {
       data: {
         widget_type: 'assistant_capabilities',
         capabilities: [
+          { title: 'Auditoría 360° del Sistema', example: 'Analiza todo el sistema con mis gastos e ingresos y metas' },
           { title: 'Cálculo de MSI', example: 'Compré una laptop de $12,000 a 12 meses sin intereses' },
           { title: 'Semáforo de Pagos', example: '¿Cuáles son mis pagos más urgentes?' },
-          { title: 'Flujo Quincenal', example: 'Gano 20,000, ¿cómo está mi corte del 15?' },
-          { title: 'Regla 50/30/20', example: 'Explícame la regla de ahorro 50/30/20' }
+          { title: 'Flujo Quincenal', example: 'Gano 20,000, ¿cómo está mi corte del 15?' }
         ]
       }
     }
