@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Wallet, TrendingUp, TrendingDown, Target, ChartColumnDecreasing, Calendar, Settings, ShoppingCart, Film, Coffee, Briefcase, Code, AlertTriangle, Bell, CheckCircle, Sparkles } from 'lucide-angular';
+import { Wallet, TrendingUp, TrendingDown, Target, ChartColumnDecreasing, Calendar, Settings, ShoppingCart, Film, Coffee, Briefcase, Code, AlertTriangle, Bell, CheckCircle, Sparkles, BarChart3, PieChart, Receipt } from 'lucide-angular';
 import { BaseChartDirective } from 'ng2-charts';
 import { SHARED_IMPORTS } from '../../shared/shared.config';
 import { DashboardService } from '../../core/services/dashboard/dashboard.service';
@@ -54,6 +54,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly Bell = Bell;
   readonly CheckCircle = CheckCircle;
   readonly Sparkles = Sparkles;
+  readonly BarChart3 = BarChart3;
+  readonly PieChart = PieChart;
+  readonly Receipt = Receipt;
 
   startTour(): void {
     this.tourService.start('dashboard', true);
@@ -120,6 +123,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   }
 
+  get hasMonthlyData(): boolean {
+    if (!this.rawMonthlyDashboards || this.rawMonthlyDashboards.length === 0) return false;
+    return this.rawMonthlyDashboards.some(d => Number(d.total_expense || 0) > 0 || Number(d.total_income || 0) > 0);
+  }
+
+  get hasCategoryData(): boolean {
+    const { data } = this.rawCategoryData || {};
+    return !!(data && data.length > 0 && data.some(v => Number(v) > 0));
+  }
+
   private setupThemeObserver(): void {
     if (typeof window !== 'undefined' && typeof MutationObserver !== 'undefined') {
       this.themeObserver = new MutationObserver(() => {
@@ -133,12 +146,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   updateChartTheme(): void {
-    if (this.rawMonthlyDashboards && this.rawMonthlyDashboards.length > 0) {
-      this.buildMonthlyChart();
-    }
-    if (this.rawCategoryData && this.rawCategoryData.labels && this.rawCategoryData.labels.length > 0) {
-      this.buildCategoryChart();
-    }
+    this.buildMonthlyChart();
+    this.buildCategoryChart();
   }
 
   buildMonthlyChart(): void {
@@ -275,7 +284,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         legend: {
           position: 'bottom',
           labels: {
-            color: isDark ? '#e2e8f0' : '#334155',
+            color: isDark ? '#f8fafc' : '#334155',
             font: {
               family: "'Outfit', sans-serif",
               size: 11,
@@ -292,6 +301,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
               return chartLbls.map((l: string, i: number) => ({
                 text: l,
                 fillStyle: dataset.backgroundColor[i] || '#64748b',
+                fontColor: isDark ? '#f8fafc' : '#334155',
                 strokeStyle: 'transparent',
                 lineWidth: 0,
                 hidden: !chart.getDataVisibility(i),
