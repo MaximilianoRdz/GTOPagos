@@ -1,0 +1,439 @@
+<!-- BOTÓN FLOTANTE TRIGGER -->
+<div class="fixed bottom-20 md:bottom-6 right-5 md:right-8 z-50">
+  <button
+    (click)="toggleOpen()"
+    type="button"
+    class="relative group flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 text-white shadow-xl hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-400/30"
+    [attr.aria-label]="i18n.t().aiAssistant"
+  >
+    <!-- Efecto de brillo pulsante -->
+    <span class="absolute -inset-0.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 opacity-70 group-hover:opacity-100 blur transition duration-500 group-hover:duration-200 animate-pulse"></span>
+    
+    <span class="relative flex items-center justify-center">
+      @if (isOpen()) {
+        <lucide-icon [img]="X" class="w-6 h-6"></lucide-icon>
+      } @else {
+        <lucide-icon [img]="Sparkles" class="w-6 h-6 animate-spin-slow"></lucide-icon>
+      }
+    </span>
+    
+    <!-- Tooltip badge -->
+    @if (!isOpen()) {
+      <span class="absolute -top-2 -right-1 px-2 py-0.5 text-[10px] font-bold tracking-wider bg-emerald-500 text-white rounded-full uppercase shadow">
+        IA
+      </span>
+    }
+  </button>
+</div>
+
+<!-- PANEL / DRAWER DEL ASISTENTE DE IA -->
+@if (isOpen()) {
+  <!-- Overlay para móviles -->
+  <div 
+    class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 md:hidden transition-opacity duration-300"
+    (click)="close()"
+  ></div>
+
+  <!-- Contenedor Principal del Chat -->
+  <div 
+    class="fixed inset-x-2 bottom-2 md:bottom-22 md:right-8 md:inset-x-auto md:w-[460px] h-[85vh] md:h-[640px] max-h-[92vh] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-bottom-6"
+  >
+    <!-- CABECERA -->
+    <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800/80 bg-gradient-to-r from-purple-50 via-indigo-50/50 to-white dark:from-gray-900 dark:via-gray-850 dark:to-gray-900 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+          <lucide-icon [img]="Bot" class="w-5 h-5"></lucide-icon>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="font-bold text-gray-900 dark:text-white text-sm">
+              {{ i18n.t().aiAssistant }}
+            </h3>
+            <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 rounded border border-indigo-200/50 dark:border-indigo-800">
+              MCP • SDD
+            </span>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {{ i18n.t().aiAssistantSubtitle }}
+          </p>
+        </div>
+      </div>
+
+      <button
+        (click)="close()"
+        type="button"
+        class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+      >
+        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- CUERPO DE MENSAJES SCROLLABLE -->
+    <div 
+      #scrollContainer 
+      class="flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-gray-50/50 dark:bg-gray-950/40"
+    >
+      @for (msg of messages(); track msg.id) {
+        <div 
+          class="flex flex-col"
+          [class.items-end]="msg.sender === 'user'"
+          [class.items-start]="msg.sender === 'agent'"
+        >
+          <!-- BURBUJA DE MENSAJE -->
+          <div 
+            class="max-w-[88%] rounded-2xl p-3.5 shadow-xs"
+            [ngClass]="msg.sender === 'user' 
+              ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-br-xs' 
+              : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700/80 rounded-bl-xs'"
+          >
+            <!-- Texto Markdown -->
+            <div 
+              class="leading-relaxed break-words" 
+              [innerHTML]="formatMarkdown(msg.text)"
+            ></div>
+
+            <!-- ACORDEÓN DE RAZONAMIENTO DEL AGENTE (THOUGHT) -->
+            @if (msg.thought && msg.sender === 'agent') {
+              <div class="mt-2.5 pt-2 border-t border-gray-100 dark:border-gray-700">
+                <button
+                  (click)="toggleThought(msg.id)"
+                  type="button"
+                  class="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none"
+                >
+                  <lucide-icon [img]="Zap" class="w-3.5 h-3.5"></lucide-icon>
+                  <span>{{ expandedThoughts()[msg.id] ? 'Ocultar razonamiento' : 'Ver razonamiento de IA' }}</span>
+                  <lucide-icon [img]="expandedThoughts()[msg.id] ? ChevronUp : ChevronDown" class="w-3 h-3"></lucide-icon>
+                </button>
+                @if (expandedThoughts()[msg.id]) {
+                  <div class="mt-1.5 p-2 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/40 text-xs text-indigo-900 dark:text-indigo-300 font-mono border border-indigo-100 dark:border-indigo-900/60">
+                    {{ msg.thought }}
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 1 - MSI CARD -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'msi_card') {
+              <div class="mt-3 p-3.5 rounded-xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-200 dark:border-indigo-800/80">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                    <lucide-icon [img]="CreditCard" class="w-4 h-4"></lucide-icon>
+                    Plan Meses Sin Intereses
+                  </span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                    Cuota {{ msg.data.current_installment }} / {{ msg.data.total_installments }}
+                  </span>
+                </div>
+
+                <!-- Monto Cuota Mensual Destacado -->
+                <div class="bg-white dark:bg-gray-850 p-3 rounded-lg border border-gray-100 dark:border-gray-800 shadow-xs mb-3">
+                  <span class="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Cuota Mensual Fija</span>
+                  <span class="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                    ${{ msg.data.monthly_installment | number:'1.2-2' }} <span class="text-xs font-medium text-gray-500">MXN</span>
+                  </span>
+                  <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    o ${{ msg.data.biweekly_installment | number:'1.2-2' }} cada quincena
+                  </div>
+                </div>
+
+                <!-- Grid de Métricas -->
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-white dark:bg-gray-850 p-2 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <span class="text-gray-400 block text-[10px]">Saldo Pendiente</span>
+                    <span class="font-bold text-gray-800 dark:text-gray-200">${{ msg.data.remaining_balance | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="bg-white dark:bg-gray-850 p-2 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <span class="text-gray-400 block text-[10px]">Monto Pagado</span>
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400">${{ msg.data.amount_paid_so_far | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+
+                <!-- Barra de Progreso de Amortización -->
+                <div class="mt-3">
+                  <div class="flex justify-between text-[11px] text-gray-500 dark:text-gray-400 mb-1">
+                    <span>Progreso de liquidación</span>
+                    <span>{{ msg.data.current_installment - 1 }} de {{ msg.data.total_installments }} cuotas</span>
+                  </div>
+                  <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                    <div 
+                      class="bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-500"
+                      [style.width.%]="((msg.data.current_installment - 1) / msg.data.total_installments) * 100"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Toggle Amortization Table -->
+                @if (msg.data.schedule?.length) {
+                  <div class="mt-3 pt-2 border-t border-indigo-100 dark:border-indigo-900/60">
+                    <button
+                      (click)="toggleSchedule(msg.id)"
+                      type="button"
+                      class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>{{ expandedSchedules()[msg.id] ? 'Ocultar calendario' : 'Ver desglose completo de cuotas' }}</span>
+                      <lucide-icon [img]="expandedSchedules()[msg.id] ? ChevronUp : ChevronDown" class="w-3 h-3"></lucide-icon>
+                    </button>
+
+                    @if (expandedSchedules()[msg.id]) {
+                      <div class="mt-2 max-h-40 overflow-y-auto space-y-1 text-xs pr-1">
+                        @for (inst of msg.data.schedule; track inst.installment_number) {
+                          <div class="flex items-center justify-between p-1.5 rounded bg-white dark:bg-gray-850 border border-gray-100 dark:border-gray-800">
+                            <span class="font-medium text-gray-700 dark:text-gray-300">Cuota {{ inst.installment_number }}</span>
+                            <span class="font-mono text-gray-900 dark:text-white">${{ inst.amount | number:'1.2-2' }}</span>
+                            <span 
+                              class="text-[9px] font-bold px-1.5 py-0.2 rounded"
+                              [ngClass]="inst.status === 'PAGADO' 
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' 
+                                : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'"
+                            >
+                              {{ inst.status }}
+                            </span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 2 - CASHFLOW GAUGE -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'cashflow_gauge') {
+              <div class="mt-3 p-3.5 rounded-xl bg-gradient-to-br from-gray-500/10 via-slate-500/5 to-transparent border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <lucide-icon [img]="PieChart" class="w-4 h-4 text-indigo-500"></lucide-icon>
+                    Termómetro de Liquidez (Corte {{ msg.data.cutoff_day }})
+                  </span>
+                  <span 
+                    class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                    [ngClass]="{
+                      'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300': msg.data.risk_level === 'BAJO',
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300': msg.data.risk_level === 'MODERADO',
+                      'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300': msg.data.risk_level === 'ALTO',
+                      'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300': msg.data.risk_level === 'CRÍTICO'
+                    }"
+                  >
+                    Riesgo {{ msg.data.risk_level }}
+                  </span>
+                </div>
+
+                <!-- Barra de Liquidez Comprometida -->
+                <div class="mb-3">
+                  <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-400 mb-1">
+                    <span>Comprometido: {{ msg.data.compromised_percentage }}%</span>
+                    <span>Libre: ${{ msg.data.available_margin | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="w-full bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
+                    <div 
+                      class="h-full rounded-full transition-all duration-500"
+                      [style.width.%]="msg.data.compromised_percentage > 100 ? 100 : msg.data.compromised_percentage"
+                      [ngClass]="{
+                        'bg-emerald-500': msg.data.risk_level === 'BAJO',
+                        'bg-yellow-500': msg.data.risk_level === 'MODERADO',
+                        'bg-orange-500': msg.data.risk_level === 'ALTO',
+                        'bg-red-500': msg.data.risk_level === 'CRÍTICO'
+                      }"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Métricas -->
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-white dark:bg-gray-850 p-2 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <span class="text-gray-400 block text-[10px]">Ingreso Quincena</span>
+                    <span class="font-bold text-gray-800 dark:text-gray-200">${{ msg.data.total_income | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="bg-white dark:bg-gray-850 p-2 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <span class="text-gray-400 block text-[10px]">Gastos a Cubrir</span>
+                    <span class="font-bold text-red-600 dark:text-red-400">${{ msg.data.total_committed | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 3 - PRIORITY TABLE -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'priority_table') {
+              <div class="mt-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <lucide-icon [img]="Clock" class="w-4 h-4 text-amber-500"></lucide-icon>
+                    Semáforo de Pagos Urgentes
+                  </span>
+                  <span class="text-[10px] text-gray-400">
+                    Ref: {{ msg.data.reference_date }}
+                  </span>
+                </div>
+
+                <div class="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+                  @for (item of msg.data.prioritized_list; track item.id || item.concept) {
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-xs">
+                      <div class="flex-1 min-w-0 pr-2">
+                        <div class="font-medium text-gray-900 dark:text-white truncate">{{ item.concept }}</div>
+                        <div class="text-[10px] text-gray-400">Vence: {{ item.due_date }} ({{ item.days_left }} días)</div>
+                      </div>
+                      <div class="text-right flex items-center gap-2">
+                        <span class="font-bold text-gray-900 dark:text-white">${{ item.amount | number:'1.2-2' }}</span>
+                        <span 
+                          class="px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-xs"
+                          [style.backgroundColor]="item.color_code"
+                        >
+                          {{ item.priority }}
+                        </span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 4 - CATEGORY BADGE -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'category_badge') {
+              <div class="mt-3 p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] uppercase font-bold text-indigo-500 dark:text-indigo-400 block">Categoría Sugerida</span>
+                  <span class="font-bold text-sm text-gray-900 dark:text-white">{{ msg.data.suggested_category }}</span>
+                  <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    Comportamiento: <span class="font-semibold">{{ msg.data.behavior }}</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="px-2 py-1 bg-indigo-600 text-white font-bold rounded-lg text-xs shadow-xs">
+                    {{ (msg.data.confidence * 100) | number:'1.0-0' }}%
+                  </span>
+                  <span class="block text-[9px] text-gray-400 mt-1">confianza</span>
+                </div>
+              </div>
+            }
+
+            <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 5 - FINANCIAL TIPS 50/30/20 -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'financial_tips') {
+              <div class="mt-3 space-y-2">
+                @for (item of msg.data.breakdown; track item.label) {
+                  <div class="p-2.5 rounded-lg bg-white dark:bg-gray-850 border border-gray-100 dark:border-gray-800 text-xs">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="font-bold text-gray-900 dark:text-white">{{ item.label }}</span>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+                        {{ item.pct }}%
+                      </span>
+                    </div>
+                    <p class="text-gray-500 dark:text-gray-400 text-[11px] leading-tight">{{ item.desc }}</p>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- ========================================================= -->
+            <!-- GENERATIVE UI: WIDGET 6 - CAPABILITIES QUICK PROMPTS -->
+            <!-- ========================================================= -->
+            @if (msg.data?.widget_type === 'assistant_capabilities') {
+              <div class="mt-3 grid grid-cols-1 gap-1.5">
+                @for (cap of msg.data.capabilities; track cap.title) {
+                  <button
+                    (click)="sendPrompt(cap.example)"
+                    type="button"
+                    class="p-2 text-left rounded-lg bg-gray-50 dark:bg-gray-850 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-gray-200/70 dark:border-gray-800 text-xs transition group flex items-center justify-between"
+                  >
+                    <div>
+                      <span class="font-semibold text-gray-800 dark:text-gray-200 block">{{ cap.title }}</span>
+                      <span class="text-[11px] text-gray-400 italic">{{ cap.example }}</span>
+                    </div>
+                    <lucide-icon [img]="ArrowRight" class="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-600 transition"></lucide-icon>
+                  </button>
+                }
+              </div>
+            }
+
+          </div>
+
+          <!-- Timestamp -->
+          <span class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 px-1">
+            {{ msg.timestamp | date:'shortTime' }}
+          </span>
+        </div>
+      }
+
+      <!-- INDICADOR DE CARGA PENSANDO -->
+      @if (isLoading()) {
+        <div class="flex items-start gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-xs">
+            <lucide-icon [img]="Bot" class="w-4 h-4"></lucide-icon>
+          </div>
+          <div class="p-3 rounded-2xl rounded-bl-xs bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"></div>
+            <div class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.2s]"></div>
+            <div class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.4s]"></div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
+              {{ i18n.t().aiThinking }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- SUGERENCIAS RÁPIDAS PILLS EN FOCO -->
+    <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <button
+        (click)="sendPrompt('Compré una laptop de $12,000 a 12 meses sin intereses')"
+        type="button"
+        class="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 border border-gray-200 dark:border-gray-700 transition"
+      >
+        {{ i18n.t().aiSuggestedMsi }}
+      </button>
+      <button
+        (click)="sendPrompt('Semáforo de vencimientos de mis pagos')"
+        type="button"
+        class="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 border border-gray-200 dark:border-gray-700 transition"
+      >
+        {{ i18n.t().aiSuggestedDueDates }}
+      </button>
+      <button
+        (click)="sendPrompt('Gano 18000 al mes, corte 15')"
+        type="button"
+        class="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 border border-gray-200 dark:border-gray-700 transition"
+      >
+        {{ i18n.t().aiSuggestedCashflow }}
+      </button>
+      <button
+        (click)="sendPrompt('Regla 50/30/20')"
+        type="button"
+        class="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 border border-gray-200 dark:border-gray-700 transition"
+      >
+        {{ i18n.t().aiSuggestedTips }}
+      </button>
+    </div>
+
+    <!-- FOOTER INPUT -->
+    <div class="p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <form (submit)="$event.preventDefault(); sendPrompt(userInput())" class="flex items-center gap-2">
+        <input
+          type="text"
+          [ngModel]="userInput()"
+          (ngModelChange)="userInput.set($event)"
+          name="query"
+          [placeholder]="i18n.t().aiPlaceholder"
+          [disabled]="isLoading()"
+          class="flex-1 px-4 py-2.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 border border-transparent focus:border-indigo-500 dark:focus:border-indigo-400 focus:bg-white dark:focus:bg-gray-850 focus:outline-none transition disabled:opacity-50"
+        />
+        <button
+          type="submit"
+          [disabled]="!userInput().trim() || isLoading()"
+          class="p-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-indigo-500/20"
+        >
+          <lucide-icon [img]="Send" class="w-4 h-4"></lucide-icon>
+        </button>
+      </form>
+    </div>
+  </div>
+}

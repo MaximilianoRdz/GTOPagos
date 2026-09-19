@@ -31,7 +31,15 @@ export const TRANSLATIONS = {
     viewReports: 'Ver Reportes',
     noTransactionsTitle: 'Sin Movimientos',
     noTransactionsDescription: 'Aún no hay transacciones para mostrar aquí.',
-    remaining: 'Restante'
+    remaining: 'Restante',
+    aiAssistant: 'Asistente IA GTOPagos',
+    aiAssistantSubtitle: 'Inteligencia Financiera con Skills & MCP',
+    aiPlaceholder: 'Pregúntale al agente (ej: compré a 12 MSI, semáforo de pagos...)',
+    aiSuggestedMsi: '💳 Proyección MSI',
+    aiSuggestedDueDates: '🚦 Semáforo Pagos',
+    aiSuggestedCashflow: '📊 Flujo Quincenal',
+    aiSuggestedTips: '💡 Regla 50/30/20',
+    aiThinking: 'Calculando con Skills Financieras...',
   },
   en: {
     welcome: 'Welcome back!',
@@ -65,6 +73,14 @@ export const TRANSLATIONS = {
     viewReports: 'View Reports',
     noTransactionsTitle: 'No Transactions',
     noTransactionsDescription: 'There are no transactions to show here yet.',
-    remaining: 'Remaining'
+    remaining: 'Remaining',
+    aiAssistant: 'GTOPagos AI Assistant',
+    aiAssistantSubtitle: 'Financial Intelligence with Skills & MCP',
+    aiPlaceholder: 'Ask the agent (e.g. bought on 12 installments, payment priority...)',
+    aiSuggestedMsi: '💳 Installments Plan',
+    aiSuggestedDueDates: '🚦 Due Dates Priority',
+    aiSuggestedCashflow: '📊 Cashflow Forecast',
+    aiSuggestedTips: '💡 50/30/20 Rule',
+    aiThinking: 'Calculating with Financial Skills...',
   },
 } as const;
