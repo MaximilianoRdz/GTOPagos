@@ -14,6 +14,7 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { AlertsService } from '../../core/services/alerts/Alerts.service';
 import { TourService } from '../../core/services/tour/tour.service';
 import { DashboardService, Category, FinancialRecordType } from '../../core/services/dashboard/dashboard.service';
+import { AuthService } from '../../core/services/auth/auth.service';
 import { ProfileSettingsComponent, ProfileData } from './components/profile-settings/profile-settings.component';
 import { SecuritySettingsComponent, SecurityData } from './components/security-settings/security-settings.component';
 import { AppearanceSettingsComponent, AppTheme } from './components/appearance-settings/appearance-settings.component';
@@ -52,7 +53,8 @@ export class ConfigurationComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private alert: AlertsService,
     private router: Router,
-    private tourService: TourService
+    private tourService: TourService,
+    private authService: AuthService
   ) {
     effect(() => {
       const step = this.tourService.currentStep();
@@ -209,11 +211,13 @@ export class ConfigurationComponent implements OnInit {
 
     this.configService.getProfile().subscribe({
       next: (profile) => {
-        this.userProfile = profile;
+        this.userProfile = { ...profile };
 
-        this.profileData.phone = profile.phone ?? '';
-        this.profileData.firstName = profile.first_name ?? '';
-        this.profileData.lastName = profile.last_name ?? '';
+        this.profileData = {
+          phone: profile.phone ?? '',
+          firstName: profile.first_name ?? '',
+          lastName: profile.last_name ?? ''
+        };
 
         const currencyId = (profile as any).currency_id;
         (this.userProfile as any)._temp_currency_id = currencyId;
@@ -226,11 +230,19 @@ export class ConfigurationComponent implements OnInit {
         if (this.incomeFrequencies.length) {
           this.userProfile.income_frequency = this.incomeFrequencies.find(f => f.id === frequencyId) ?? null;
         }
+
+        const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim();
+        if (fullName) {
+          this.authService.updateUser({ name: fullName });
+        }
+
         this.loadingProfile = false;
+        this.cdr.markForCheck();
         this.cdr.detectChanges();
       },
       error: () => {
         this.loadingProfile = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -266,15 +278,15 @@ export class ConfigurationComponent implements OnInit {
     const d = data || this.profileData;
     const payload: any = {};
 
-    if (d.firstName?.trim()) {
+    if (d.firstName !== undefined) {
       payload.first_name = d.firstName.trim();
     }
 
-    if (d.lastName?.trim()) {
+    if (d.lastName !== undefined) {
       payload.last_name = d.lastName.trim();
     }
 
-    if (d.phone?.trim()) {
+    if (d.phone !== undefined) {
       payload.phone = d.phone.trim();
     }
 
@@ -282,14 +294,40 @@ export class ConfigurationComponent implements OnInit {
 
     this.loadingProfile = true;
     this.configService.updateProfile(payload).subscribe({
-      next: () => {
+      next: (updatedProfile) => {
         this.loadingProfile = false;
         this.alert.show('Información personal actualizada', 'success');
-        this.loadUserProfile();
+
+        const updatedName = [updatedProfile.first_name, updatedProfile.last_name].filter(Boolean).join(' ').trim()
+          || updatedProfile.first_name?.trim()
+          || this.authService.user()?.name
+          || 'Usuario';
+
+        this.authService.updateUser({ name: updatedName });
+
+        this.profileData = {
+          firstName: updatedProfile.first_name ?? '',
+          lastName: updatedProfile.last_name ?? '',
+          phone: updatedProfile.phone ?? ''
+        };
+
+        this.userProfile = {
+          ...this.userProfile,
+          first_name: updatedProfile.first_name,
+          last_name: updatedProfile.last_name,
+          phone: updatedProfile.phone
+        };
+
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+
+        this.authService.validateToken().subscribe();
       },
-      error: () => {
+      error: (err) => {
         this.loadingProfile = false;
+        console.error('Error actualizando perfil', err);
         this.alert.show('Error al actualizar información', 'error');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -380,15 +418,16 @@ export class ConfigurationComponent implements OnInit {
 
     this.loadingFinancial = true;
     this.configService.updateProfile(payload).subscribe({
-      next: (updatedProfile) => {
+      next: () => {
         this.loadingFinancial = false;
-        this.userProfile.salary = updatedProfile.salary;
         this.alert.show('Perfil financiero actualizado', 'success');
+        this.loadUserProfile();
       },
       error: (err) => {
         this.loadingFinancial = false;
         console.error('Error actualizando perfil', err);
         this.alert.show('Error al actualizar perfil financiero', 'error');
+        this.cdr.detectChanges();
       },
     });
   }

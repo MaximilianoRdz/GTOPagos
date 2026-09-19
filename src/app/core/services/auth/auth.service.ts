@@ -40,6 +40,15 @@ export class AuthService {
     this.user.set(null);
   }
 
+  updateUser(partialUser: Partial<AuthUser>) {
+    const current = this.user();
+    if (current) {
+      this.user.set({ ...current, ...partialUser });
+    } else if (partialUser.name && partialUser.email && partialUser.id) {
+      this.user.set(partialUser as AuthUser);
+    }
+  }
+
   /* ================= AUTH ================= */
 
   isAuthenticated(): boolean {
