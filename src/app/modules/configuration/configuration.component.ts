@@ -10,7 +10,6 @@ import {
   Tags,
   Sparkles,
 } from 'lucide-angular';
-import { I18nService } from '../../core/i18n/i18n.service';
 import { AlertsService } from '../../core/services/alerts/Alerts.service';
 import { TourService } from '../../core/services/tour/tour.service';
 import { DashboardService, Category, FinancialRecordType } from '../../core/services/dashboard/dashboard.service';
@@ -25,7 +24,6 @@ import { CategoriesSettingsComponent } from './components/categories-settings/ca
 
 interface AppearanceSettings {
   theme: AppTheme;
-  language: string;
 }
 
 type Tab = 'profile' | 'security' | 'appearance' | 'financial' | 'categories';
@@ -47,7 +45,6 @@ type Tab = 'profile' | 'security' | 'appearance' | 'financial' | 'categories';
 })
 export class ConfigurationComponent implements OnInit {
   constructor(
-    public i18n: I18nService,
     private configService: ConfigurationService,
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -58,23 +55,24 @@ export class ConfigurationComponent implements OnInit {
   ) {
     effect(() => {
       const step = this.tourService.currentStep();
-      if (step?.configTab && this.activeTab !== step.configTab) {
-        this.setActiveTab(step.configTab as Tab);
-        this.cdr.detectChanges();
-      }
+      if (!step) return;
+
+      const selector = step.targetSelector;
+      if (selector.includes('profile')) this.activeTab = 'profile';
+      else if (selector.includes('security')) this.activeTab = 'security';
+      else if (selector.includes('appearance')) this.activeTab = 'appearance';
+      else if (selector.includes('financial')) this.activeTab = 'financial';
+      else if (selector.includes('categories')) this.activeTab = 'categories';
+      this.cdr.markForCheck();
     });
   }
 
   ngOnInit(): void {
     const savedTheme = localStorage.getItem('theme') as AppTheme | null;
-    const savedLang = localStorage.getItem('language') as 'es' | 'en' | null;
 
     if (savedTheme) {
       this.appearanceSettings.theme = savedTheme;
       this.applyTheme(savedTheme);
-    }
-    if (savedLang) {
-      this.appearanceSettings.language = savedLang;
     }
 
     this.loadCurrencies();
@@ -111,7 +109,6 @@ export class ConfigurationComponent implements OnInit {
 
   appearanceSettings: AppearanceSettings = {
     theme: 'auto',
-    language: 'es',
   };
 
   userProfile: UserProfile = {
@@ -392,13 +389,6 @@ export class ConfigurationComponent implements OnInit {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       root.classList.toggle('dark', prefersDark);
     }
-  }
-
-  setLanguage(lang: string): void {
-    const validLang = lang === 'en' ? 'en' : 'es';
-    this.appearanceSettings.language = validLang;
-    this.i18n.setLanguage(validLang);
-    localStorage.setItem('language', validLang);
   }
 
   restartTour(): void {

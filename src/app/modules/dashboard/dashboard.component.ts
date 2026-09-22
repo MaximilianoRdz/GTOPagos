@@ -4,7 +4,6 @@ import { Wallet, TrendingUp, TrendingDown, Target, ChartColumnDecreasing, Calend
 import { BaseChartDirective } from 'ng2-charts';
 import { SHARED_IMPORTS } from '../../shared/shared.config';
 import { DashboardService } from '../../core/services/dashboard/dashboard.service';
-import { I18nService } from '../../core/i18n/i18n.service';
 import { AlertsService } from '../../core/services/alerts/Alerts.service';
 import { TourService } from '../../core/services/tour/tour.service';
 import { forkJoin, catchError, of } from 'rxjs';
@@ -95,7 +94,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private dashboardService: DashboardService, 
     private configService: ConfigurationService,
-    public i18n: I18nService,
     private router: Router,
     private alert: AlertsService,
     private tourService: TourService
@@ -474,16 +472,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return [
       {
         icon: this.Wallet,
-        title: this.i18n.t().totalNetWorth,
+        title: 'Patrimonio Total',
         value: this.formatCurrency(this.netWorth),
-        change: `${this.dashboardCount} ${this.i18n.t().spaces}`,
+        change: `${this.dashboardCount} espacios`,
         trend: 'up',
         color: 'text-emerald-600',
         isNegative: this.netWorth < 0
       },
       {
         icon: this.TrendingUp,
-        title: this.i18n.t().monthlyIncome,
+        title: 'Ingresos del Mes',
         value: this.formatCurrency(this.totalIncome),
         change: '',
         trend: 'up',
@@ -492,7 +490,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       {
         icon: this.TrendingDown,
-        title: this.i18n.t().monthlyExpenses,
+        title: 'Gastos del Mes',
         value: this.formatCurrency(this.totalExpenses),
         change: '',
         trend: 'down',
@@ -501,7 +499,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       {
         icon: this.Target,
-        title: this.i18n.t().goalsReached,
+        title: 'Metas Alcanzadas',
         value: '0',
         change: '',
         trend: 'up',

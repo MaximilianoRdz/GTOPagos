@@ -1,9 +1,8 @@
-import { Component, OnDestroy, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutService } from '../../../core/services/layout/layout.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router, NavigationEnd } from '@angular/router';
-import { I18nService } from '../../../core/i18n/i18n.service';
 import { Subscription, filter } from 'rxjs';
 import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, User, Settings, LogOut, Menu } from 'lucide-angular';
 
@@ -38,23 +37,22 @@ export class SidebarComponent implements OnDestroy {
   private subscription!: Subscription;
   private layoutSub!: Subscription;
 
-  menuItems = computed<MenuItem[]>(() => [
-    { id: 'dashboard', label: this.i18n.t().dashboard, icon: this.Layers, hasDropdown: true, route: '/dashboard' },
-    { id: 'budgets', label: this.i18n.t().budgets, icon: this.Wallet, route: '/budgets' },
-    { id: 'goals', label: this.i18n.t().goals, icon: this.Target, route: '/goals' },
-    { id: 'reports', label: this.i18n.t().reports, icon: this.ChartColumnDecreasing, route: '/reports' },
+  menuItems = signal<MenuItem[]>([
+    { id: 'dashboard', label: 'Dashboard', icon: this.Layers, hasDropdown: true, route: '/dashboard' },
+    { id: 'budgets', label: 'Presupuesto', icon: this.Wallet, route: '/budgets' },
+    { id: 'goals', label: 'Metas', icon: this.Target, route: '/goals' },
+    { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing, route: '/reports' },
   ]);
 
   mobileMenuItems = computed<MenuItem[]>(() => [
     ...this.menuItems(),
-    { id: 'configuration', label: this.i18n.t().settings, icon: this.Settings, route: '/configuration' },
+    { id: 'configuration', label: 'Configuración', icon: this.Settings, route: '/configuration' },
   ]);
 
   constructor(
     private layoutService: LayoutService, 
     private router: Router, 
-    public auth: AuthService, 
-    public i18n: I18nService
+    public auth: AuthService
   ) {
     this.subscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))

@@ -27,16 +27,27 @@ export class AuthService {
     return localStorage.getItem('access_token');
   }
 
-  setSession(token: string, user: AuthUser, refreshToken?: string) {
+  get isDemo(): boolean {
+    return localStorage.getItem('is_demo') === 'true' || this.user()?.email === 'demo@gtopagos.com';
+  }
+
+  setSession(token: string, user: AuthUser, refreshToken?: string, isDemo?: boolean) {
     localStorage.setItem('access_token', token);
     if (refreshToken) {
       localStorage.setItem('refresh_token', refreshToken);
+    }
+    if (isDemo || user.email === 'demo@gtopagos.com') {
+      localStorage.setItem('is_demo', 'true');
+    } else {
+      localStorage.removeItem('is_demo');
     }
     this.user.set(user);
   }
 
   clearSession() {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('is_demo');
     this.user.set(null);
   }
 
