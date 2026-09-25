@@ -5,6 +5,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { LucideAngularModule, DollarSign, Layers, Wallet, Target, ChartColumnDecreasing, User, Settings, LogOut, Menu } from 'lucide-angular';
+import { HapticsService } from '../../../core/services/native/haptics.service';
 
 interface MenuItem {
   id: string;
@@ -55,7 +56,8 @@ export class SidebarComponent implements OnDestroy {
   constructor(
     private layoutService: LayoutService, 
     private router: Router, 
-    public auth: AuthService
+    public auth: AuthService,
+    private haptics: HapticsService
   ) {
     this.subscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -72,10 +74,12 @@ export class SidebarComponent implements OnDestroy {
   user = computed(() => this.auth.user());
   
   toggleSidebar() {
+    this.haptics.impactLight();
     this.layoutService.toggleSidebar();
   }
 
   setActiveSection(sectionId: string) {
+    this.haptics.impactLight();
     const item = this.mobileMenuItems().find((m: MenuItem) => m.id === sectionId);
     if (!item) return;
 

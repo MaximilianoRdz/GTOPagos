@@ -12,7 +12,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "cap:sync": "ng build && npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:run:android": "npx cap run android"
   },
   "private": true,
   "dependencies": {
@@ -24,6 +27,10 @@
     "@angular/platform-browser": "^22.1.7",
     "@angular/platform-browser-dynamic": "^22.1.7",
     "@angular/router": "^22.1.7",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3",
     "chart.js": "^4.5.1",
     "lucide-angular": "^1.0.0",
     "ng2-charts": "^10.0.0",
@@ -36,6 +43,7 @@
     "@angular/build": "^22.1.8",
     "@angular/cli": "^22.1.8",
     "@angular/compiler-cli": "^22.1.7",
+    "@capacitor/cli": "^8.5.2",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.6.1",
@@ -57,4 +65,3 @@
     }
   }
 }
-

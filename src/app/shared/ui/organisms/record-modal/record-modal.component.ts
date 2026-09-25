@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectionStrategy, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, TrendingDown, TrendingUp, X, AlertTriangle, Loader2 } from 'lucide-angular';
 import { Category, PaymentStatus, FinancialRecord, CreateFinancialRecordPayload } from '../../../../core/services/dashboard/dashboard.service';
+import { HapticsService } from '../../../../core/services/native/haptics.service';
 
 export interface RecordModalSaveEvent {
   payload: Partial<CreateFinancialRecordPayload>;
@@ -327,7 +328,10 @@ export class RecordModalComponent implements OnChanges {
     }).format(amount);
   }
 
+  private haptics = inject(HapticsService);
+
   onClose(): void {
+    this.haptics.impactLight();
     this.close.emit();
     this.resetForm();
   }
@@ -343,15 +347,18 @@ export class RecordModalComponent implements OnChanges {
     if (this.creatingRecord) return;
 
     if (this.formData.amount === null || this.formData.amount <= 0) {
+      this.haptics.warning();
       this.validationError.emit('Monto requerido');
       return;
     }
 
     if (!this.formData.category_id) {
+      this.haptics.warning();
       this.validationError.emit('Categoría requerida');
       return;
     }
 
+    this.haptics.success();
     const payload: Partial<CreateFinancialRecordPayload> = {
       amount: this.formData.amount,
       description: this.formData.description,

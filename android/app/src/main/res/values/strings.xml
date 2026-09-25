@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GTOPagos</string>
+    <string name="title_activity_main">GTOPagos</string>
+    <string name="package_name">com.gtopagos.app</string>
+    <string name="custom_url_scheme">com.gtopagos.app</string>
+</resources>
