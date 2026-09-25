@@ -22,6 +22,7 @@ import { AddFundsModalComponent } from './ui/organisms/add-funds-modal/add-funds
 import { ReportFiltersComponent } from './ui/organisms/report-filters/report-filters.component';
 import { ReportTableComponent } from './ui/organisms/report-table/report-table.component';
 import { TourComponent } from './ui/molecules/tour/tour.component';
+import { SmartInsightsComponent } from './ui/molecules/smart-insights/smart-insights.component';
 
 export const SHARED_IMPORTS = [
   CommonModule,
@@ -48,6 +49,7 @@ export const SHARED_IMPORTS = [
   ReportFiltersComponent,
   ReportTableComponent,
   TourComponent,
+  SmartInsightsComponent,
 ];
 
 export {
@@ -72,4 +74,5 @@ export {
   ReportFiltersComponent,
   ReportTableComponent,
   TourComponent,
+  SmartInsightsComponent,
 };

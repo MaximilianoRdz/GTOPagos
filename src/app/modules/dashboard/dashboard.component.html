@@ -18,18 +18,20 @@
       </button>
     </div>
 
-    <!-- ALERTA DE PAGOS PRÓXIMOS A VENCER O VENCIDOS -->
-    @if (upcomingDueCount > 0) {
-      <app-alert-banner
-        variant="warning"
-        [icon]="AlertTriangle"
-        [title]="'Atención: Tienes ' + upcomingDueCount + (upcomingDueCount === 1 ? ' pago pendiente' : ' pagos pendientes') + ' por vencer o vencidos'"
-        description="Revisa tus compromisos para evitar intereses o recargos en tus tarjetas y cuentas."
-        [actionText]="'Ver pagos pendientes (' + upcomingDueCount + ')'"
-        (actionClick)="showUpcomingDueModal = true"
-        class="block mb-8"
-      />
-    }
+    <!-- SMART INSIGHTS ENGINE PROACTIVO -->
+    <app-smart-insights
+      [totalIncome]="totalIncome"
+      [totalExpenses]="totalExpenses"
+      [budgetLimit]="budgetLimit"
+      [budgetDaysLeft]="budgetDaysLeft"
+      [upcomingDueCount]="upcomingDueCount"
+      [upcomingDueRecords]="upcomingDueRecords"
+      [rawCategoryData]="rawCategoryData"
+      [netWorth]="netWorth"
+      (openUpcomingDueModal)="showUpcomingDueModal = true"
+      (navigateRoute)="handleInsightRoute($event)"
+      class="block mb-8"
+    />
 
     <!-- Stats -->
     <div id="tour-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

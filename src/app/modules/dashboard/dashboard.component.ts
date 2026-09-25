@@ -74,7 +74,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   monthlyChartOptions: any;
 
   private rawMonthlyDashboards: any[] = [];
-  private rawCategoryData: { labels: string[]; data: number[] } = { labels: [], data: [] };
+  rawCategoryData: { labels: string[]; data: number[] } = { labels: [], data: [] };
   private themeObserver: MutationObserver | null = null;
 
 
@@ -103,6 +103,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToGoals() { this.router.navigate(['/goals']); }
   goToReports() { this.router.navigate(['/reports']); }
   goToConfiguration() { this.router.navigate(['/configuration']); }
+  handleInsightRoute(route: string) { this.router.navigateByUrl(route); }
 
   ngOnInit() {
     this.setupThemeObserver();
