@@ -17,10 +17,12 @@ export interface RecordModalSaveEvent {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (isOpen) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" role="dialog" aria-modal="true">
-        <div class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4" role="dialog" aria-modal="true">
+        <div class="w-full max-w-lg rounded-t-[32px] sm:rounded-3xl bg-white dark:bg-slate-900 border-t sm:border border-gray-200 dark:border-slate-700 shadow-2xl overflow-hidden max-h-[92vh] sm:max-h-[90vh] flex flex-col pb-safe">
+          <!-- Handle bar for mobile gestures -->
+          <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-1 sm:hidden shrink-0"></div>
           <!-- HEADER -->
-          <div class="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 p-6 shrink-0">
+          <div class="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 px-6 py-4 sm:py-5 shrink-0">
             <div>
               <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
                 <lucide-angular [img]="isExpenses ? TrendingDown : TrendingUp" class="w-6 h-6 text-emerald-500"></lucide-angular>
@@ -181,11 +183,11 @@ export interface RecordModalSaveEvent {
           </div>
 
           <!-- FOOTER -->
-          <div class="flex justify-end gap-3 border-t border-gray-200 dark:border-slate-700 p-6 shrink-0">
+          <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 border-t border-gray-200 dark:border-slate-700 p-4 sm:p-6 shrink-0">
             <button
               type="button"
               (click)="onClose()"
-              class="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
+              class="w-full sm:w-auto px-4 py-3 sm:py-2.5 rounded-xl border border-gray-300 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer active:scale-95 text-center"
             >
               Cancelar
             </button>
@@ -194,7 +196,7 @@ export interface RecordModalSaveEvent {
               type="button"
               (click)="onSubmit()"
               [disabled]="creatingRecord"
-              class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white font-semibold transition-all shadow-md shadow-emerald-600/20 cursor-pointer inline-flex items-center gap-2"
+              class="w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white font-semibold transition-all shadow-md shadow-emerald-600/20 cursor-pointer inline-flex items-center justify-center gap-2 active:scale-95"
             >
               @if (creatingRecord) {
                 <lucide-angular [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-angular>

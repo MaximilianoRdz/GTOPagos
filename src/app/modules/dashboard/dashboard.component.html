@@ -1,16 +1,16 @@
-<main class="flex-1 p-6 overflow-auto text-gray-900 dark:text-gray-100">
+<main class="flex-1 p-4 sm:p-6 overflow-auto text-gray-900 dark:text-gray-100">
   <div class="max-w-7xl mx-auto">
     <!-- Welcome -->
-    <div id="tour-welcome" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div id="tour-welcome" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
       <div>
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">¡Bienvenido de vuelta!</h2>
-        <p class="text-gray-600 dark:text-gray-400">Aquí tienes un resumen de tus finanzas personales</p>
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1">¡Bienvenido de vuelta!</h2>
+        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Aquí tienes un resumen de tus finanzas personales</p>
       </div>
 
       <button
         type="button"
         (click)="startTour()"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 self-start sm:self-auto"
+        class="inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 self-start sm:self-auto"
         title="Ver guía interactiva del Dashboard"
       >
         <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
@@ -30,17 +30,17 @@
       [netWorth]="netWorth"
       (openUpcomingDueModal)="showUpcomingDueModal = true"
       (navigateRoute)="handleInsightRoute($event)"
-      class="block mb-8"
+      class="block mb-6 sm:mb-8"
     />
 
     <!-- Stats -->
-    <div id="tour-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div id="tour-stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
       @for (stat of stats; track stat.title) {
-        <div class="rounded-xl shadow-sm border p-6 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+        <div class="rounded-2xl shadow-sm border p-4 sm:p-6 hover:shadow-md transition-all duration-200 active:scale-[0.98]"
              [ngClass]="stat.isNegative ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'">
-          <div class="flex items-center justify-between mb-4">
-            <div class="p-3 rounded-lg bg-white dark:bg-slate-800 shadow-sm" [ngClass]="stat.isNegative ? 'text-red-600' : stat.color">
-              <lucide-angular [img]="stat.icon" class="w-6 h-6"></lucide-angular>
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
+            <div class="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm" [ngClass]="stat.isNegative ? 'text-red-600' : stat.color">
+              <lucide-angular [img]="stat.icon" class="w-5 h-5 sm:w-6 sm:h-6"></lucide-angular>
             </div>
             <app-badge
               [variant]="stat.trend === 'up' ? 'success' : 'danger'"
@@ -50,8 +50,8 @@
             </app-badge>
           </div>
           <div>
-            <p class="text-2xl font-bold mb-1" [ngClass]="stat.isNegative ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'">{{ stat.value }}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ stat.title }}</p>
+            <p class="text-xl sm:text-2xl font-bold mb-0.5 sm:mb-1" [ngClass]="stat.isNegative ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'">{{ stat.value }}</p>
+            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{{ stat.title }}</p>
           </div>
         </div>
       }

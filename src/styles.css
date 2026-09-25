@@ -37,3 +37,39 @@ select {
   color-scheme: dark;
 }
 
+/* Optimizaciones nativas para móvil */
+html {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utilidades para Safe Areas (Notch, barras de navegación móviles) */
+@utility pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+}
+
+@utility pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+}
+
+@utility mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Ocultar barra de desplazamiento manteniendo el scroll fluido */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+

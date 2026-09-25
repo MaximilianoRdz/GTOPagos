@@ -87,13 +87,18 @@
 </aside>
 
 <!-- MOBILE BOTTOM NAVIGATION -->
-<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-1.5 py-1 z-[100] shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-safe">
- @for (item of mobileMenuItems(); track item.id) {
- <button (click)="setActiveSection(item.id)" [attr.aria-label]="item.label" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl gap-0.5 transition-all cursor-pointer select-none" [ngClass]="activeSection === item.id ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'">
- <div [class]="'p-1.5 rounded-full transition-all ' + (activeSection === item.id ? 'bg-emerald-50 dark:bg-emerald-500/20 scale-105' : 'bg-transparent')">
- <lucide-angular [img]="item.icon" class="w-5 h-5"></lucide-angular>
- </div>
- <span class="text-[10px] truncate max-w-full leading-tight">{{ item.label }}</span>
- </button>
- }
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-around px-2 pt-1.5 z-40 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.35)] pb-safe">
+  @for (item of mobileMenuItems(); track item.id) {
+    <button 
+      (click)="setActiveSection(item.id)" 
+      [attr.aria-label]="item.label" 
+      class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 px-1 rounded-2xl gap-1 transition-all duration-150 cursor-pointer select-none active:scale-90" 
+      [ngClass]="activeSection === item.id ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium'"
+    >
+      <div [class]="'relative p-1.5 rounded-xl transition-all duration-200 ' + (activeSection === item.id ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 scale-105 shadow-xs' : 'bg-transparent text-slate-400 dark:text-slate-400')">
+        <lucide-angular [img]="item.icon" class="w-5 h-5"></lucide-angular>
+      </div>
+      <span class="text-[11px] tracking-tight truncate max-w-full leading-none">{{ item.label }}</span>
+    </button>
+  }
 </nav>

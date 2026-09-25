@@ -9,11 +9,12 @@ import { LucideAngularModule, AlertTriangle, X, CheckCircle } from 'lucide-angul
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
     @if (isOpen) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" role="dialog" aria-modal="true">
-        <div class="w-full max-w-2xl rounded-3xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-          
+      <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4" role="dialog" aria-modal="true">
+        <div class="w-full max-w-2xl rounded-t-[32px] sm:rounded-3xl bg-white dark:bg-slate-900 border-t sm:border border-gray-200 dark:border-slate-800 shadow-2xl overflow-hidden max-h-[92vh] sm:max-h-[90vh] flex flex-col pb-safe">
+          <!-- Mobile drag handle -->
+          <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-1 sm:hidden shrink-0"></div>
           <!-- Header -->
-          <div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800 shrink-0">
+          <div class="flex items-center justify-between px-6 py-4 sm:p-6 border-b border-gray-100 dark:border-slate-800 shrink-0">
             <div class="flex items-center gap-3">
               <div class="p-2.5 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
                 <lucide-angular [img]="AlertTriangle" class="w-6 h-6"></lucide-angular>
@@ -78,7 +79,7 @@ import { LucideAngularModule, AlertTriangle, X, CheckCircle } from 'lucide-angul
             <button
               type="button"
               (click)="close.emit()"
-              class="px-5 py-2 text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              class="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer active:scale-95 text-center"
             >
               Cerrar
             </button>

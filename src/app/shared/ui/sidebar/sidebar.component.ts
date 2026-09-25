@@ -45,8 +45,11 @@ export class SidebarComponent implements OnDestroy {
   ]);
 
   mobileMenuItems = computed<MenuItem[]>(() => [
-    ...this.menuItems(),
-    { id: 'configuration', label: 'Configuración', icon: this.Settings, route: '/configuration' },
+    { id: 'dashboard', label: 'Inicio', icon: this.Layers, route: '/dashboard' },
+    { id: 'budgets', label: 'Cuentas', icon: this.Wallet, route: '/budgets' },
+    { id: 'goals', label: 'Metas', icon: this.Target, route: '/goals' },
+    { id: 'reports', label: 'Reportes', icon: this.ChartColumnDecreasing, route: '/reports' },
+    { id: 'configuration', label: 'Ajustes', icon: this.Settings, route: '/configuration' },
   ]);
 
   constructor(
