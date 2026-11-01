@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Bot, Sparkles, Send, X, MessageSquare, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Clock, CreditCard, PieChart, ArrowRight, RefreshCw, Zap, Target, TrendingUp, Activity, Lightbulb, ShieldCheck, Check, Ban, FileText, Calendar, Tag, Folder } from 'lucide-angular';
 import { AiService, ChatMessage, AgentActionResponse } from '../../../core/services/ai/ai.service';
 import { AlertsService } from '../../../core/services/alerts/Alerts.service';
-import { I18nService } from '../../../core/i18n/i18n.service';
 
 @Component({
   selector: 'app-ai-assistant',
@@ -75,8 +74,7 @@ export class AiAssistantComponent implements AfterViewChecked {
 
   constructor(
     private aiService: AiService,
-    private alertsService: AlertsService,
-    public i18n: I18nService
+    private alertsService: AlertsService
   ) {}
 
   ngAfterViewChecked(): void {

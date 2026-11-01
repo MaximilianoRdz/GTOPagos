@@ -1,0 +1,534 @@
+{
+  "diagram_type": "architecture",
+  "schema_version": 1,
+  "meta": {
+    "title": "Arquitectura de la Base de Datos de GTOPagos",
+    "quality_profile": "showcase",
+    "output": "arquitectura_gtopagos.html"
+  },
+  "components": [
+    {
+      "id": "auth_group",
+      "type": "security",
+      "label": "auth_group",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "auth_group_permissions",
+      "type": "security",
+      "label": "auth_group_permissions",
+      "pos": [
+        360,
+        120
+      ],
+      "size": [
+        219,
+        64
+      ]
+    },
+    {
+      "id": "auth_permission",
+      "type": "security",
+      "label": "auth_permission",
+      "pos": [
+        680,
+        120
+      ],
+      "size": [
+        159,
+        64
+      ]
+    },
+    {
+      "id": "dashboard_userfinancedashboard",
+      "type": "backend",
+      "label": "dashboard_userfinancedashboard",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        287,
+        64
+      ]
+    },
+    {
+      "id": "django_admin_log",
+      "type": "backend",
+      "label": "django_admin_log",
+      "pos": [
+        360,
+        340
+      ],
+      "size": [
+        168,
+        64
+      ]
+    },
+    {
+      "id": "django_content_type",
+      "type": "backend",
+      "label": "django_content_type",
+      "pos": [
+        680,
+        340
+      ],
+      "size": [
+        193,
+        64
+      ]
+    },
+    {
+      "id": "django_migrations",
+      "type": "backend",
+      "label": "django_migrations",
+      "pos": [
+        40,
+        560
+      ],
+      "size": [
+        176,
+        64
+      ]
+    },
+    {
+      "id": "django_session",
+      "type": "backend",
+      "label": "django_session",
+      "pos": [
+        360,
+        560
+      ],
+      "size": [
+        151,
+        64
+      ]
+    },
+    {
+      "id": "finance_category",
+      "type": "backend",
+      "label": "finance_category",
+      "pos": [
+        680,
+        560
+      ],
+      "size": [
+        168,
+        64
+      ]
+    },
+    {
+      "id": "finance_categorykeyword",
+      "type": "backend",
+      "label": "finance_categorykeyword",
+      "pos": [
+        40,
+        780
+      ],
+      "size": [
+        227,
+        64
+      ]
+    },
+    {
+      "id": "finance_financialgoal",
+      "type": "backend",
+      "label": "finance_financialgoal",
+      "pos": [
+        360,
+        780
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "finance_financialrecord",
+      "type": "backend",
+      "label": "finance_financialrecord",
+      "pos": [
+        680,
+        780
+      ],
+      "size": [
+        227,
+        64
+      ]
+    },
+    {
+      "id": "finance_financialrecordmetadata",
+      "type": "backend",
+      "label": "finance_financialrecordmetadata",
+      "pos": [
+        40,
+        1000
+      ],
+      "size": [
+        295,
+        64
+      ]
+    },
+    {
+      "id": "finance_financialrecordtype",
+      "type": "backend",
+      "label": "finance_financialrecordtype",
+      "pos": [
+        360,
+        1000
+      ],
+      "size": [
+        261,
+        64
+      ]
+    },
+    {
+      "id": "payments_paymentmethod",
+      "type": "backend",
+      "label": "payments_paymentmethod",
+      "pos": [
+        680,
+        1000
+      ],
+      "size": [
+        219,
+        64
+      ]
+    },
+    {
+      "id": "payments_paymentstatus",
+      "type": "backend",
+      "label": "payments_paymentstatus",
+      "pos": [
+        40,
+        1220
+      ],
+      "size": [
+        219,
+        64
+      ]
+    },
+    {
+      "id": "users_currency",
+      "type": "backend",
+      "label": "users_currency",
+      "pos": [
+        360,
+        1220
+      ],
+      "size": [
+        151,
+        64
+      ]
+    },
+    {
+      "id": "users_incomefrequency",
+      "type": "backend",
+      "label": "users_incomefrequency",
+      "pos": [
+        680,
+        1220
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "users_user",
+      "type": "backend",
+      "label": "users_user",
+      "pos": [
+        40,
+        1440
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "users_user_groups",
+      "type": "backend",
+      "label": "users_user_groups",
+      "pos": [
+        360,
+        1440
+      ],
+      "size": [
+        176,
+        64
+      ]
+    },
+    {
+      "id": "users_user_user_permissions",
+      "type": "backend",
+      "label": "users_user_user_permissions",
+      "pos": [
+        680,
+        1440
+      ],
+      "size": [
+        261,
+        64
+      ]
+    },
+    {
+      "id": "users_userprofile",
+      "type": "backend",
+      "label": "users_userprofile",
+      "pos": [
+        40,
+        1660
+      ],
+      "size": [
+        176,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c_1_auth_group_auth_group_permissions",
+      "from": "auth_group",
+      "to": "auth_group_permissions"
+    },
+    {
+      "id": "c_2_auth_group_auth_permission",
+      "from": "auth_group",
+      "to": "auth_permission"
+    },
+    {
+      "id": "c_3_auth_group_users_user_groups",
+      "from": "auth_group",
+      "to": "users_user_groups"
+    },
+    {
+      "id": "c_4_auth_group_permissions_auth_permission",
+      "from": "auth_group_permissions",
+      "to": "auth_permission"
+    },
+    {
+      "id": "c_5_auth_permission_django_content_type",
+      "from": "auth_permission",
+      "to": "django_content_type"
+    },
+    {
+      "id": "c_6_dashboard_userfinancedashboard_users_user",
+      "from": "dashboard_userfinancedashboard",
+      "to": "users_user"
+    },
+    {
+      "id": "c_7_django_admin_log_django_content_type",
+      "from": "django_admin_log",
+      "to": "django_content_type"
+    },
+    {
+      "id": "c_8_django_admin_log_users_user",
+      "from": "django_admin_log",
+      "to": "users_user"
+    },
+    {
+      "id": "c_9_django_content_type_auth_group",
+      "from": "django_content_type",
+      "to": "auth_group"
+    },
+    {
+      "id": "c_10_django_content_type_auth_group_permissions",
+      "from": "django_content_type",
+      "to": "auth_group_permissions"
+    },
+    {
+      "id": "c_11_django_content_type_auth_permission",
+      "from": "django_content_type",
+      "to": "auth_permission"
+    },
+    {
+      "id": "c_12_django_content_type_dashboard_userfinancedashboard",
+      "from": "django_content_type",
+      "to": "dashboard_userfinancedashboard"
+    },
+    {
+      "id": "c_13_django_content_type_django_admin_log",
+      "from": "django_content_type",
+      "to": "django_admin_log"
+    },
+    {
+      "id": "c_14_django_content_type_django_migrations",
+      "from": "django_content_type",
+      "to": "django_migrations"
+    },
+    {
+      "id": "c_15_django_content_type_django_session",
+      "from": "django_content_type",
+      "to": "django_session"
+    },
+    {
+      "id": "c_16_django_content_type_finance_category",
+      "from": "django_content_type",
+      "to": "finance_category"
+    },
+    {
+      "id": "c_17_django_content_type_finance_categorykeyword",
+      "from": "django_content_type",
+      "to": "finance_categorykeyword"
+    },
+    {
+      "id": "c_18_django_content_type_finance_financialgoal",
+      "from": "django_content_type",
+      "to": "finance_financialgoal"
+    },
+    {
+      "id": "c_19_django_content_type_finance_financialrecord",
+      "from": "django_content_type",
+      "to": "finance_financialrecord"
+    },
+    {
+      "id": "c_20_django_content_type_finance_financialrecordmetadata",
+      "from": "django_content_type",
+      "to": "finance_financialrecordmetadata"
+    },
+    {
+      "id": "c_21_django_content_type_finance_financialrecordtype",
+      "from": "django_content_type",
+      "to": "finance_financialrecordtype"
+    },
+    {
+      "id": "c_22_django_content_type_payments_paymentmethod",
+      "from": "django_content_type",
+      "to": "payments_paymentmethod"
+    },
+    {
+      "id": "c_23_django_content_type_payments_paymentstatus",
+      "from": "django_content_type",
+      "to": "payments_paymentstatus"
+    },
+    {
+      "id": "c_24_django_content_type_users_currency",
+      "from": "django_content_type",
+      "to": "users_currency"
+    },
+    {
+      "id": "c_25_django_content_type_users_incomefrequency",
+      "from": "django_content_type",
+      "to": "users_incomefrequency"
+    },
+    {
+      "id": "c_26_django_content_type_users_user",
+      "from": "django_content_type",
+      "to": "users_user"
+    },
+    {
+      "id": "c_27_django_content_type_users_user_groups",
+      "from": "django_content_type",
+      "to": "users_user_groups"
+    },
+    {
+      "id": "c_28_django_content_type_users_user_user_permissions",
+      "from": "django_content_type",
+      "to": "users_user_user_permissions"
+    },
+    {
+      "id": "c_29_django_content_type_users_userprofile",
+      "from": "django_content_type",
+      "to": "users_userprofile"
+    },
+    {
+      "id": "c_30_django_migrations_django_content_type",
+      "from": "django_migrations",
+      "to": "django_content_type"
+    },
+    {
+      "id": "c_31_django_session_users_user",
+      "from": "django_session",
+      "to": "users_user"
+    },
+    {
+      "id": "c_32_finance_category_finance_categorykeyword",
+      "from": "finance_category",
+      "to": "finance_categorykeyword"
+    },
+    {
+      "id": "c_33_finance_category_finance_financialrecord",
+      "from": "finance_category",
+      "to": "finance_financialrecord"
+    },
+    {
+      "id": "c_34_finance_category_finance_financialrecordtype",
+      "from": "finance_category",
+      "to": "finance_financialrecordtype"
+    },
+    {
+      "id": "c_35_finance_categorykeyword_finance_financialrecord",
+      "from": "finance_categorykeyword",
+      "to": "finance_financialrecord"
+    },
+    {
+      "id": "c_36_finance_financialgoal_finance_financialrecord",
+      "from": "finance_financialgoal",
+      "to": "finance_financialrecord"
+    },
+    {
+      "id": "c_37_finance_financialrecord_finance_financialrecordmetadata",
+      "from": "finance_financialrecord",
+      "to": "finance_financialrecordmetadata"
+    },
+    {
+      "id": "c_38_finance_financialrecord_finance_financialrecordtype",
+      "from": "finance_financialrecord",
+      "to": "finance_financialrecordtype"
+    },
+    {
+      "id": "c_39_finance_financialrecordmetadata_finance_financialrecord",
+      "from": "finance_financialrecordmetadata",
+      "to": "finance_financialrecord"
+    },
+    {
+      "id": "c_40_finance_financialrecordtype_finance_financialrecord",
+      "from": "finance_financialrecordtype",
+      "to": "finance_financialrecord"
+    },
+    {
+      "id": "c_41_payments_paymentmethod_payments_paymentstatus",
+      "from": "payments_paymentmethod",
+      "to": "payments_paymentstatus"
+    },
+    {
+      "id": "c_42_users_currency_users_user",
+      "from": "users_currency",
+      "to": "users_user"
+    },
+    {
+      "id": "c_43_users_incomefrequency_users_user",
+      "from": "users_incomefrequency",
+      "to": "users_user"
+    },
+    {
+      "id": "c_44_users_user_users_user_groups",
+      "from": "users_user",
+      "to": "users_user_groups"
+    },
+    {
+      "id": "c_45_users_user_users_user_user_permissions",
+      "from": "users_user",
+      "to": "users_user_user_permissions"
+    },
+    {
+      "id": "c_46_users_user_groups_auth_group",
+      "from": "users_user_groups",
+      "to": "auth_group"
+    },
+    {
+      "id": "c_47_users_user_user_permissions_auth_permission",
+      "from": "users_user_user_permissions",
+      "to": "auth_permission"
+    }
+  ]
+}

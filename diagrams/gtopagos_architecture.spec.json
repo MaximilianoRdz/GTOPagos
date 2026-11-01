@@ -1,0 +1,113 @@
+{
+  "diagram_type": "architecture",
+  "schema_version": 1,
+  "meta": {
+    "title": "Diagrama de Arquitectura",
+    "quality_profile": "showcase",
+    "output": "gtopagos_architecture.html"
+  },
+  "components": [
+    {
+      "id": "CoreHR",
+      "type": "backend",
+      "label": "Core HR / Gestión de Empleados",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        287,
+        64
+      ]
+    },
+    {
+      "id": "Payroll",
+      "type": "backend",
+      "label": "Nómina / Pagos",
+      "pos": [
+        360,
+        120
+      ],
+      "size": [
+        151,
+        64
+      ]
+    },
+    {
+      "id": "Attendance",
+      "type": "backend",
+      "label": "Asistencia & Vacaciones",
+      "pos": [
+        680,
+        120
+      ],
+      "size": [
+        227,
+        64
+      ]
+    },
+    {
+      "id": "Recruitment",
+      "type": "backend",
+      "label": "Reclutamiento & Onboarding",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        253,
+        64
+      ]
+    },
+    {
+      "id": "Performance",
+      "type": "backend",
+      "label": "Rendimiento & Evaluaciones",
+      "pos": [
+        360,
+        340
+      ],
+      "size": [
+        253,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c_1_CoreHR_Payroll",
+      "from": "CoreHR",
+      "to": "Payroll"
+    },
+    {
+      "id": "c_2_CoreHR_Attendance",
+      "from": "CoreHR",
+      "to": "Attendance"
+    },
+    {
+      "id": "c_3_CoreHR_Recruitment",
+      "from": "CoreHR",
+      "to": "Recruitment"
+    },
+    {
+      "id": "c_4_CoreHR_Performance",
+      "from": "CoreHR",
+      "to": "Performance"
+    },
+    {
+      "id": "c_5_Payroll_Attendance",
+      "from": "Payroll",
+      "to": "Attendance"
+    },
+    {
+      "id": "c_6_Attendance_Recruitment",
+      "from": "Attendance",
+      "to": "Recruitment"
+    },
+    {
+      "id": "c_7_Recruitment_Performance",
+      "from": "Recruitment",
+      "to": "Performance"
+    }
+  ]
+}
