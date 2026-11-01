@@ -11,10 +11,12 @@ import { Goal } from '../../../../core/services/goals/goals.service';
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
     @if (isOpen && goal) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" (click)="!savingFunds && close.emit()"></div>
+      <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" (click)="!savingFunds && close.emit()"></div>
 
-        <div class="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-gray-200 dark:border-slate-800">
+        <div class="relative bg-white dark:bg-slate-900 rounded-t-[32px] sm:rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border-t sm:border border-gray-200 dark:border-slate-800 pb-safe">
+          <!-- Mobile Drag Handle -->
+          <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-1 sm:hidden shrink-0"></div>
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">

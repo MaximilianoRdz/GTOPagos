@@ -19,7 +19,16 @@ export class AuthService {
   user = signal<AuthUser | null>(null);
   loading = signal<boolean>(true);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    const savedUser = localStorage.getItem('auth_user');
+    if (savedUser) {
+      try {
+        this.user.set(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem('auth_user');
+      }
+    }
+  }
 
   /* ================= TOKEN ================= */
 
@@ -27,25 +36,42 @@ export class AuthService {
     return localStorage.getItem('access_token');
   }
 
-  setSession(token: string, user: AuthUser, refreshToken?: string) {
+  get isDemo(): boolean {
+    return localStorage.getItem('is_demo') === 'true' || this.user()?.email === 'demo@gtopagos.com';
+  }
+
+  setSession(token: string, user: AuthUser, refreshToken?: string, isDemo?: boolean) {
     localStorage.setItem('access_token', token);
+    localStorage.setItem('auth_user', JSON.stringify(user));
     if (refreshToken) {
       localStorage.setItem('refresh_token', refreshToken);
+    }
+    if (isDemo || user.email === 'demo@gtopagos.com') {
+      localStorage.setItem('is_demo', 'true');
+    } else {
+      localStorage.removeItem('is_demo');
     }
     this.user.set(user);
   }
 
   clearSession() {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('is_demo');
     this.user.set(null);
   }
 
   updateUser(partialUser: Partial<AuthUser>) {
     const current = this.user();
     if (current) {
-      this.user.set({ ...current, ...partialUser });
+      const updated = { ...current, ...partialUser };
+      this.user.set(updated);
+      localStorage.setItem('auth_user', JSON.stringify(updated));
     } else if (partialUser.name && partialUser.email && partialUser.id) {
-      this.user.set(partialUser as AuthUser);
+      const updated = partialUser as AuthUser;
+      this.user.set(updated);
+      localStorage.setItem('auth_user', JSON.stringify(updated));
     }
   }
 
@@ -66,11 +92,13 @@ export class AuthService {
       .post(`${this.apiUrl}/token/validate/`, {}, { headers })
       .pipe(
         tap((res: any) => {
-          this.user.set({
+          const userObj: AuthUser = {
             id: res.user_id,
             name: res.user.name,
             email: res.user.email,
-          });
+          };
+          this.user.set(userObj);
+          localStorage.setItem('auth_user', JSON.stringify(userObj));
           this.loading.set(false);
         })
       );

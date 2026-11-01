@@ -9,6 +9,11 @@ export const layoutRoutes: Routes = [
     canActivate: [AuthGuard],
     children: [
       {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
         path: 'dashboard',
         loadComponent: () => import("../modules/dashboard/dashboard.component").then(m => m.DashboardComponent),
       },

@@ -6,7 +6,9 @@ import {
   signal,
   effect,
   ElementRef,
-  ViewChild
+  ViewChild,
+  OnInit,
+  OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -193,7 +195,7 @@ interface PopoverPos {
     }
   `
 })
-export class TourComponent {
+export class TourComponent implements OnInit, OnDestroy {
   tour = inject(TourService);
 
   readonly X = X;
@@ -207,6 +209,14 @@ export class TourComponent {
   popover = signal<PopoverPos>({ top: 100, left: 100, placement: 'center' });
 
   private rafId: number | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  private timeouts: any[] = [];
+
+  private onScrollCapture = () => {
+    if (this.tour.isActive()) {
+      this.requestPosUpdate();
+    }
+  };
 
   constructor() {
     effect(() => {
@@ -214,26 +224,41 @@ export class TourComponent {
       const step = this.tour.currentStep();
 
       if (active && step) {
-        // Al cambiar de paso, esperamos a que el elemento exista y hacemos scroll solo 1 vez
-        setTimeout(() => {
-          this.handleStepChange();
-        }, 60);
+        // Al cambiar de paso, iniciamos seguimiento
+        this.clearPendingTimeouts();
+        this.timeouts.push(setTimeout(() => this.handleStepChange(), 30));
       } else {
         this.spotlight.set(null);
       }
     });
   }
 
-  @HostListener('window:resize')
-  onResize(): void {
-    if (!this.tour.isActive()) return;
-    this.requestPosUpdate();
+  ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', this.onScrollCapture, true);
+      window.addEventListener('resize', this.onScrollCapture, { passive: true });
+    }
   }
 
-  @HostListener('window:scroll')
-  onScroll(): void {
-    if (!this.tour.isActive()) return;
-    this.requestPosUpdate();
+  ngOnDestroy(): void {
+    this.clearPendingTimeouts();
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.onScrollCapture, true);
+      window.removeEventListener('resize', this.onScrollCapture);
+    }
+  }
+
+  private clearPendingTimeouts(): void {
+    for (const t of this.timeouts) {
+      clearTimeout(t);
+    }
+    this.timeouts = [];
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -271,19 +296,21 @@ export class TourComponent {
 
     const el = document.querySelector(step.targetSelector) as HTMLElement | null;
     if (el) {
-      // ScrollIntoView se ejecuta ÚNICAMENTE al cambiar de paso, nunca en eventos scroll
+      // Ajuste de scroll solo si el elemento no está visible cómodamente
       const b = el.getBoundingClientRect();
-      const inView = b.top >= 80 && b.bottom <= (window.innerHeight - 80);
+      const inView = b.top >= 70 && b.bottom <= (window.innerHeight - 70);
       if (!inView) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-        // Recalcular posición tras breve retardo para acompañar el scroll
-        setTimeout(() => this.updatePositions(), 200);
-      } else {
-        this.updatePositions();
       }
-    } else if (retryCount < 4) {
-      // Reintentar si el elemento aún no ha renderizado en el DOM (p. ej. cambio de pestaña)
-      setTimeout(() => this.handleStepChange(retryCount + 1), 80);
+
+      this.updatePositions();
+      // Verificaciones subsecuentes mientras termina la animación de scroll
+      this.timeouts.push(setTimeout(() => this.updatePositions(), 100));
+      this.timeouts.push(setTimeout(() => this.updatePositions(), 250));
+      this.timeouts.push(setTimeout(() => this.updatePositions(), 450));
+    } else if (retryCount < 6) {
+      // Reintentar si el DOM aún está alternando vistas (por ejemplo, cambio de pestaña en configuración)
+      this.timeouts.push(setTimeout(() => this.handleStepChange(retryCount + 1), 60));
     } else {
       this.updatePositions();
     }
@@ -330,82 +357,100 @@ export class TourComponent {
   }
 
   private computePopoverPos(target: Rect, preferredPlacement: string): void {
-    const popWidth = Math.min(380, window.innerWidth - 32);
-    const popHeight = 240;
+    const popEl = this.popoverRef?.nativeElement;
+    const popWidth = popEl?.offsetWidth || Math.min(380, window.innerWidth - 32);
+    const popHeight = popEl?.offsetHeight || 250;
     const gap = 16;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-
-    let placement = preferredPlacement || 'bottom';
-    let top = 0;
-    let left = 0;
 
     const spaceBelow = vh - target.bottom - gap;
     const spaceAbove = target.top - gap;
     const spaceRight = vw - target.right - gap;
     const spaceLeft = target.left - gap;
 
+    let placement = preferredPlacement || 'bottom';
+
+    // Selección inteligente de posición comprobando espacio real suficiente
     if (placement === 'bottom') {
-      if (spaceBelow >= popHeight || spaceBelow >= spaceAbove) {
-        top = target.bottom + gap;
-      } else {
+      if (spaceBelow < popHeight && spaceAbove >= popHeight) {
         placement = 'top';
-        top = target.top - gap - popHeight;
-      }
-      left = target.left + (target.width / 2) - (popWidth / 2);
-    } else if (placement === 'top') {
-      if (spaceAbove >= popHeight || spaceAbove >= spaceBelow) {
-        top = target.top - gap - popHeight;
-      } else {
-        placement = 'bottom';
-        top = target.bottom + gap;
-      }
-      left = target.left + (target.width / 2) - (popWidth / 2);
-    } else if (placement === 'right') {
-      if (spaceRight >= popWidth || spaceRight >= spaceLeft) {
-        left = target.right + gap;
-        top = target.top + (target.height / 2) - (popHeight / 2);
-      } else if (spaceLeft >= popWidth) {
+      } else if (spaceBelow < popHeight && spaceRight >= popWidth) {
+        placement = 'right';
+      } else if (spaceBelow < popHeight && spaceLeft >= popWidth) {
         placement = 'left';
-        left = target.left - gap - popWidth;
-        top = target.top + (target.height / 2) - (popHeight / 2);
-      } else {
+      }
+    } else if (placement === 'top') {
+      if (spaceAbove < popHeight && spaceBelow >= popHeight) {
         placement = 'bottom';
-        top = target.bottom + gap;
-        left = target.left + (target.width / 2) - (popWidth / 2);
+      } else if (spaceAbove < popHeight && spaceRight >= popWidth) {
+        placement = 'right';
+      } else if (spaceAbove < popHeight && spaceLeft >= popWidth) {
+        placement = 'left';
       }
     } else if (placement === 'left') {
-      if (spaceLeft >= popWidth || spaceLeft >= spaceRight) {
-        left = target.left - gap - popWidth;
-        top = target.top + (target.height / 2) - (popHeight / 2);
-      } else if (spaceRight >= popWidth) {
+      if (spaceLeft < popWidth && spaceRight >= popWidth) {
         placement = 'right';
-        left = target.right + gap;
-        top = target.top + (target.height / 2) - (popHeight / 2);
-      } else {
+      } else if (spaceLeft < popWidth && spaceBelow >= popHeight) {
         placement = 'bottom';
-        top = target.bottom + gap;
-        left = target.left + (target.width / 2) - (popWidth / 2);
+      } else if (spaceLeft < popWidth && spaceAbove >= popHeight) {
+        placement = 'top';
       }
-    } else {
+    } else if (placement === 'right') {
+      if (spaceRight < popWidth && spaceLeft >= popWidth) {
+        placement = 'left';
+      } else if (spaceRight < popWidth && spaceBelow >= popHeight) {
+        placement = 'bottom';
+      } else if (spaceRight < popWidth && spaceAbove >= popHeight) {
+        placement = 'top';
+      }
+    } else { // 'auto'
       if (spaceBelow >= popHeight) {
         placement = 'bottom';
-        top = target.bottom + gap;
-        left = target.left + (target.width / 2) - (popWidth / 2);
       } else if (spaceAbove >= popHeight) {
         placement = 'top';
-        top = target.top - gap - popHeight;
-        left = target.left + (target.width / 2) - (popWidth / 2);
+      } else if (spaceRight >= popWidth) {
+        placement = 'right';
+      } else if (spaceLeft >= popWidth) {
+        placement = 'left';
       } else {
-        placement = 'bottom';
-        top = Math.max(16, vh - popHeight - 16);
-        left = target.left + (target.width / 2) - (popWidth / 2);
+        placement = spaceBelow >= spaceAbove ? 'bottom' : 'top';
       }
+    }
+
+    let top = 0;
+    let left = 0;
+
+    if (placement === 'bottom') {
+      top = target.bottom + gap;
+      left = target.left + (target.width / 2) - (popWidth / 2);
+    } else if (placement === 'top') {
+      top = target.top - gap - popHeight;
+      left = target.left + (target.width / 2) - (popWidth / 2);
+    } else if (placement === 'right') {
+      left = target.right + gap;
+      top = target.top + (target.height / 2) - (popHeight / 2);
+    } else if (placement === 'left') {
+      left = target.left - gap - popWidth;
+      top = target.top + (target.height / 2) - (popHeight / 2);
     }
 
     // Clamping estricto para no desbordar viewport
     left = Math.max(16, Math.min(left, vw - popWidth - 16));
     top = Math.max(16, Math.min(top, vh - popHeight - 16));
+
+    // Si aún con clamping se solapara con el elemento resaltado (tarjetas gigantescas)
+    const overlapsVertically = top < target.bottom && (top + popHeight) > target.top;
+    const overlapsHorizontally = left < target.right && (left + popWidth) > target.left;
+    if (overlapsVertically && overlapsHorizontally) {
+      if (spaceRight >= popWidth) {
+        left = target.right + gap;
+        placement = 'right';
+      } else if (spaceLeft >= popWidth) {
+        left = Math.max(16, target.left - gap - popWidth);
+        placement = 'left';
+      }
+    }
 
     this.popover.set({
       top: Math.round(top),

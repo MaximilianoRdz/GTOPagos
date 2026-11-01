@@ -92,10 +92,8 @@ export class AppearanceSettingsComponent {
   readonly Sparkles = Sparkles;
 
   @Input() currentTheme: AppTheme = 'auto';
-  @Input() currentLanguage = 'es';
 
   @Output() themeChange = new EventEmitter<AppTheme>();
-  @Output() languageChange = new EventEmitter<string>();
   @Output() restartTour = new EventEmitter<void>();
 
   themeOptions = [

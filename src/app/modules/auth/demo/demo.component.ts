@@ -119,15 +119,18 @@ export class DemoComponent implements OnInit {
   startDemoLogin(): void {
     this.errorMessage.set(null);
 
-    // Si ya tiene sesión activa como demo, entra de inmediato
+    // Si ya tiene sesión activa y en memoria como demo, entra de inmediato
     if (this.auth.user()?.email === 'demo@gtopagos.com') {
       this.router.navigate(['/dashboard']);
       return;
     }
 
+    // Limpiar de forma segura cualquier token expirado o residual de sesiones anteriores
+    this.auth.clearSession();
+
     this.loginService.loginAsDemo().subscribe({
       next: (res) => {
-        this.auth.setSession(res.access_token, res.user, res.refresh_token);
+        this.auth.setSession(res.access_token, res.user, res.refresh_token, true);
         this.alert.show('¡Bienvenido al Modo Demo de GTOPagos!', 'success');
         
         // Breve retardo para permitir una transición visual suave

@@ -1,16 +1,16 @@
-<main class="flex-1 p-6 overflow-auto text-gray-900 dark:text-gray-100">
+<main class="flex-1 p-4 sm:p-6 overflow-auto text-gray-900 dark:text-gray-100">
   <div class="max-w-7xl mx-auto">
     <!-- Welcome -->
-    <div id="tour-welcome" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div id="tour-welcome" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
       <div>
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{{ i18n.t().welcome }}</h2>
-        <p class="text-gray-600 dark:text-gray-400">{{ i18n.t().summary }}</p>
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1">¡Bienvenido de vuelta!</h2>
+        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Aquí tienes un resumen de tus finanzas personales</p>
       </div>
 
       <button
         type="button"
         (click)="startTour()"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 self-start sm:self-auto"
+        class="inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 self-start sm:self-auto"
         title="Ver guía interactiva del Dashboard"
       >
         <lucide-angular [img]="Sparkles" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></lucide-angular>
@@ -18,27 +18,29 @@
       </button>
     </div>
 
-    <!-- ALERTA DE PAGOS PRÓXIMOS A VENCER O VENCIDOS -->
-    @if (upcomingDueCount > 0) {
-      <app-alert-banner
-        variant="warning"
-        [icon]="AlertTriangle"
-        [title]="'Atención: Tienes ' + upcomingDueCount + (upcomingDueCount === 1 ? ' pago pendiente' : ' pagos pendientes') + ' por vencer o vencidos'"
-        description="Revisa tus compromisos para evitar intereses o recargos en tus tarjetas y cuentas."
-        [actionText]="'Ver pagos pendientes (' + upcomingDueCount + ')'"
-        (actionClick)="showUpcomingDueModal = true"
-        class="block mb-8"
-      />
-    }
+    <!-- SMART INSIGHTS ENGINE PROACTIVO -->
+    <app-smart-insights
+      [totalIncome]="totalIncome"
+      [totalExpenses]="totalExpenses"
+      [budgetLimit]="budgetLimit"
+      [budgetDaysLeft]="budgetDaysLeft"
+      [upcomingDueCount]="upcomingDueCount"
+      [upcomingDueRecords]="upcomingDueRecords"
+      [rawCategoryData]="rawCategoryData"
+      [netWorth]="netWorth"
+      (openUpcomingDueModal)="showUpcomingDueModal = true"
+      (navigateRoute)="handleInsightRoute($event)"
+      class="block mb-6 sm:mb-8"
+    />
 
     <!-- Stats -->
-    <div id="tour-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div id="tour-stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
       @for (stat of stats; track stat.title) {
-        <div class="rounded-xl shadow-sm border p-6 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+        <div class="rounded-2xl shadow-sm border p-4 sm:p-6 hover:shadow-md transition-all duration-200 active:scale-[0.98]"
              [ngClass]="stat.isNegative ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'">
-          <div class="flex items-center justify-between mb-4">
-            <div class="p-3 rounded-lg bg-white dark:bg-slate-800 shadow-sm" [ngClass]="stat.isNegative ? 'text-red-600' : stat.color">
-              <lucide-angular [img]="stat.icon" class="w-6 h-6"></lucide-angular>
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
+            <div class="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm" [ngClass]="stat.isNegative ? 'text-red-600' : stat.color">
+              <lucide-angular [img]="stat.icon" class="w-5 h-5 sm:w-6 sm:h-6"></lucide-angular>
             </div>
             <app-badge
               [variant]="stat.trend === 'up' ? 'success' : 'danger'"
@@ -48,8 +50,8 @@
             </app-badge>
           </div>
           <div>
-            <p class="text-2xl font-bold mb-1" [ngClass]="stat.isNegative ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'">{{ stat.value }}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ stat.title }}</p>
+            <p class="text-xl sm:text-2xl font-bold mb-0.5 sm:mb-1" [ngClass]="stat.isNegative ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'">{{ stat.value }}</p>
+            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{{ stat.title }}</p>
           </div>
         </div>
       }
@@ -59,10 +61,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Charts Section (New) -->
-      <div id="tour-charts" class="lg:col-span-2 space-y-6">
+      <div class="lg:col-span-2 space-y-6">
         <!-- Monthly Chart -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ i18n.t().summaryByAccount }}</h3>
+        <div id="tour-charts" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Resumen por Cuenta</h3>
           @if (hasMonthlyData) {
             <div class="h-[280px] sm:h-[300px] w-full relative">
               <canvas baseChart [data]="monthlyChartData" [options]="monthlyChartOptions" type="bar"></canvas>
@@ -72,11 +74,11 @@
               <div class="w-12 h-12 rounded-full bg-emerald-100/70 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
                 <lucide-angular [img]="BarChart3" class="w-6 h-6"></lucide-angular>
               </div>
-              <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">{{ i18n.t().noAccountDataTitle }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm mb-4">{{ i18n.t().noAccountDataDesc }}</p>
+              <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Sin movimientos por cuenta</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm mb-4">Cuando registres ingresos o gastos en tus cuentas, aquí verás la comparativa gráfica.</p>
               <button (click)="goToBudgets()" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer shadow-sm">
                 <lucide-angular [img]="Wallet" class="w-3.5 h-3.5"></lucide-angular>
-                {{ i18n.t().manageBudget }}
+                Gestionar Presupuesto
               </button>
             </div>
           }
@@ -84,8 +86,8 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           <!-- Category Chart -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ i18n.t().expensesByCategory }}</h3>
+          <div id="tour-category-chart" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Gastos por Categoría (Global)</h3>
             @if (hasCategoryData) {
               <div class="flex-1 flex items-center justify-center min-h-[240px] w-full">
                 <div class="h-[240px] w-full max-w-[280px] relative">
@@ -97,8 +99,8 @@
                 <div class="w-12 h-12 rounded-full bg-indigo-100/70 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400 flex items-center justify-center mb-3">
                   <lucide-angular [img]="PieChart" class="w-6 h-6"></lucide-angular>
                 </div>
-                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">{{ i18n.t().noCategoryExpensesTitle }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 max-w-xs">{{ i18n.t().noCategoryExpensesDesc }}</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Sin gastos registrados</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 max-w-xs">Los gastos clasificados por categoría aparecerán aquí.</p>
               </div>
             }
           </div>
@@ -107,8 +109,8 @@
           <div id="tour-transactions" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ i18n.t().recentTransactions }}</h3>
-                <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium" style="cursor: pointer;" (click)="goToBudgets()">{{ i18n.t().viewAll }}</button>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Transacciones Recientes</h3>
+                <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium" style="cursor: pointer;" (click)="goToBudgets()">Ver todas</button>
               </div>
               <div class="space-y-3">
                 @for (transaction of recentTransactions.slice(0, 4); track transaction) {
@@ -135,11 +137,11 @@
                     <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
                       <lucide-angular [img]="Receipt" class="w-6 h-6"></lucide-angular>
                     </div>
-                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">{{ i18n.t().noTransactionsTitle }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 max-w-xs mb-3">{{ i18n.t().noTransactionsDescription }}</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Sin Movimientos</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 max-w-xs mb-3">Aún no hay transacciones para mostrar aquí.</p>
                     <button (click)="goToBudgets()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg transition-colors cursor-pointer">
                       <lucide-angular [img]="Wallet" class="w-3.5 h-3.5"></lucide-angular>
-                      {{ i18n.t().manageBudget }}
+                      Gestionar Presupuesto
                     </button>
                   </div>
                 }
@@ -152,31 +154,31 @@
 
       <!-- Quick Actions -->
       <div id="tour-quick-actions" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-6">{{ i18n.t().quickActions }}</h3>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-6">Acciones Rápidas</h3>
         <div class="space-y-3">
           <button (click)="goToBudgets()" class="w-full flex items-center space-x-3 p-3 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 cursor-pointer">
             <div class="p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-lg">
               <lucide-angular [img]="Wallet" class="w-4 h-4" />
             </div>
-            <span class="font-medium text-gray-700 dark:text-gray-200">{{ i18n.t().manageBudget }}</span>
+            <span class="font-medium text-gray-700 dark:text-gray-200">Gestionar Presupuesto</span>
           </button>
           <button (click)="goToGoals()" class="w-full flex items-center space-x-3 p-3 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 cursor-pointer">
             <div class="p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg">
               <lucide-angular [img]="Target" class="w-4 h-4" />
             </div>
-            <span class="font-medium text-gray-700 dark:text-gray-200">{{ i18n.t().newGoal }}</span>
+            <span class="font-medium text-gray-700 dark:text-gray-200">Nueva Meta</span>
           </button>
           <button (click)="goToReports()" class="w-full flex items-center space-x-3 p-3 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 cursor-pointer">
             <div class="p-2 bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 rounded-lg">
               <lucide-angular [img]="ChartColumnDecreasing" class="w-4 h-4" />
             </div>
-            <span class="font-medium text-gray-700 dark:text-gray-200">{{ i18n.t().viewReports }}</span>
+            <span class="font-medium text-gray-700 dark:text-gray-200">Ver Reportes</span>
           </button>
           <button (click)="goToConfiguration()" class="w-full flex items-center space-x-3 p-3 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 cursor-pointer">
             <div class="p-2 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-lg">
               <lucide-angular [img]="Settings" class="w-4 h-4" />
             </div>
-            <span class="font-medium text-gray-700 dark:text-gray-200">{{ i18n.t().settings }}</span>
+            <span class="font-medium text-gray-700 dark:text-gray-200">Configuración</span>
           </button>
         </div>
 
@@ -187,11 +189,11 @@
           [budgetPercentage]="budgetPercentage"
           [budgetDaysLeft]="budgetDaysLeft"
           [periodDaysSuffix]="periodDaysSuffix"
-          [usedLabel]="i18n.t().used"
-          [budgetsLabel]="i18n.t().budgets"
-          [spentLabel]="i18n.t().spent"
-          [remainingLabel]="i18n.t().remaining"
-          [daysLeftLabel]="i18n.t().daysLeft"
+          [usedLabel]="'usado'"
+          [budgetsLabel]="'Presupuesto'"
+          [spentLabel]="'Gastado'"
+          [remainingLabel]="'Restante'"
+          [daysLeftLabel]="'Te quedan'"
         />
       </div>
     </div>

@@ -11,8 +11,10 @@ import { DashboardItem } from '../../../../core/services/dashboard/dashboard.ser
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
     @if (isOpen) {
-      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
-        <div class="bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 rounded-3xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-slate-800 overflow-hidden">
+      <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true">
+        <div class="bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 rounded-t-[32px] sm:rounded-3xl shadow-2xl w-full max-w-lg border-t sm:border border-gray-200 dark:border-slate-800 overflow-hidden pb-safe">
+          <!-- Mobile Drag Handle -->
+          <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-1 sm:hidden shrink-0"></div>
           <!-- HEADER -->
           <div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800">
             <div class="flex items-center gap-3">
@@ -106,11 +108,11 @@ import { DashboardItem } from '../../../../core/services/dashboard/dashboard.ser
           </div>
 
           <!-- FOOTER -->
-          <div class="flex items-center justify-end gap-3 p-5 border-t border-gray-100 dark:border-slate-800">
+          <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 p-4 sm:p-5 border-t border-gray-100 dark:border-slate-800">
             <button
               type="button"
               (click)="close.emit()"
-              class="px-4 py-2 text-sm font-semibold rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              class="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-sm font-semibold rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95 text-center"
             >
               Cancelar
             </button>
@@ -118,7 +120,7 @@ import { DashboardItem } from '../../../../core/services/dashboard/dashboard.ser
             <button
               type="button"
               (click)="submit()"
-              class="px-5 py-2 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all cursor-pointer flex items-center gap-2"
+              class="w-full sm:w-auto px-5 py-2.5 sm:py-2 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
             >
               <lucide-angular [img]="CheckCircle" class="w-4 h-4"></lucide-angular>
               <span>{{ dashboard ? 'Guardar cambios' : 'Crear espacio' }}</span>

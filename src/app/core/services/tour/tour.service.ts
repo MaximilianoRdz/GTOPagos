@@ -45,28 +45,37 @@ export class TourService {
       {
         id: 'dash-charts',
         targetSelector: '#tour-charts',
-        title: '3. Gráficas Financieras',
-        description: 'Evolución de saldos mes a mes y diagrama de dona con la distribución de gastos por categoría.',
+        title: '3. Resumen por Cuenta',
+        description: 'Evolución gráfica de saldos mes a mes para comparar ingresos y gastos en tus diferentes cuentas y tarjetas.',
         iconName: 'barChart',
-        placement: 'top',
+        placement: 'bottom',
         highlightPadding: 10
       },
       {
-        id: 'dash-quick-actions',
-        targetSelector: '#tour-quick-actions',
-        title: '4. Presupuesto y Accesos Rápidos',
-        description: 'Consulta el presupuesto disponible de tu período y accede directamente a presupuestos, metas o reportes.',
-        iconName: 'trendingUp',
-        placement: 'left',
+        id: 'dash-category-chart',
+        targetSelector: '#tour-category-chart',
+        title: '4. Gastos por Categoría',
+        description: 'Diagrama interactivo con la distribución porcentual de tus gastos clasificados por categoría.',
+        iconName: 'sparkles',
+        placement: 'top',
         highlightPadding: 10
       },
       {
         id: 'dash-transactions',
         targetSelector: '#tour-transactions',
         title: '5. Historial de Movimientos',
-        description: 'Consulta tus transacciones recientes y entra al detalle con filtros por pagos Pendientes, compras a MSI y gastos Recurrentes.',
-        iconName: 'sparkles',
+        description: 'Consulta tus transacciones recientes y entra al detalle con filtros por pagos pendientes y compras a MSI.',
+        iconName: 'trendingUp',
         placement: 'top',
+        highlightPadding: 10
+      },
+      {
+        id: 'dash-quick-actions',
+        targetSelector: '#tour-quick-actions',
+        title: '6. Presupuesto y Accesos Rápidos',
+        description: 'Consulta el presupuesto disponible de tu período y accede directamente a presupuestos, metas o reportes.',
+        iconName: 'wallet',
+        placement: 'left',
         highlightPadding: 10
       }
     ],

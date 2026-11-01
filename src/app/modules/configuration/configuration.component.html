@@ -73,9 +73,7 @@
               @if (isAppearanceTab) {
                 <app-appearance-settings
                   [currentTheme]="appearanceSettings.theme"
-                  [currentLanguage]="appearanceSettings.language"
                   (themeChange)="setTheme($event)"
-                  (languageChange)="setLanguage($event)"
                   (restartTour)="restartTour()"
                 />
               }

@@ -1,0 +1,407 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura de Datos y Relaciones - GTOPagos (PostgreSQL)",
+    "subtitle": "Mapeo Relacional de Tablas, Claves Foraneas y Flujo Fullstack",
+    "quality_profile": "showcase",
+    "output": "arquitectura_base_datos.html"
+  },
+  "components": [
+    {
+      "id": "users_user",
+      "type": "security",
+      "label": "users_user",
+      "sublabel": "Usuario del Sistema",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "Auth Core"
+    },
+    {
+      "id": "users_userprofile",
+      "type": "security",
+      "label": "users_userprofile",
+      "sublabel": "Perfil & Preferencias",
+      "pos": [
+        40,
+        320
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "1:1 User"
+    },
+    {
+      "id": "users_currency",
+      "type": "database",
+      "label": "users_currency",
+      "sublabel": "Catalogo Divisas",
+      "pos": [
+        40,
+        520
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "ISO Codes"
+    },
+    {
+      "id": "users_incomefreq",
+      "type": "database",
+      "label": "users_incomefrequency",
+      "sublabel": "Frecuencia Ingresos",
+      "pos": [
+        40,
+        720
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "Frecuencias"
+    },
+    {
+      "id": "finance_record",
+      "type": "database",
+      "label": "finance_financialrecord",
+      "sublabel": "Transacciones Core",
+      "pos": [
+        340,
+        120
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Transacciones"
+    },
+    {
+      "id": "finance_category",
+      "type": "database",
+      "label": "finance_category",
+      "sublabel": "Categorias de Gastos",
+      "pos": [
+        340,
+        320
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Categorias"
+    },
+    {
+      "id": "finance_type",
+      "type": "database",
+      "label": "finance_recordtype",
+      "sublabel": "Tipo Ingreso / Gasto",
+      "pos": [
+        340,
+        520
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Tipo Transaccion"
+    },
+    {
+      "id": "finance_goal",
+      "type": "database",
+      "label": "finance_financialgoal",
+      "sublabel": "Metas de Ahorro",
+      "pos": [
+        340,
+        720
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Metas"
+    },
+    {
+      "id": "finance_keywords",
+      "type": "cloud",
+      "label": "finance_categorykeyword",
+      "sublabel": "Keywords Clasificador IA",
+      "pos": [
+        640,
+        120
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "IA Deteccion"
+    },
+    {
+      "id": "finance_meta",
+      "type": "database",
+      "label": "finance_recordmetadata",
+      "sublabel": "Auditoria / Metadatos",
+      "pos": [
+        640,
+        320
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Audit Log"
+    },
+    {
+      "id": "payment_method",
+      "type": "database",
+      "label": "payments_paymentmethod",
+      "sublabel": "Metodos de Pago",
+      "pos": [
+        640,
+        520
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Metodos"
+    },
+    {
+      "id": "payment_status",
+      "type": "database",
+      "label": "payments_paymentstatus",
+      "sublabel": "Estado del Pago",
+      "pos": [
+        640,
+        720
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Estados"
+    },
+    {
+      "id": "dashboard",
+      "type": "database",
+      "label": "dashboard_userfinance",
+      "sublabel": "Metricas Agregadas",
+      "pos": [
+        940,
+        120
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "KPIs"
+    },
+    {
+      "id": "django_api",
+      "type": "backend",
+      "label": "Django REST Backend",
+      "sublabel": "ORM & ViewSets (:8000)",
+      "pos": [
+        940,
+        320
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "API Core"
+    },
+    {
+      "id": "angular_ui",
+      "type": "frontend",
+      "label": "Angular 21 Client",
+      "sublabel": "Signals & Tailwind (:4200)",
+      "pos": [
+        940,
+        520
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "tag": "Web SPA"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Modulo de Usuarios & Divisas",
+      "wraps": [
+        "users_user",
+        "users_userprofile",
+        "users_currency",
+        "users_incomefreq"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Modulo Core Financiero",
+      "wraps": [
+        "finance_record",
+        "finance_category",
+        "finance_type",
+        "finance_goal"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Pagos, Clasificacion IA & Metadatos",
+      "wraps": [
+        "finance_keywords",
+        "finance_meta",
+        "payment_method",
+        "payment_status"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Capa de Analitica & Consumo Fullstack",
+      "wraps": [
+        "dashboard",
+        "django_api",
+        "angular_ui"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "users_user",
+      "to": "users_userprofile",
+      "label": "1 a 1",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "users_user",
+      "to": "finance_record",
+      "label": "FK User",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c3",
+      "from": "users_currency",
+      "to": "users_userprofile",
+      "label": "FK Currency",
+      "variant": "default"
+    },
+    {
+      "id": "c4",
+      "from": "users_incomefreq",
+      "to": "users_userprofile",
+      "label": "FK Frecuencia",
+      "variant": "default"
+    },
+    {
+      "id": "c5",
+      "from": "finance_category",
+      "to": "finance_record",
+      "label": "FK Categoria",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c6",
+      "from": "finance_type",
+      "to": "finance_record",
+      "label": "FK Tipo",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c7",
+      "from": "finance_goal",
+      "to": "finance_record",
+      "label": "FK Meta",
+      "variant": "default"
+    },
+    {
+      "id": "c8",
+      "from": "finance_category",
+      "to": "finance_keywords",
+      "label": "FK Categoria",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c9",
+      "from": "finance_record",
+      "to": "finance_meta",
+      "label": "1 a 1 Meta",
+      "variant": "default"
+    },
+    {
+      "id": "c10",
+      "from": "payment_method",
+      "to": "finance_record",
+      "label": "FK Metodo",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c11",
+      "from": "payment_status",
+      "to": "finance_record",
+      "label": "FK Estado",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c12",
+      "from": "users_user",
+      "to": "dashboard",
+      "label": "FK User",
+      "variant": "default"
+    },
+    {
+      "id": "c13",
+      "from": "django_api",
+      "to": "finance_record",
+      "label": "ORM Query",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c14",
+      "from": "angular_ui",
+      "to": "django_api",
+      "label": "HTTP REST",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Base de Datos PostgreSQL (:5434)",
+      "items": [
+        "22 tablas registradas con integridad referencial",
+        "Conexion directa mediante psycopg y PostgreSQL MCP",
+        "Indices optimizados por usuario y fechas"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Logica de Negocio & Finanzas",
+      "items": [
+        "Transacciones atomicas en finance_financialrecord",
+        "Clasificador con keywords de IA en finance_categorykeyword",
+        "Seguimiento de metas y frecuencia de ingresos"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Arquitectura Fullstack",
+      "items": [
+        "Django 5 REST Framework orquestando servicios",
+        "Angular 21 Standalone con Tailwind CSS",
+        "Monitoreo en vivo desde AI & Services Hub"
+      ]
+    }
+  ]
+}
