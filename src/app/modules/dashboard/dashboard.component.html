@@ -61,9 +61,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Charts Section (New) -->
-      <div id="tour-charts" class="lg:col-span-2 space-y-6">
+      <div class="lg:col-span-2 space-y-6">
         <!-- Monthly Chart -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
+        <div id="tour-charts" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
           <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Resumen por Cuenta</h3>
           @if (hasMonthlyData) {
             <div class="h-[280px] sm:h-[300px] w-full relative">
@@ -86,7 +86,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           <!-- Category Chart -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between">
+          <div id="tour-category-chart" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col justify-between">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Gastos por Categoría (Global)</h3>
             @if (hasCategoryData) {
               <div class="flex-1 flex items-center justify-center min-h-[240px] w-full">

@@ -57,13 +57,11 @@ export class ConfigurationComponent implements OnInit {
       const step = this.tourService.currentStep();
       if (!step) return;
 
-      const selector = step.targetSelector;
-      if (selector.includes('profile')) this.activeTab = 'profile';
-      else if (selector.includes('security')) this.activeTab = 'security';
-      else if (selector.includes('appearance')) this.activeTab = 'appearance';
-      else if (selector.includes('financial')) this.activeTab = 'financial';
-      else if (selector.includes('categories')) this.activeTab = 'categories';
-      this.cdr.markForCheck();
+      const tab = step.configTab || (step.id.includes('profile') ? 'profile' : step.id.includes('security') ? 'security' : step.id.includes('appearance') ? 'appearance' : step.id.includes('financial') ? 'financial' : step.id.includes('categories') ? 'categories' : null);
+      if (tab) {
+        this.setActiveTab(tab as Tab);
+        this.cdr.detectChanges();
+      }
     });
   }
 
